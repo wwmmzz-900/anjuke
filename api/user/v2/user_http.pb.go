@@ -19,15 +19,21 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationUserBindPhone = "/api.user.v2.User/BindPhone"
 const OperationUserCreateUser = "/api.user.v2.User/CreateUser"
+const OperationUserSendSms = "/api.user.v2.User/SendSms"
 
 type UserHTTPServer interface {
+	BindPhone(context.Context, *BindPhoneRequest) (*BindPhoneReply, error)
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserReply, error)
+	SendSms(context.Context, *SendSmsRequest) (*SendSmsReply, error)
 }
 
 func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r := s.Route("/")
 	r.POST("/user/create", _User_CreateUser0_HTTP_Handler(srv))
+	r.POST("/bind/phone", _User_BindPhone0_HTTP_Handler(srv))
+	r.POST("/sendSms", _User_SendSms0_HTTP_Handler(srv))
 }
 
 func _User_CreateUser0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -52,8 +58,54 @@ func _User_CreateUser0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) e
 	}
 }
 
+func _User_BindPhone0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in BindPhoneRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserBindPhone)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.BindPhone(ctx, req.(*BindPhoneRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*BindPhoneReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_SendSms0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SendSmsRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserSendSms)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SendSms(ctx, req.(*SendSmsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SendSmsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserHTTPClient interface {
+	BindPhone(ctx context.Context, req *BindPhoneRequest, opts ...http.CallOption) (rsp *BindPhoneReply, err error)
 	CreateUser(ctx context.Context, req *CreateUserRequest, opts ...http.CallOption) (rsp *CreateUserReply, err error)
+	SendSms(ctx context.Context, req *SendSmsRequest, opts ...http.CallOption) (rsp *SendSmsReply, err error)
 }
 
 type UserHTTPClientImpl struct {
@@ -64,11 +116,37 @@ func NewUserHTTPClient(client *http.Client) UserHTTPClient {
 	return &UserHTTPClientImpl{client}
 }
 
+func (c *UserHTTPClientImpl) BindPhone(ctx context.Context, in *BindPhoneRequest, opts ...http.CallOption) (*BindPhoneReply, error) {
+	var out BindPhoneReply
+	pattern := "/bind/phone"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserBindPhone))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *UserHTTPClientImpl) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...http.CallOption) (*CreateUserReply, error) {
 	var out CreateUserReply
 	pattern := "/user/create"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserCreateUser))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) SendSms(ctx context.Context, in *SendSmsRequest, opts ...http.CallOption) (*SendSmsReply, error) {
+	var out SendSmsReply
+	pattern := "/sendSms"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserSendSms))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

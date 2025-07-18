@@ -15,6 +15,18 @@ service User {
 			body:"*"
 				};
 	};
+	rpc BindPhone (BindPhoneRequest) returns (BindPhoneReply){
+		option (google.api.http) = {
+			post: "/bind/phone"
+			body:"*"
+		};
+	};
+	rpc SendSms (SendSmsRequest) returns (SendSmsReply){
+		option (google.api.http) = {
+			post: "/sendSms"
+			body:"*"
+		};
+	};
 }
 
 message CreateUserRequest {
@@ -24,4 +36,23 @@ message CreateUserRequest {
 }
 message CreateUserReply {
 	string Success=1;
+}
+
+message BindPhoneRequest {
+	int64 UserId=1;
+	string Type=2;
+	string Value=3;
+	string Extra=4;
+	string code=5;
+}
+message BindPhoneReply {
+	string Success=1;
+	int64 userid=2;
+}
+message SendSmsRequest {
+	string Phone =1;
+	string Soures =2;
+}
+message SendSmsReply {
+	string sms =1;
 }

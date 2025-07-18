@@ -3,6 +3,10 @@ package service
 import (
 	v2 "anjuke/api/user/v2"
 	"anjuke/internal/biz"
+	"context"
+	"fmt"
+	"math/rand"
+	"time"
 )
 
 type UserService struct {
@@ -49,3 +53,53 @@ func NewUserService(v2uc *biz.UserUsecase) *UserService {
 //		Success: "登录成功",
 //	}, nil
 //}
+
+// todo:获取验证码
+func (s *UserService) SendSms(ctx context.Context, req *v2.SendSmsRequest) (*v2.SendSmsReply, error) {
+	// 1. 生成随机验证码
+	code := generateCode(6) // 6位数字验证码
+	// 2. 存储验证码 (5分钟有效期)
+	if err := s.v2uc.Store(ctx, req.Soures, req.Phone, code, 5*time.Minute); err != nil {
+		return nil, fmt.Errorf("验证码存储失败")
+	}
+	return &v2.SendSmsReply{
+		Sms: "验证码存储成功",
+	}, nil
+}
+
+// todo:生成随机数字验证码
+func generateCode(length int) string {
+	rand.Seed(time.Now().UnixNano())
+	letters := "0123456789"
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+// todo：用户绑定
+func (s *UserService) BindPhone(ctx context.Context, req *v2.BindPhoneRequest) (*v2.BindPhoneReply, error) {
+	// 验证验证码
+	get, err := s.v2uc.Get(ctx, "phone", req.Value)
+	if err != nil {
+		return nil, fmt.Errorf("获取验证码错误" + err.Error())
+	}
+	if get != req.Code {
+		return nil, fmt.Errorf("验证码错误")
+	}
+	err = s.v2uc.BindPhone(ctx, req.UserId, req.Value, &biz.UserBinding{
+		UserId: req.UserId,
+		Type:   req.Type,
+		Value:  req.Value,
+		Extra:  req.Extra,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("用户绑定失败" + err.Error())
+	}
+	_ = s.v2uc.Delete(ctx, "phone", req.Value)
+	return &v2.BindPhoneReply{
+		Success: "用户绑定成功",
+		Userid:  req.UserId,
+	}, nil
+}

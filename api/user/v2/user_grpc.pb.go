@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion8
 
 const (
 	User_CreateUser_FullMethodName = "/api.user.v2.User/CreateUser"
+	User_BindPhone_FullMethodName  = "/api.user.v2.User/BindPhone"
+	User_SendSms_FullMethodName    = "/api.user.v2.User/SendSms"
 )
 
 // UserClient is the client API for User service.
@@ -27,6 +29,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserReply, error)
+	BindPhone(ctx context.Context, in *BindPhoneRequest, opts ...grpc.CallOption) (*BindPhoneReply, error)
+	SendSms(ctx context.Context, in *SendSmsRequest, opts ...grpc.CallOption) (*SendSmsReply, error)
 }
 
 type userClient struct {
@@ -47,11 +51,33 @@ func (c *userClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts
 	return out, nil
 }
 
+func (c *userClient) BindPhone(ctx context.Context, in *BindPhoneRequest, opts ...grpc.CallOption) (*BindPhoneReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BindPhoneReply)
+	err := c.cc.Invoke(ctx, User_BindPhone_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) SendSms(ctx context.Context, in *SendSmsRequest, opts ...grpc.CallOption) (*SendSmsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendSmsReply)
+	err := c.cc.Invoke(ctx, User_SendSms_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
 type UserServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserReply, error)
+	BindPhone(context.Context, *BindPhoneRequest) (*BindPhoneReply, error)
+	SendSms(context.Context, *SendSmsRequest) (*SendSmsReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -61,6 +87,12 @@ type UnimplementedUserServer struct {
 
 func (UnimplementedUserServer) CreateUser(context.Context, *CreateUserRequest) (*CreateUserReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedUserServer) BindPhone(context.Context, *BindPhoneRequest) (*BindPhoneReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BindPhone not implemented")
+}
+func (UnimplementedUserServer) SendSms(context.Context, *SendSmsRequest) (*SendSmsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendSms not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -93,6 +125,42 @@ func _User_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_BindPhone_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BindPhoneRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).BindPhone(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_BindPhone_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).BindPhone(ctx, req.(*BindPhoneRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_SendSms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendSmsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).SendSms(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_SendSms_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).SendSms(ctx, req.(*SendSmsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -103,6 +171,14 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateUser",
 			Handler:    _User_CreateUser_Handler,
+		},
+		{
+			MethodName: "BindPhone",
+			Handler:    _User_BindPhone_Handler,
+		},
+		{
+			MethodName: "SendSms",
+			Handler:    _User_SendSms_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
