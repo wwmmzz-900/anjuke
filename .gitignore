@@ -37,3 +37,4 @@ bin/
 .idea/
 *.swp
 go.mod
+go.sum
