@@ -17,6 +17,23 @@ service House {
 }
 
 message CreateHouseRequest {
-
+	string title = 1;                       // 房源标题
+	string description = 2;                  // 房源描述
+	int64 landlord_id = 3;                   // 发布人ID
+	string address = 4;                      // 详细地址
+	int64 region_id = 5;                     // 区域/小区ID
+	int64 community_id = 6;                  // 小区ID
+	double price = 7;                        // 价格
+	float area = 8;                          // 面积
+	string layout = 9;                       // 户型
+	string floor = 10;                       // 楼层
+	string ownership_certificate_url = 11;   // 产权证明图片
+	string orientation = 12;                 // 朝向
+	string decoration = 13;                  // 装修
+	string facilities = 14;                  // 配套设施（逗号分隔）
 }
-message CreateHouseReply {}
+
+message CreateHouseReply {
+	int64 house_id = 1;                      // 新增房源的ID
+	string message = 2;                      // 返回信息，如“发布成功”
+}
