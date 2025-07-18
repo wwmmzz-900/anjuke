@@ -1,10 +1,10 @@
 package service
 
 import (
-	"anjuke/internal/biz"
 	"context"
+	"github.com/wwmmzz-900/anjuke/internal/biz"
 
-	pb "anjuke/api/transaction/v4"
+	pb "github.com/wwmmzz-900/anjuke/api/transaction/v4"
 )
 
 type TransactionService struct {

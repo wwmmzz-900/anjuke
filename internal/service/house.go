@@ -1,10 +1,10 @@
 package service
 
 import (
-	"anjuke/internal/biz"
 	"context"
+	"github.com/wwmmzz-900/anjuke/internal/biz"
 
-	pb "anjuke/api/house/v3"
+	pb "github.com/wwmmzz-900/anjuke/api/house/v3"
 )
 
 type HouseService struct {

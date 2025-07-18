@@ -3,7 +3,7 @@ package biz
 import (
 	"context"
 
-	v1 "anjuke/api/helloworld/v1"
+	v1 "github.com/wwmmzz-900/anjuke/api/helloworld/v1"
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"

@@ -3,7 +3,7 @@ package data
 import (
 	"context"
 
-	"anjuke/internal/biz"
+	"github.com/wwmmzz-900/anjuke/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

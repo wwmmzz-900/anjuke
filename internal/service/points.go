@@ -1,10 +1,10 @@
 package service
 
 import (
-	"anjuke/internal/biz"
 	"context"
+	"github.com/wwmmzz-900/anjuke/internal/biz"
 
-	pb "anjuke/api/points/v5"
+	pb "github.com/wwmmzz-900/anjuke/api/points/v5"
 )
 
 type PointsService struct {

@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	v1 "anjuke/api/helloworld/v1"
-	"anjuke/internal/biz"
+	v1 "github.com/wwmmzz-900/anjuke/api/helloworld/v1"
+	"github.com/wwmmzz-900/anjuke/internal/biz"
 )
 
 // GreeterService is a greeter service.

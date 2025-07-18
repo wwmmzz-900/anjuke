@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"anjuke/internal/conf"
+	"github.com/wwmmzz-900/anjuke/internal/conf"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"

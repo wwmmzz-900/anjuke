@@ -1,8 +1,8 @@
 package service
 
 import (
-	v2 "anjuke/api/user/v2"
-	"anjuke/internal/biz"
+	v2 "github.com/wwmmzz-900/anjuke/api/user/v2"
+	"github.com/wwmmzz-900/anjuke/internal/biz"
 )
 
 type UserService struct {

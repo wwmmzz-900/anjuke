@@ -1,9 +1,9 @@
 package data
 
 import (
-	"anjuke/internal/conf"
 	"context"
 	"fmt"
+	"github.com/wwmmzz-900/anjuke/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"

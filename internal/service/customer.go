@@ -1,10 +1,10 @@
 package service
 
 import (
-	"anjuke/internal/biz"
 	"context"
+	"github.com/wwmmzz-900/anjuke/internal/biz"
 
-	pb "anjuke/api/customer/v6"
+	pb "github.com/wwmmzz-900/anjuke/api/customer/v6"
 )
 
 type CustomerService struct {
