@@ -16,5 +16,7 @@ service House {
 	};
 }
 
-message CreateHouseRequest {}
+message CreateHouseRequest {
+
+}
 message CreateHouseReply {}
