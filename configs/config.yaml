@@ -1,0 +1,17 @@
+server:
+  http:
+    addr: 0.0.0.0:8000
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 1s
+data:
+  database:
+    driver: mysql
+    source: root:e10adc3949ba59abbe56e057f20f883e@tcp(14.103.149.201:3306)/anjuke?parseTime=True&loc=Local
+  redis:
+    addr: 14.103.149.201:6379
+    password: e10adc3949ba59abbe56e057f20f883e
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+

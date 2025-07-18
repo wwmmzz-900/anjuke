@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package api.house.v3;
+import "google/api/annotations.proto";
+option go_package = "anjuke/api/house/v3;v3";
+option java_multiple_files = true;
+option java_package = "api.house.v3";
+option java_outer_classname = "HouseProtoV3";
+
+service House {
+	rpc CreateHouse (CreateHouseRequest) returns (CreateHouseReply){
+		option (google.api.http) = {
+			post: "/house/create"
+			body:"*"
+		};
+	};
+}
+
+message CreateHouseRequest {}
+message CreateHouseReply {}
