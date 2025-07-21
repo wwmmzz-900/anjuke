@@ -15,9 +15,7 @@ import (
 	"github.com/wwmmzz-900/anjuke/internal/data"
 	"github.com/wwmmzz-900/anjuke/internal/server"
 	"github.com/wwmmzz-900/anjuke/internal/service"
-)
 
-import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -45,8 +43,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	userUsecase := biz.NewUserUsecase(userRepo, logger)
 	userService := service.NewUserService(userUsecase)
 	//todo:house
-	houseRepo := data.NewHouseRepo(dataData, logger)
-	houseUsecase := biz.NewHouseUsecase(houseRepo, logger)
+	houseRepo := data.NewHouseRepo(dataData)
+	houseUsecase := biz.NewHouseUsecase(houseRepo)
 	houseService := service.NewHouseService(houseUsecase)
 	//todo:transaction
 	transaction := data.NewTransactionRepo(dataData, logger)

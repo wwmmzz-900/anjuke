@@ -1,0 +1,5 @@
+group: shop_nacos
+dataId: shopconfig
+namespaceId: 392f2e07-cc1f-4040-8022-683a77814ac8
+port: 8848
+host: 14.103.149.201

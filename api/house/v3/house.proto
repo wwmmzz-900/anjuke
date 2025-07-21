@@ -8,13 +8,69 @@ option java_package = "api.house.v3";
 option java_outer_classname = "HouseProtoV3";
 
 service House {
-	rpc CreateHouse (CreateHouseRequest) returns (CreateHouseReply){
-		option (google.api.http) = {
-			post: "/house/create"
-			body:"*"
-		};
-	};
+  // 普通推荐列表
+  rpc RecommendList (HouseRecommendRequest) returns (HouseRecommendReply) {
+    option (google.api.http) = {
+      get: "/house/recommend"
+    };
+  }
+
+  // 个性化推荐列表，根据用户浏览习惯推荐
+  rpc PersonalRecommendList (PersonalRecommendRequest) returns (HouseRecommendReply) {
+    option (google.api.http) = {
+      get: "/house/personal-recommend"
+    };
+  }
+
+  // 预约看房
+  rpc ReserveHouse (ReserveHouseRequest) returns (ReserveHouseReply) {
+    option (google.api.http) = {
+      post: "/house/reserve"
+      body: "*"
+    };
+  }
 }
 
-message CreateHouseRequest {}
-message CreateHouseReply {}
+// 普通推荐请求
+message HouseRecommendRequest {
+  int32 page = 1;        // 页码
+  int32 page_size = 2;   // 每页数量
+}
+
+// 个性化推荐请求
+message PersonalRecommendRequest {
+  int64 user_id = 1;     // 用户ID
+  int32 page = 2;        // 页码
+  int32 page_size = 3;   // 每页数量
+}
+
+message HouseRecommendReply {
+  int64 total = 1;       // 总数
+  repeated HouseRecommendItem list = 2; // 房源列表
+}
+
+message HouseRecommendItem {
+  int64 house_id = 1;
+  string title = 2;
+  string description = 3;
+  double price = 4;
+  double area = 5;
+  string layout = 6;
+  string image_url = 7;
+}
+
+// 预约看房请求
+message ReserveHouseRequest {
+  int64 landlord_id = 1;      // 房东ID
+  int64 user_id = 2;          // 预约人ID
+  string user_name = 3;       // 预约人姓名
+  int64 house_id = 4;         // 房源ID
+  string house_title = 5;     // 房源标题
+  string reserve_time = 6;    // 预约时间
+}
+
+// 预约看房响应
+message ReserveHouseReply {
+  bool success = 1;
+  string message = 2;
+}
