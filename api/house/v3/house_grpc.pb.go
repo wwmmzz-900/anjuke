@@ -22,6 +22,7 @@ const (
 	House_RecommendList_FullMethodName         = "/api.house.v3.House/RecommendList"
 	House_PersonalRecommendList_FullMethodName = "/api.house.v3.House/PersonalRecommendList"
 	House_ReserveHouse_FullMethodName          = "/api.house.v3.House/ReserveHouse"
+	House_StartChat_FullMethodName             = "/api.house.v3.House/StartChat"
 )
 
 // HouseClient is the client API for House service.
@@ -34,6 +35,8 @@ type HouseClient interface {
 	PersonalRecommendList(ctx context.Context, in *PersonalRecommendRequest, opts ...grpc.CallOption) (*HouseRecommendReply, error)
 	// 预约看房
 	ReserveHouse(ctx context.Context, in *ReserveHouseRequest, opts ...grpc.CallOption) (*ReserveHouseReply, error)
+	// 发起在线聊天
+	StartChat(ctx context.Context, in *StartChatRequest, opts ...grpc.CallOption) (*StartChatReply, error)
 }
 
 type houseClient struct {
@@ -74,6 +77,16 @@ func (c *houseClient) ReserveHouse(ctx context.Context, in *ReserveHouseRequest,
 	return out, nil
 }
 
+func (c *houseClient) StartChat(ctx context.Context, in *StartChatRequest, opts ...grpc.CallOption) (*StartChatReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StartChatReply)
+	err := c.cc.Invoke(ctx, House_StartChat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HouseServer is the server API for House service.
 // All implementations must embed UnimplementedHouseServer
 // for forward compatibility
@@ -84,6 +97,8 @@ type HouseServer interface {
 	PersonalRecommendList(context.Context, *PersonalRecommendRequest) (*HouseRecommendReply, error)
 	// 预约看房
 	ReserveHouse(context.Context, *ReserveHouseRequest) (*ReserveHouseReply, error)
+	// 发起在线聊天
+	StartChat(context.Context, *StartChatRequest) (*StartChatReply, error)
 	mustEmbedUnimplementedHouseServer()
 }
 
@@ -99,6 +114,9 @@ func (UnimplementedHouseServer) PersonalRecommendList(context.Context, *Personal
 }
 func (UnimplementedHouseServer) ReserveHouse(context.Context, *ReserveHouseRequest) (*ReserveHouseReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReserveHouse not implemented")
+}
+func (UnimplementedHouseServer) StartChat(context.Context, *StartChatRequest) (*StartChatReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartChat not implemented")
 }
 func (UnimplementedHouseServer) mustEmbedUnimplementedHouseServer() {}
 
@@ -167,6 +185,24 @@ func _House_ReserveHouse_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _House_StartChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartChatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).StartChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_StartChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).StartChat(ctx, req.(*StartChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // House_ServiceDesc is the grpc.ServiceDesc for House service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -185,6 +221,10 @@ var House_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReserveHouse",
 			Handler:    _House_ReserveHouse_Handler,
+		},
+		{
+			MethodName: "StartChat",
+			Handler:    _House_StartChat_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

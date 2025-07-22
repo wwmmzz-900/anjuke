@@ -1,8 +1,6 @@
 package server
 
 import (
-	"net/http" // 标准库
-
 	v6 "github.com/wwmmzz-900/anjuke/api/customer/v6"
 	v1 "github.com/wwmmzz-900/anjuke/api/helloworld/v1"
 	v3 "github.com/wwmmzz-900/anjuke/api/house/v3"
@@ -12,14 +10,10 @@ import (
 	"github.com/wwmmzz-900/anjuke/internal/conf"
 	"github.com/wwmmzz-900/anjuke/internal/service"
 
-	"strconv"
-
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 )
-
-var wsHub = service.WsHub // 全局Hub
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, logger log.Logger) *kratoshttp.Server {
@@ -45,17 +39,16 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 	v5.RegisterPointsHTTPServer(srv, points)
 	v6.RegisterCustomerHTTPServer(srv, customer)
 
-	// 在 HTTP Server 启动前注册 WebSocket 路由
-	// 注册 WebSocket 路由（用 net/http）
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		userIDStr := r.URL.Query().Get("user_id")
-		userID, err := strconv.ParseInt(userIDStr, 10, 64)
-		if err != nil || userID <= 0 {
-			http.Error(w, "invalid user_id", http.StatusBadRequest)
-			return
-		}
-		wsHub.HandleWS(w, r, userID)
-	})
+	// 注册 WebSocket 路由到 Kratos HTTP 服务器
+	srv.HandleFunc("/ws/house", service.HandleHouseWS)
+	// 注册 WebSocket 统计信息路由
+	srv.HandleFunc("/api/websocket/stats", service.HandleWSStats)
+	// 注册 WebSocket 测试页面路由
+	srv.HandleFunc("/websocket-test", service.HandleWSTestPage)
+	// 注册安全聊天页面路由
+	srv.HandleFunc("/secure-chat", service.HandleSecureChatPage)
 
 	return srv
 }
+
+// 注意：WebSocket 处理逻辑已移至 service 包

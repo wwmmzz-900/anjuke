@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+
 	"os"
 
 	"github.com/wwmmzz-900/anjuke/internal/conf"
@@ -31,6 +32,7 @@ var (
 
 func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
+
 }
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {

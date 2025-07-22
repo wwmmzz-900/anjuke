@@ -22,6 +22,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationHousePersonalRecommendList = "/api.house.v3.House/PersonalRecommendList"
 const OperationHouseRecommendList = "/api.house.v3.House/RecommendList"
 const OperationHouseReserveHouse = "/api.house.v3.House/ReserveHouse"
+const OperationHouseStartChat = "/api.house.v3.House/StartChat"
 
 type HouseHTTPServer interface {
 	// PersonalRecommendList 个性化推荐列表，根据用户浏览习惯推荐
@@ -30,6 +31,8 @@ type HouseHTTPServer interface {
 	RecommendList(context.Context, *HouseRecommendRequest) (*HouseRecommendReply, error)
 	// ReserveHouse 预约看房
 	ReserveHouse(context.Context, *ReserveHouseRequest) (*ReserveHouseReply, error)
+	// StartChat 发起在线聊天
+	StartChat(context.Context, *StartChatRequest) (*StartChatReply, error)
 }
 
 func RegisterHouseHTTPServer(s *http.Server, srv HouseHTTPServer) {
@@ -37,6 +40,7 @@ func RegisterHouseHTTPServer(s *http.Server, srv HouseHTTPServer) {
 	r.GET("/house/recommend", _House_RecommendList0_HTTP_Handler(srv))
 	r.GET("/house/personal-recommend", _House_PersonalRecommendList0_HTTP_Handler(srv))
 	r.POST("/house/reserve", _House_ReserveHouse0_HTTP_Handler(srv))
+	r.POST("/house/chat/start", _House_StartChat0_HTTP_Handler(srv))
 }
 
 func _House_RecommendList0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
@@ -99,10 +103,33 @@ func _House_ReserveHouse0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Contex
 	}
 }
 
+func _House_StartChat0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in StartChatRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseStartChat)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.StartChat(ctx, req.(*StartChatRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*StartChatReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type HouseHTTPClient interface {
 	PersonalRecommendList(ctx context.Context, req *PersonalRecommendRequest, opts ...http.CallOption) (rsp *HouseRecommendReply, err error)
 	RecommendList(ctx context.Context, req *HouseRecommendRequest, opts ...http.CallOption) (rsp *HouseRecommendReply, err error)
 	ReserveHouse(ctx context.Context, req *ReserveHouseRequest, opts ...http.CallOption) (rsp *ReserveHouseReply, err error)
+	StartChat(ctx context.Context, req *StartChatRequest, opts ...http.CallOption) (rsp *StartChatReply, err error)
 }
 
 type HouseHTTPClientImpl struct {
@@ -144,6 +171,19 @@ func (c *HouseHTTPClientImpl) ReserveHouse(ctx context.Context, in *ReserveHouse
 	pattern := "/house/reserve"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationHouseReserveHouse))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *HouseHTTPClientImpl) StartChat(ctx context.Context, in *StartChatRequest, opts ...http.CallOption) (*StartChatReply, error) {
+	var out StartChatReply
+	pattern := "/house/chat/start"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationHouseStartChat))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
