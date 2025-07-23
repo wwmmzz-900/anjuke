@@ -49,6 +49,7 @@ func (r *HouseRepo) CreateHouse(ctx context.Context, house *biz.House) (int64, e
 	}
 
 	return house.HouseID, nil
+	//成功
 	/*//1 写入数据库
 	// 插入数据到数据库
 	result := r.data.db.Create(house)
