@@ -1,6 +1,7 @@
 package server
 
 import (
+	blacklistv1 "anjuke/api/blacklist/v1"
 	v6 "anjuke/api/customer/v6"
 	v1 "anjuke/api/helloworld/v1"
 	v3 "anjuke/api/house/v3"
@@ -16,7 +17,7 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, blacklist *service.BlacklistService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -38,5 +39,6 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, user *servic
 	v4.RegisterTransactionServer(srv, transaction)
 	v5.RegisterPointsServer(srv, points)
 	v6.RegisterCustomerServer(srv, customer)
+	blacklistv1.RegisterBlacklistServer(srv, blacklist)
 	return srv
 }
