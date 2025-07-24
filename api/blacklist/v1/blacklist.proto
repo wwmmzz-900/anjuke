@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package api.blacklist.v1;
+import "google/api/annotations.proto";
+
+option go_package = "anjuke/api/blacklist/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.blacklist.v1";
+option java_outer_classname = "BlacklistProtoV1";
+
+service Blacklist {
+    // 添加用户到黑名单
+    rpc AddToBlacklist (AddToBlacklistRequest) returns (AddToBlacklistReply) {
+        option (google.api.http) = {
+            post: "/blacklist/add"
+            body: "*"
+        };
+    }
+    
+    // 从黑名单移除用户
+    rpc RemoveFromBlacklist (RemoveFromBlacklistRequest) returns (RemoveFromBlacklistReply) {
+        option (google.api.http) = {
+            delete: "/blacklist/{user_id}"
+        };
+    }
+    
+    // 检查用户是否在黑名单中
+    rpc CheckBlacklist (CheckBlacklistRequest) returns (CheckBlacklistReply) {
+        option (google.api.http) = {
+            get: "/blacklist/check/{user_id}"
+        };
+    }
+    
+    // 获取黑名单列表
+    rpc GetBlacklistList (GetBlacklistListRequest) returns (GetBlacklistListReply) {
+        option (google.api.http) = {
+            get: "/blacklist/list"
+        };
+    }
+}
+
+message AddToBlacklistRequest {
+    int64 user_id = 1;      // 被拉黑的用户ID
+    string reason = 2;       // 拉黑原因
+}
+
+message AddToBlacklistReply {
+    bool success = 1;
+    string message = 2;
+    int64 blacklist_id = 3;  // 黑名单记录ID
+}
+
+message RemoveFromBlacklistRequest {
+    int64 user_id = 1;       // 要移除的用户ID
+}
+
+message RemoveFromBlacklistReply {
+    bool success = 1;
+    string message = 2;
+}
+
+message CheckBlacklistRequest {
+    int64 user_id = 1;       // 要检查的用户ID
+}
+
+message CheckBlacklistReply {
+    bool is_blacklisted = 1; // 是否在黑名单中
+    string reason = 2;       // 拉黑原因
+    string created_at = 3;   // 拉黑时间
+}
+
+message GetBlacklistListRequest {
+    int32 page = 1;          // 页码
+    int32 page_size = 2;     // 每页大小
+}
+
+message BlacklistItem {
+    int64 id = 1;            // 黑名单记录ID
+    int64 user_id = 2;       // 用户ID
+    string reason = 3;       // 拉黑原因
+    string created_at = 4;   // 拉黑时间
+    string user_name = 5;    // 用户昵称
+    string phone = 6;        // 用户手机号
+}
+
+message GetBlacklistListReply {
+    repeated BlacklistItem items = 1;
+    int32 total = 2;         // 总数
+    int32 page = 3;          // 当前页
+    int32 page_size = 4;     // 每页大小
+}
