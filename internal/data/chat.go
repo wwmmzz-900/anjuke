@@ -25,14 +25,14 @@ func (r *ChatRepo) CreateChatSession(ctx context.Context, reservationID, userID,
 
 	// 创建聊天会话
 	session := &model.ChatSession{
-		ChatID:       chatID,
+		ChatID:        chatID,
 		ReservationID: reservationID,
-		UserID:       userID,
-		LandlordID:   landlordID,
-		HouseID:      houseID,
-		Status:       "active",
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		UserID:        userID,
+		LandlordID:    landlordID,
+		HouseID:       houseID,
+		Status:        "active",
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 
 	// 保存到数据库
@@ -144,9 +144,4 @@ func (r *ChatRepo) ChatSessionExists(ctx context.Context, reservationID int64) (
 		return false, fmt.Errorf("检查聊天会话是否存在失败: %w", err)
 	}
 	return count > 0, nil
-}
-
-// 自动迁移数据库表
-func (r *ChatRepo) AutoMigrate() error {
-	return r.data.db.AutoMigrate(&model.ChatSession{}, &model.ChatMessage{})
 }

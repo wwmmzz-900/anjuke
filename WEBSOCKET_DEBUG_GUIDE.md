@@ -79,7 +79,7 @@ go run websocket_client.go 101 1001 localhost 8080
 ### 访问方式
 
 1. 启动服务器
-2. 访问 `http://localhost:8080/ws/test` 或直接打开HTML文件
+2. 访问 `http://localhost:8000/ws/test` 或直接打开HTML文件
 
 ### 主要功能
 

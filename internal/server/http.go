@@ -15,12 +15,40 @@ import (
 	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
+// 中间件已移除，使用proto文件中的json_name="-"来隐藏房源ID
+
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, logger log.Logger) *kratoshttp.Server {
 	var opts = []kratoshttp.ServerOption{
 		kratoshttp.Middleware(
 			recovery.Recovery(),
 		),
+		// 添加请求解码器选项，支持更多Content-Type
+		kratoshttp.RequestDecoder(func(r *kratoshttp.Request, v interface{}) error {
+			// 设置默认Content-Type为application/json
+			if r.Header.Get("Content-Type") == "" {
+				r.Header.Set("Content-Type", "application/json")
+			}
+			return kratoshttp.DefaultRequestDecoder(r, v)
+		}),
+		kratoshttp.ResponseEncoder(func(w kratoshttp.ResponseWriter, r *kratoshttp.Request, v interface{}) error {
+			// 设置响应Content-Type
+			w.Header().Set("Content-Type", "application/json")
+			return kratoshttp.DefaultResponseEncoder(w, r, v)
+		}),
+		// 添加请求解码器选项，支持更多Content-Type
+		kratoshttp.RequestDecoder(func(r *kratoshttp.Request, v interface{}) error {
+			// 设置默认Content-Type为application/json
+			if r.Header.Get("Content-Type") == "" {
+				r.Header.Set("Content-Type", "application/json")
+			}
+			return kratoshttp.DefaultRequestDecoder(r, v)
+		}),
+		kratoshttp.ResponseEncoder(func(w kratoshttp.ResponseWriter, r *kratoshttp.Request, v interface{}) error {
+			// 设置响应Content-Type
+			w.Header().Set("Content-Type", "application/json")
+			return kratoshttp.DefaultResponseEncoder(w, r, v)
+		}),
 	}
 	if c.Http.Network != "" {
 		opts = append(opts, kratoshttp.Network(c.Http.Network))

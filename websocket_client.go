@@ -73,7 +73,7 @@ func main() {
 				}
 				return
 			}
-			
+
 			// 解析并格式化消息
 			formatAndPrintMessage(message)
 		}
@@ -113,20 +113,20 @@ func main() {
 					fmt.Printf("%s无效的命令格式。使用: /to <user_id> <message>%s\n", colorRed, colorReset)
 					continue
 				}
-				
+
 				// 构造私聊消息
 				msg := map[string]interface{}{
 					"action":  "message",
 					"to":      parts[0],
 					"content": parts[1],
 				}
-				
+
 				jsonMsg, err := json.Marshal(msg)
 				if err != nil {
 					fmt.Printf("%s消息格式化失败: %v%s\n", colorRed, err, colorReset)
 					continue
 				}
-				
+
 				if err := c.WriteMessage(websocket.TextMessage, jsonMsg); err != nil {
 					fmt.Printf("%s发送消息失败: %v%s\n", colorRed, err, colorReset)
 				}
@@ -160,14 +160,14 @@ func main() {
 			}
 		case <-interrupt:
 			log.Println("收到中断信号，正在关闭连接...")
-			
+
 			// 发送关闭消息
 			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
 				log.Println("发送关闭消息失败:", err)
 				return
 			}
-			
+
 			select {
 			case <-done:
 			case <-time.After(time.Second):
@@ -222,7 +222,7 @@ func formatAndPrintMessage(message []byte) {
 	var msgMap map[string]interface{}
 	if err := json.Unmarshal(message, &msgMap); err != nil {
 		// 不是JSON，直接打印
-		fmt.Printf("%s[%s] 收到消息: %s%s\n", 
+		fmt.Printf("%s[%s] 收到消息: %s%s\n",
 			colorPurple, time.Now().Format("15:04:05"), string(message), colorReset)
 		return
 	}
@@ -233,14 +233,14 @@ func formatAndPrintMessage(message []byte) {
 
 	switch msgType {
 	case TypeSystem:
-		fmt.Printf("%s[%s] 系统消息: %v%s\n", 
+		fmt.Printf("%s[%s] 系统消息: %v%s\n",
 			colorBlue, timestamp, msgMap["message"], colorReset)
-	
+
 	case TypeChat:
 		from, _ := msgMap["from"].(float64)
 		content, hasContent := msgMap["content"].(string)
 		message, hasMessage := msgMap["message"].(string)
-		
+
 		var msgContent string
 		if hasContent {
 			msgContent = content
@@ -249,22 +249,22 @@ func formatAndPrintMessage(message []byte) {
 		} else {
 			msgContent = "<空消息>"
 		}
-		
-		fmt.Printf("%s[%s] 用户 %.0f 说: %s%s\n", 
+
+		fmt.Printf("%s[%s] 用户 %.0f 说: %s%s\n",
 			colorGreen, timestamp, from, msgContent, colorReset)
-	
+
 	case TypeError:
-		fmt.Printf("%s[%s] 错误: %v%s\n", 
+		fmt.Printf("%s[%s] 错误: %v%s\n",
 			colorRed, timestamp, msgMap["message"], colorReset)
-	
+
 	default:
 		// 美化输出JSON
 		prettyJSON, err := json.MarshalIndent(msgMap, "", "  ")
 		if err != nil {
-			fmt.Printf("%s[%s] %s%s\n", 
+			fmt.Printf("%s[%s] %s%s\n",
 				colorPurple, timestamp, string(message), colorReset)
 		} else {
-			fmt.Printf("%s[%s] 收到JSON:%s\n%s%s\n", 
+			fmt.Printf("%s[%s] 收到JSON:%s\n%s%s\n",
 				colorPurple, timestamp, colorReset, string(prettyJSON), colorReset)
 		}
 	}

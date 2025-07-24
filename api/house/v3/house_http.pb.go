@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.8.4
 // - protoc             v3.19.4
-// source: house.proto
+// source: api/house/v3/house.proto
 
 package v3
 

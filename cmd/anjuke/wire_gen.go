@@ -61,7 +61,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 
 	grpcServer := server.NewGRPCServer(confServer, greeterService, userService, houseService, transactionService, pointsService, customerService, logger)
 	httpServer := server.NewHTTPServer(confServer, greeterService, userService, houseService, transactionService, pointsService, customerService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	httpServerNoAuth := server.NewHTTPServerNoAuth(confServer, greeterService, userService, houseService, transactionService, pointsService, customerService, logger)
+	app := newApp(logger, grpcServer, httpServer, httpServerNoAuth)
 	return app, func() {
 		cleanup()
 	}, nil

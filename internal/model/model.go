@@ -28,17 +28,6 @@ func (*House) TableName() string {
 	return "house"
 }
 
-type HouseImage struct {
-	Id        int64  `gorm:"column:id;type:bigint;comment:图片ID;primaryKey;not null;" json:"id"`           // 图片ID
-	HouseId   int64  `gorm:"column:house_id;type:bigint;comment:房源ID;not null;" json:"house_id"`          // 房源ID
-	ImageUrl  string `gorm:"column:image_url;type:varchar(255);comment:图片URL;not null;" json:"image_url"` // 图片URL
-	SortOrder int32  `gorm:"column:sort_order;type:int;comment:排序;default:0;" json:"sort_order"`          // 排序
-}
-
-func (*HouseImage) TableName() string {
-	return "house_image"
-}
-
 type HouseReservation struct {
 	ID          int64 `gorm:"primaryKey"`
 	LandlordID  int64

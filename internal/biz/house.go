@@ -22,6 +22,7 @@ type House struct {
 type HouseRepo interface {
 	GetUserPricePreference(ctx context.Context, userID int64) (float64, float64, error)
 	GetPersonalRecommendList(ctx context.Context, minPrice, maxPrice float64, page, pageSize int) ([]*House, int, error)
+	GetRecommendList(ctx context.Context, page, pageSize int) ([]*House, int, error)
 	CreateReservation(ctx context.Context, reservation *model.HouseReservation) error
 	HasReservation(ctx context.Context, userID, houseID int64) (bool, error)
 }
@@ -44,6 +45,12 @@ func (uc *HouseUsecase) PersonalRecommendList(ctx context.Context, userID int64,
 	}
 	// 2. 查询推荐房源
 	return uc.repo.GetPersonalRecommendList(ctx, minPrice, maxPrice, page, pageSize)
+}
+
+// 普通推荐列表
+func (uc *HouseUsecase) RecommendList(ctx context.Context, page, pageSize int) ([]*House, int, error) {
+	// 直接查询推荐房源
+	return uc.repo.GetRecommendList(ctx, page, pageSize)
 }
 
 // 预约看房业务逻辑

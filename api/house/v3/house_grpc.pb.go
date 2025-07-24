@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.4.0
 // - protoc             v3.19.4
-// source: house.proto
+// source: api/house/v3/house.proto
 
 package v3
 
@@ -228,5 +228,5 @@ var House_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "house.proto",
+	Metadata: "api/house/v3/house.proto",
 }

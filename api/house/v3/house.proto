@@ -37,6 +37,7 @@ service House {
       body: "*"
     };
   }
+ 
 }
 
 // 普通推荐请求
@@ -72,13 +73,13 @@ message HouseRecommendReply {
 }
 
 message HouseRecommendItem {
-  int64 house_id = 1;
-  string title = 2;
-  string description = 3;
-  double price = 4;
-  double area = 5;
-  string layout = 6;
-  string image_url = 7;
+  // house_id字段已完全移除
+  string title = 1;
+  string description = 2;
+  double price = 3;
+  double area = 4;
+  string layout = 5;
+  string image_url = 6;
 }
 
 // 预约看房请求

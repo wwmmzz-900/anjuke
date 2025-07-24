@@ -1,0 +1,28 @@
+{
+  "name": "发起在线聊天示例",
+  "description": "这是一个发起在线聊天的API请求示例",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:8000/house/chat/start",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "reservation_id": 12345,
+      "user_id": 1001,
+      "landlord_id": 2001,
+      "initial_message": "您好，我想咨询一下这套房子的情况"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "code": 0,
+      "msg": "聊天发起成功",
+      "data": {
+        "chat_id": "chat_12345_1001_1627372800",
+        "success": true
+      }
+    }
+  }
+}
