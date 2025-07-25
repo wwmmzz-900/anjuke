@@ -29,13 +29,25 @@ func (s *ChatService) StartChat(ctx context.Context, req *pb.StartChatRequest) (
 		req.ReservationId, req.UserId, req.LandlordId)
 
 	// 检查参数有效性
-	if req.ReservationId <= 0 || req.UserId <= 0 || req.LandlordId <= 0 {
+	if req.ReservationId <= 0 {
+		return &pb.StartChatReply{
+			Code: model.ErrCodeInvalidParams,
+			Msg:  "无效的预约ID",
+			Data: &pb.StartChatData{Success: false},
+		}, nil
+	}
+	if req.UserId <= 0 {
 		return &pb.StartChatReply{
 			Code: 400,
-			Msg:  "无效的参数",
-			Data: &pb.StartChatData{
-				Success: false,
-			},
+			Msg:  "无效的用户ID",
+			Data: &pb.StartChatData{Success: false},
+		}, nil
+	}
+	if req.LandlordId <= 0 {
+		return &pb.StartChatReply{
+			Code: 400,
+			Msg:  "无效的房东ID",
+			Data: &pb.StartChatData{Success: false},
 		}, nil
 	}
 
@@ -46,7 +58,7 @@ func (s *ChatService) StartChat(ctx context.Context, req *pb.StartChatRequest) (
 	}
 
 	var chatID string
-	
+
 	if exists {
 		// 获取已存在的聊天会话
 		session, err := s.chatRepo.GetChatSessionByReservationID(ctx, req.ReservationId)
@@ -75,19 +87,19 @@ func (s *ChatService) StartChat(ctx context.Context, req *pb.StartChatRequest) (
 		message := &model.ChatMessage{
 			ChatID:       chatID,
 			SenderID:     req.UserId,
-			SenderName:   "用户", // 实际项目中应该从用户信息中获取
+			SenderName:   model.DefaultUserName, // 使用常量，实际项目中应该从用户信息中获取
 			ReceiverID:   req.LandlordId,
-			ReceiverName: "房东", // 实际项目中应该从房东信息中获取
-			Type:         0,    // 文本消息
+			ReceiverName: model.DefaultLandlordName, // 使用常量，实际项目中应该从房东信息中获取
+			Type:         model.MessageTypeText,     // 使用枚举
 			Content:      req.InitialMessage,
 			Read:         false,
 			CreatedAt:    time.Now(),
 		}
-		
+
 		if err := s.chatRepo.AddChatMessage(ctx, message); err != nil {
 			log.Printf("保存聊天消息失败: %v", err)
 		}
-		
+
 		// 通过WebSocket发送消息给房东
 		chatMessage := map[string]interface{}{
 			"type":           "chat",
@@ -100,12 +112,12 @@ func (s *ChatService) StartChat(ctx context.Context, req *pb.StartChatRequest) (
 			"timestamp":      time.Now().Unix(),
 			"sequence":       GlobalSequenceManager.GetNextSequence(req.UserId),
 		}
-		
+
 		// 使用全局WebSocket管理器发送消息
 		if err := GlobalWebSocketManager.SendMessageToUser(req.LandlordId, chatMessage); err != nil {
 			log.Printf("发送WebSocket消息失败: %v", err)
 		}
-		
+
 		// 发送确认消息给用户
 		confirmMessage := map[string]interface{}{
 			"type":           "chat_confirm",
@@ -114,14 +126,14 @@ func (s *ChatService) StartChat(ctx context.Context, req *pb.StartChatRequest) (
 			"reservation_id": req.ReservationId,
 			"timestamp":      time.Now().Unix(),
 		}
-		
+
 		if err := GlobalWebSocketManager.SendMessageToUser(req.UserId, confirmMessage); err != nil {
 			log.Printf("发送确认消息失败: %v", err)
 		}
 	}
 
 	return &pb.StartChatReply{
-		Code: 0,
+		Code: model.ErrCodeSuccess,
 		Msg:  "发起聊天成功",
 		Data: &pb.StartChatData{
 			ChatId:  chatID,
@@ -131,16 +143,25 @@ func (s *ChatService) StartChat(ctx context.Context, req *pb.StartChatRequest) (
 }
 
 // SendChatMessage 发送聊天消息
-func (s *ChatService) SendChatMessage(ctx context.Context, senderID, receiverID int64, chatID, content string, msgType int) error {
+func (s *ChatService) SendChatMessage(ctx context.Context, senderID, receiverID int64, chatID, content string, msgType model.MessageType) error {
 	// 参数验证
-	if senderID <= 0 || receiverID <= 0 || chatID == "" || content == "" {
-		return fmt.Errorf("无效的参数")
+	if senderID <= 0 {
+		return fmt.Errorf("无效的发送者ID")
 	}
-	
+	if receiverID <= 0 {
+		return fmt.Errorf("无效的接收者ID")
+	}
+	if chatID == "" {
+		return fmt.Errorf("聊天ID不能为空")
+	}
+	if content == "" {
+		return fmt.Errorf("消息内容不能为空")
+	}
+
 	// 获取发送者和接收者信息（实际项目中应该从用户服务获取）
-	senderName := fmt.Sprintf("用户%d", senderID)
-	receiverName := fmt.Sprintf("用户%d", receiverID)
-	
+	senderName := fmt.Sprintf("%s%d", model.DefaultUserName, senderID)
+	receiverName := fmt.Sprintf("%s%d", model.DefaultUserName, receiverID)
+
 	// 保存消息到数据库
 	message := &model.ChatMessage{
 		ChatID:       chatID,
@@ -153,31 +174,31 @@ func (s *ChatService) SendChatMessage(ctx context.Context, senderID, receiverID 
 		Read:         false,
 		CreatedAt:    time.Now(),
 	}
-	
+
 	if err := s.chatRepo.AddChatMessage(ctx, message); err != nil {
 		return fmt.Errorf("保存聊天消息失败: %w", err)
 	}
-	
+
 	// 通过WebSocket发送消息给接收者
 	chatMessage := map[string]interface{}{
-		"type":        "chat",
-		"chat_id":     chatID,
-		"from":        senderID,
-		"from_name":   senderName,
-		"to":          receiverID,
-		"to_name":     receiverName,
-		"content":     content,
-		"message":     content, // 兼容旧版本
+		"type":         "chat",
+		"chat_id":      chatID,
+		"from":         senderID,
+		"from_name":    senderName,
+		"to":           receiverID,
+		"to_name":      receiverName,
+		"content":      content,
+		"message":      content, // 兼容旧版本
 		"message_type": msgType,
-		"timestamp":   time.Now().Unix(),
-		"sequence":    GlobalSequenceManager.GetNextSequence(senderID),
+		"timestamp":    time.Now().Unix(),
+		"sequence":     GlobalSequenceManager.GetNextSequence(senderID),
 	}
-	
+
 	// 使用全局WebSocket管理器发送消息
 	if err := GlobalWebSocketManager.SendMessageToUser(receiverID, chatMessage); err != nil {
 		log.Printf("发送WebSocket消息失败: %v", err)
 	}
-	
+
 	// 发送确认消息给发送者
 	confirmMessage := map[string]interface{}{
 		"type":      "chat_confirm",
@@ -185,23 +206,30 @@ func (s *ChatService) SendChatMessage(ctx context.Context, senderID, receiverID 
 		"message":   "消息已发送",
 		"timestamp": time.Now().Unix(),
 	}
-	
+
 	if err := GlobalWebSocketManager.SendMessageToUser(senderID, confirmMessage); err != nil {
 		log.Printf("发送确认消息失败: %v", err)
 	}
-	
+
 	return nil
 }
 
 // GetChatMessages 获取聊天消息列表
 func (s *ChatService) GetChatMessages(ctx context.Context, chatID string, page, pageSize int) ([]*model.ChatMessage, int64, error) {
-	if page <= 0 {
-		page = 1
-	}
-	if pageSize <= 0 {
-		pageSize = 20
+	if chatID == "" {
+		return nil, 0, fmt.Errorf("聊天ID不能为空")
 	}
 	
+	if page <= 0 {
+		page = model.DefaultPage
+	}
+	if pageSize <= 0 {
+		pageSize = model.DefaultPageSize
+	}
+	if pageSize > model.MaxPageSize {
+		pageSize = model.MaxPageSize
+	}
+
 	return s.chatRepo.GetChatMessages(ctx, chatID, page, pageSize)
 }
 

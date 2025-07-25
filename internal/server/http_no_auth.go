@@ -13,6 +13,7 @@ import (
 	v4 "github.com/wwmmzz-900/anjuke/api/transaction/v4"
 	v2 "github.com/wwmmzz-900/anjuke/api/user/v2"
 	"github.com/wwmmzz-900/anjuke/internal/conf"
+	"github.com/wwmmzz-900/anjuke/internal/model"
 	"github.com/wwmmzz-900/anjuke/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -40,7 +41,7 @@ func NewHTTPServerNoAuth(c *conf.Server, greeter *service.GreeterService, user *
 			return kratoshttp.DefaultResponseEncoder(w, r, v)
 		}),
 	}
-	
+
 	// 设置网络和地址
 	if c.Http.Network != "" {
 		opts = append(opts, kratoshttp.Network(c.Http.Network))
@@ -52,9 +53,9 @@ func NewHTTPServerNoAuth(c *conf.Server, greeter *service.GreeterService, user *
 	if c.Http.Timeout != nil {
 		opts = append(opts, kratoshttp.Timeout(c.Http.Timeout.AsDuration()))
 	}
-	
+
 	srv := kratoshttp.NewServer(opts...)
-	
+
 	// 注册所有服务
 	v1.RegisterGreeterHTTPServer(srv, greeter)
 	v2.RegisterUserHTTPServer(srv, user)
@@ -68,26 +69,26 @@ func NewHTTPServerNoAuth(c *conf.Server, greeter *service.GreeterService, user *
 	srv.HandleFunc("/api/websocket/stats", service.HandleWSStats)
 	srv.HandleFunc("/websocket-test", service.HandleWSTestPage)
 	srv.HandleFunc("/secure-chat", service.HandleSecureChatPage)
-	
+
 	// 添加聊天相关API路由
 	srv.HandleFunc("/api/chat/messages", handleChatMessages)
 	srv.HandleFunc("/api/chat/mark-read", handleMarkMessagesAsRead)
 	srv.HandleFunc("/api/chat/unread-count", handleUnreadMessageCount)
-	
+
 	// 添加一个健康检查路由
 	srv.HandleFunc("/health", func(w kratoshttp.ResponseWriter, r *kratoshttp.Request) {
 		w.Write([]byte("OK"))
 	})
-	
+
 	log.NewHelper(logger).Info("HTTP server without authentication started on port 8001")
-	
+
 	return srv
 }
 
 // 处理获取聊天消息列表请求
 func handleChatMessages(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	// 获取参数
 	chatID := r.URL.Query().Get("chat_id")
 	if chatID == "" {
@@ -95,31 +96,31 @@ func handleChatMessages(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"code":400,"msg":"缺少chat_id参数","data":null}`))
 		return
 	}
-	
+
 	// 获取分页参数
-	page := 1
-	pageSize := 20
-	
+	page := model.DefaultPage
+	pageSize := model.DefaultPageSize
+
 	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
 			page = p
 		}
 	}
-	
+
 	if pageSizeStr := r.URL.Query().Get("page_size"); pageSizeStr != "" {
 		if ps, err := strconv.Atoi(pageSizeStr); err == nil && ps > 0 {
 			pageSize = ps
 		}
 	}
-	
+
 	// 使用分页参数（避免未使用变量警告）
 	_ = page
 	_ = pageSize
-	
+
 	// 调用聊天服务获取消息列表
 	// 注意：这里需要获取ChatService实例，实际项目中应该通过依赖注入获取
 	// 这里简化处理，直接返回示例数据
-	
+
 	// 构造响应
 	response := map[string]interface{}{
 		"code": 0,
@@ -154,7 +155,7 @@ func handleChatMessages(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	}
-	
+
 	// 返回JSON响应
 	jsonData, err := json.Marshal(response)
 	if err != nil {
@@ -162,44 +163,44 @@ func handleChatMessages(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"code":500,"msg":"内部服务器错误","data":null}`))
 		return
 	}
-	
+
 	w.Write(jsonData)
 }
 
 // 处理标记消息为已读请求
 func handleMarkMessagesAsRead(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	// 只接受POST请求
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		w.Write([]byte(`{"code":405,"msg":"方法不允许","data":null}`))
 		return
 	}
-	
+
 	// 解析请求体
 	var req struct {
 		ChatID     string `json:"chat_id"`
 		ReceiverID int64  `json:"receiver_id"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`{"code":400,"msg":"无效的请求体","data":null}`))
 		return
 	}
-	
+
 	// 参数验证
 	if req.ChatID == "" || req.ReceiverID <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`{"code":400,"msg":"缺少必要参数","data":null}`))
 		return
 	}
-	
+
 	// 调用聊天服务标记消息为已读
 	// 注意：这里需要获取ChatService实例，实际项目中应该通过依赖注入获取
 	// 这里简化处理，直接返回成功
-	
+
 	// 构造响应
 	response := map[string]interface{}{
 		"code": 0,
@@ -208,7 +209,7 @@ func handleMarkMessagesAsRead(w http.ResponseWriter, r *http.Request) {
 			"success": true,
 		},
 	}
-	
+
 	// 返回JSON响应
 	jsonData, err := json.Marshal(response)
 	if err != nil {
@@ -216,14 +217,14 @@ func handleMarkMessagesAsRead(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"code":500,"msg":"内部服务器错误","data":null}`))
 		return
 	}
-	
+
 	w.Write(jsonData)
 }
 
 // 处理获取未读消息数量请求
 func handleUnreadMessageCount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	// 获取参数
 	receiverIDStr := r.URL.Query().Get("receiver_id")
 	if receiverIDStr == "" {
@@ -231,18 +232,18 @@ func handleUnreadMessageCount(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"code":400,"msg":"缺少receiver_id参数","data":null}`))
 		return
 	}
-	
+
 	receiverID, err := strconv.ParseInt(receiverIDStr, 10, 64)
 	if err != nil || receiverID <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`{"code":400,"msg":"无效的receiver_id参数","data":null}`))
 		return
 	}
-	
+
 	// 调用聊天服务获取未读消息数量
 	// 注意：这里需要获取ChatService实例，实际项目中应该通过依赖注入获取
 	// 这里简化处理，直接返回示例数据
-	
+
 	// 构造响应
 	response := map[string]interface{}{
 		"code": 0,
@@ -251,7 +252,7 @@ func handleUnreadMessageCount(w http.ResponseWriter, r *http.Request) {
 			"count": 5,
 		},
 	}
-	
+
 	// 返回JSON响应
 	jsonData, err := json.Marshal(response)
 	if err != nil {
@@ -259,6 +260,6 @@ func handleUnreadMessageCount(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"code":500,"msg":"内部服务器错误","data":null}`))
 		return
 	}
-	
+
 	w.Write(jsonData)
 }

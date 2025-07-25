@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	pb "github.com/wwmmzz-900/anjuke/api/house/v3"
@@ -16,19 +17,74 @@ import (
 type HouseService struct {
 	pb.UnimplementedHouseServer
 	uc *biz.HouseUsecase
-}
-
-func NewHouseService(uc *biz.HouseUsecase) *HouseService {
-	return &HouseService{
-		uc: uc,
+	// 请求统计
+	stats struct {
+		sync.RWMutex
+		totalRequests     int64
+		successRequests   int64
+		failedRequests    int64
+		avgResponseTime   time.Duration
+		lastRequestTime   time.Time
 	}
 }
 
-// 普通推荐列表
-func (s *HouseService) RecommendList(ctx context.Context, req *pb.HouseRecommendRequest) (*pb.HouseRecommendReply, error) {
-	log.Printf("接收到普通推荐请求: page=%d, pageSize=%d", req.Page, req.PageSize)
+func NewHouseService(uc *biz.HouseUsecase) *HouseService {
+	service := &HouseService{
+		uc: uc,
+	}
 	
-	// 确保页码和每页数量有效
+	// 启动统计信息定期输出
+	go service.logStats()
+	
+	return service
+}
+
+// 记录请求统计
+func (s *HouseService) recordRequest(success bool, duration time.Duration) {
+	s.stats.Lock()
+	defer s.stats.Unlock()
+	
+	s.stats.totalRequests++
+	s.stats.lastRequestTime = time.Now()
+	
+	if success {
+		s.stats.successRequests++
+	} else {
+		s.stats.failedRequests++
+	}
+	
+	// 计算平均响应时间（简单移动平均）
+	if s.stats.totalRequests == 1 {
+		s.stats.avgResponseTime = duration
+	} else {
+		s.stats.avgResponseTime = (s.stats.avgResponseTime + duration) / 2
+	}
+}
+
+// 定期输出统计信息
+func (s *HouseService) logStats() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	
+	for range ticker.C {
+		s.stats.RLock()
+		log.Printf("房源服务统计 - 总请求: %d, 成功: %d, 失败: %d, 平均响应时间: %v",
+			s.stats.totalRequests, s.stats.successRequests, s.stats.failedRequests, s.stats.avgResponseTime)
+		s.stats.RUnlock()
+	}
+}
+
+// 普通推荐列表（高并发优化版本）
+func (s *HouseService) RecommendList(ctx context.Context, req *pb.HouseRecommendRequest) (*pb.HouseRecommendReply, error) {
+	startTime := time.Now()
+	defer func() {
+		duration := time.Since(startTime)
+		s.recordRequest(true, duration)
+	}()
+	
+	log.Printf("接收到普通推荐请求: page=%d, pageSize=%d", req.Page, req.PageSize)
+
+	// 参数验证和标准化
 	page := int(req.Page)
 	if page <= 0 {
 		page = 1
@@ -37,38 +93,27 @@ func (s *HouseService) RecommendList(ctx context.Context, req *pb.HouseRecommend
 	if pageSize <= 0 {
 		pageSize = 10
 	}
-	
-	// 从数据库查询推荐房源
+	if pageSize > 100 {
+		pageSize = 100
+	}
+
+	// 设置请求超时
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// 从业务层查询推荐房源
 	houses, total, err := s.uc.RecommendList(ctx, page, pageSize)
 	if err != nil {
 		log.Printf("获取推荐列表失败: %v", err)
-		// 如果查询失败，返回默认数据
-		items := []*pb.HouseRecommendItem{
-			{
-				// 不再设置HouseId字段
-				Title:       "精装修两室一厅",
-				Description: "地铁口附近，交通便利，精装修",
-				Price:       3500.0,
-				Area:        85.5,
-				Layout:      "2室1厅1卫",
-				ImageUrl:    "https://example.com/house1.jpg",
-			},
-			{
-				// 不再设置HouseId字段
-				Title:       "温馨三室两厅",
-				Description: "小区环境优美，配套设施完善",
-				Price:       4200.0,
-				Area:        120.0,
-				Layout:      "3室2厅2卫",
-				ImageUrl:    "https://example.com/house2.jpg",
-			},
-		}
+		s.recordRequest(false, time.Since(startTime))
+		
+		// 降级策略：返回空列表但不报错
 		return &pb.HouseRecommendReply{
 			Code: 0,
 			Msg:  "success",
 			Data: &pb.HouseRecommendData{
-				Total: int64(len(items)),
-				List:  items,
+				Total: 0,
+				List:  []*pb.HouseRecommendItem{},
 			},
 		}, nil
 	}
@@ -98,11 +143,31 @@ func (s *HouseService) RecommendList(ctx context.Context, req *pb.HouseRecommend
 	}, nil
 }
 
-// 个性化推荐列表
+// 个性化推荐列表（高并发优化版本）
 func (s *HouseService) PersonalRecommendList(ctx context.Context, req *pb.PersonalRecommendRequest) (*pb.HouseRecommendReply, error) {
+	startTime := time.Now()
+	defer func() {
+		duration := time.Since(startTime)
+		s.recordRequest(true, duration)
+	}()
+	
 	log.Printf("接收到个性化推荐请求: userId=%d, page=%d, pageSize=%d", req.UserId, req.Page, req.PageSize)
 
-	// 确保页码和每页数量有效
+	// 参数验证
+	if req.UserId <= 0 {
+		log.Printf("无效的用户ID: %d", req.UserId)
+		s.recordRequest(false, time.Since(startTime))
+		return &pb.HouseRecommendReply{
+			Code: 400,
+			Msg:  "无效的用户ID",
+			Data: &pb.HouseRecommendData{
+				Total: 0,
+				List:  []*pb.HouseRecommendItem{},
+			},
+		}, nil
+	}
+
+	// 参数标准化
 	page := int(req.Page)
 	if page <= 0 {
 		page = 1
@@ -111,32 +176,27 @@ func (s *HouseService) PersonalRecommendList(ctx context.Context, req *pb.Person
 	if pageSize <= 0 {
 		pageSize = 10
 	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
 
-	// 注意：这里不需要验证码验证，直接处理请求
-	// 如果前端API需要验证码，应该在API网关层处理，而不是在这个服务中
+	// 设置请求超时
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
 	// 调用业务层获取个性化推荐
 	houses, total, err := s.uc.PersonalRecommendList(ctx, req.UserId, page, pageSize)
 	if err != nil {
 		log.Printf("获取个性化推荐失败: %v", err)
-		// 如果业务层失败，返回默认推荐
-		items := []*pb.HouseRecommendItem{
-			{
-				// 不再设置HouseId字段
-				Title:       "个性化推荐-豪华公寓",
-				Description: "根据您的浏览记录推荐",
-				Price:       5800.0,
-				Area:        150.0,
-				Layout:      "3室2厅2卫",
-				ImageUrl:    "https://example.com/house3.jpg",
-			},
-		}
+		s.recordRequest(false, time.Since(startTime))
+		
+		// 降级策略：返回空列表但不报错
 		return &pb.HouseRecommendReply{
 			Code: 0,
 			Msg:  "success",
 			Data: &pb.HouseRecommendData{
-				Total: int64(len(items)),
-				List:  items,
+				Total: 0,
+				List:  []*pb.HouseRecommendItem{},
 			},
 		}, nil
 	}
@@ -186,7 +246,7 @@ func (s *HouseService) ReserveHouse(ctx context.Context, req *pb.ReserveHouseReq
 	userName := req.GetUserName()
 	houseTitle := req.GetHouseTitle()
 	houseID := req.GetHouseId()
-	
+
 	// 生成预约ID（实际项目中应该从数据库获取）
 	reservationID := time.Now().Unix()
 
@@ -203,7 +263,7 @@ func (s *HouseService) ReserveHouse(ctx context.Context, req *pb.ReserveHouseReq
 		"timestamp":      time.Now().Unix(),
 		"sequence":       GlobalSequenceManager.GetNextSequence(0), // 系统消息使用0作为发送者ID
 	}
-	
+
 	// 使用全局WebSocket管理器推送消息给房东
 	if err := GlobalWebSocketManager.SendMessageToUser(landlordID, landlordMessage); err != nil {
 		log.Printf("推送消息给房东 %d 失败: %v", landlordID, err)
@@ -223,7 +283,7 @@ func (s *HouseService) ReserveHouse(ctx context.Context, req *pb.ReserveHouseReq
 		"timestamp":      time.Now().Unix(),
 		"sequence":       GlobalSequenceManager.GetNextSequence(0), // 系统消息使用0作为发送者ID
 	}
-	
+
 	// 使用全局WebSocket管理器推送消息给用户
 	if err := GlobalWebSocketManager.SendMessageToUser(userID, userMessage); err != nil {
 		log.Printf("推送消息给用户 %d 失败: %v", userID, err)
@@ -312,7 +372,7 @@ func (s *HouseService) StartChat(ctx context.Context, req *pb.StartChatRequest) 
 		} else {
 			log.Printf("成功发送聊天消息给房东 %d", req.LandlordId)
 		}
-		
+
 		// 发送确认消息给用户
 		userMessage := map[string]interface{}{
 			"type":           "chat_started",
@@ -322,7 +382,7 @@ func (s *HouseService) StartChat(ctx context.Context, req *pb.StartChatRequest) 
 			"reservation_id": req.ReservationId,
 			"timestamp":      time.Now().Unix(),
 		}
-		
+
 		// 使用全局WebSocket管理器发送确认消息给用户
 		if err := GlobalWebSocketManager.SendMessageToUser(req.UserId, userMessage); err != nil {
 			log.Printf("发送确认消息给用户 %d 失败: %v", req.UserId, err)
