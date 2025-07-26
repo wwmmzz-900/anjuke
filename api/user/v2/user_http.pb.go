@@ -19,13 +19,21 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationUserBindEmail = "/api.user.v2.User/BindEmail"
 const OperationUserBindPhone = "/api.user.v2.User/BindPhone"
 const OperationUserCreateUser = "/api.user.v2.User/CreateUser"
+const OperationUserGetUserInfo = "/api.user.v2.User/GetUserInfo"
+const OperationUserLoginOrRegister = "/api.user.v2.User/LoginOrRegister"
+const OperationUserSendEmailCode = "/api.user.v2.User/SendEmailCode"
 const OperationUserSendSms = "/api.user.v2.User/SendSms"
 
 type UserHTTPServer interface {
+	BindEmail(context.Context, *BindEmailRequest) (*BindEmailReply, error)
 	BindPhone(context.Context, *BindPhoneRequest) (*BindPhoneReply, error)
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserReply, error)
+	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error)
+	LoginOrRegister(context.Context, *LoginOrRegisterRequest) (*LoginOrRegisterReply, error)
+	SendEmailCode(context.Context, *SendEmailCodeRequest) (*SendEmailCodeReply, error)
 	SendSms(context.Context, *SendSmsRequest) (*SendSmsReply, error)
 }
 
@@ -34,6 +42,10 @@ func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r.POST("/user/create", _User_CreateUser0_HTTP_Handler(srv))
 	r.POST("/bind/phone", _User_BindPhone0_HTTP_Handler(srv))
 	r.POST("/sendSms", _User_SendSms0_HTTP_Handler(srv))
+	r.POST("/sendEmailCode", _User_SendEmailCode0_HTTP_Handler(srv))
+	r.POST("/bind/email", _User_BindEmail0_HTTP_Handler(srv))
+	r.POST("/user/login", _User_LoginOrRegister0_HTTP_Handler(srv))
+	r.GET("/user/info", _User_GetUserInfo0_HTTP_Handler(srv))
 }
 
 func _User_CreateUser0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -102,9 +114,98 @@ func _User_SendSms0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) erro
 	}
 }
 
+func _User_SendEmailCode0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SendEmailCodeRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserSendEmailCode)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SendEmailCode(ctx, req.(*SendEmailCodeRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SendEmailCodeReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_BindEmail0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in BindEmailRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserBindEmail)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.BindEmail(ctx, req.(*BindEmailRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*BindEmailReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_LoginOrRegister0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in LoginOrRegisterRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserLoginOrRegister)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.LoginOrRegister(ctx, req.(*LoginOrRegisterRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*LoginOrRegisterReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_GetUserInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetUserInfoRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserGetUserInfo)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetUserInfo(ctx, req.(*GetUserInfoRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetUserInfoReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserHTTPClient interface {
+	BindEmail(ctx context.Context, req *BindEmailRequest, opts ...http.CallOption) (rsp *BindEmailReply, err error)
 	BindPhone(ctx context.Context, req *BindPhoneRequest, opts ...http.CallOption) (rsp *BindPhoneReply, err error)
 	CreateUser(ctx context.Context, req *CreateUserRequest, opts ...http.CallOption) (rsp *CreateUserReply, err error)
+	GetUserInfo(ctx context.Context, req *GetUserInfoRequest, opts ...http.CallOption) (rsp *GetUserInfoReply, err error)
+	LoginOrRegister(ctx context.Context, req *LoginOrRegisterRequest, opts ...http.CallOption) (rsp *LoginOrRegisterReply, err error)
+	SendEmailCode(ctx context.Context, req *SendEmailCodeRequest, opts ...http.CallOption) (rsp *SendEmailCodeReply, err error)
 	SendSms(ctx context.Context, req *SendSmsRequest, opts ...http.CallOption) (rsp *SendSmsReply, err error)
 }
 
@@ -114,6 +215,19 @@ type UserHTTPClientImpl struct {
 
 func NewUserHTTPClient(client *http.Client) UserHTTPClient {
 	return &UserHTTPClientImpl{client}
+}
+
+func (c *UserHTTPClientImpl) BindEmail(ctx context.Context, in *BindEmailRequest, opts ...http.CallOption) (*BindEmailReply, error) {
+	var out BindEmailReply
+	pattern := "/bind/email"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserBindEmail))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 func (c *UserHTTPClientImpl) BindPhone(ctx context.Context, in *BindPhoneRequest, opts ...http.CallOption) (*BindPhoneReply, error) {
@@ -134,6 +248,45 @@ func (c *UserHTTPClientImpl) CreateUser(ctx context.Context, in *CreateUserReque
 	pattern := "/user/create"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserCreateUser))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...http.CallOption) (*GetUserInfoReply, error) {
+	var out GetUserInfoReply
+	pattern := "/user/info"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserGetUserInfo))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) LoginOrRegister(ctx context.Context, in *LoginOrRegisterRequest, opts ...http.CallOption) (*LoginOrRegisterReply, error) {
+	var out LoginOrRegisterReply
+	pattern := "/user/login"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserLoginOrRegister))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) SendEmailCode(ctx context.Context, in *SendEmailCodeRequest, opts ...http.CallOption) (*SendEmailCodeReply, error) {
+	var out SendEmailCodeReply
+	pattern := "/sendEmailCode"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserSendEmailCode))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

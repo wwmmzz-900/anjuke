@@ -19,9 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	User_CreateUser_FullMethodName = "/api.user.v2.User/CreateUser"
-	User_BindPhone_FullMethodName  = "/api.user.v2.User/BindPhone"
-	User_SendSms_FullMethodName    = "/api.user.v2.User/SendSms"
+	User_CreateUser_FullMethodName      = "/api.user.v2.User/CreateUser"
+	User_BindPhone_FullMethodName       = "/api.user.v2.User/BindPhone"
+	User_SendSms_FullMethodName         = "/api.user.v2.User/SendSms"
+	User_SendEmailCode_FullMethodName   = "/api.user.v2.User/SendEmailCode"
+	User_BindEmail_FullMethodName       = "/api.user.v2.User/BindEmail"
+	User_LoginOrRegister_FullMethodName = "/api.user.v2.User/LoginOrRegister"
+	User_GetUserInfo_FullMethodName     = "/api.user.v2.User/GetUserInfo"
 )
 
 // UserClient is the client API for User service.
@@ -31,6 +35,10 @@ type UserClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserReply, error)
 	BindPhone(ctx context.Context, in *BindPhoneRequest, opts ...grpc.CallOption) (*BindPhoneReply, error)
 	SendSms(ctx context.Context, in *SendSmsRequest, opts ...grpc.CallOption) (*SendSmsReply, error)
+	SendEmailCode(ctx context.Context, in *SendEmailCodeRequest, opts ...grpc.CallOption) (*SendEmailCodeReply, error)
+	BindEmail(ctx context.Context, in *BindEmailRequest, opts ...grpc.CallOption) (*BindEmailReply, error)
+	LoginOrRegister(ctx context.Context, in *LoginOrRegisterRequest, opts ...grpc.CallOption) (*LoginOrRegisterReply, error)
+	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoReply, error)
 }
 
 type userClient struct {
@@ -71,6 +79,46 @@ func (c *userClient) SendSms(ctx context.Context, in *SendSmsRequest, opts ...gr
 	return out, nil
 }
 
+func (c *userClient) SendEmailCode(ctx context.Context, in *SendEmailCodeRequest, opts ...grpc.CallOption) (*SendEmailCodeReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendEmailCodeReply)
+	err := c.cc.Invoke(ctx, User_SendEmailCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) BindEmail(ctx context.Context, in *BindEmailRequest, opts ...grpc.CallOption) (*BindEmailReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BindEmailReply)
+	err := c.cc.Invoke(ctx, User_BindEmail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) LoginOrRegister(ctx context.Context, in *LoginOrRegisterRequest, opts ...grpc.CallOption) (*LoginOrRegisterReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LoginOrRegisterReply)
+	err := c.cc.Invoke(ctx, User_LoginOrRegister_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserInfoReply)
+	err := c.cc.Invoke(ctx, User_GetUserInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
@@ -78,6 +126,10 @@ type UserServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserReply, error)
 	BindPhone(context.Context, *BindPhoneRequest) (*BindPhoneReply, error)
 	SendSms(context.Context, *SendSmsRequest) (*SendSmsReply, error)
+	SendEmailCode(context.Context, *SendEmailCodeRequest) (*SendEmailCodeReply, error)
+	BindEmail(context.Context, *BindEmailRequest) (*BindEmailReply, error)
+	LoginOrRegister(context.Context, *LoginOrRegisterRequest) (*LoginOrRegisterReply, error)
+	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -93,6 +145,18 @@ func (UnimplementedUserServer) BindPhone(context.Context, *BindPhoneRequest) (*B
 }
 func (UnimplementedUserServer) SendSms(context.Context, *SendSmsRequest) (*SendSmsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendSms not implemented")
+}
+func (UnimplementedUserServer) SendEmailCode(context.Context, *SendEmailCodeRequest) (*SendEmailCodeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendEmailCode not implemented")
+}
+func (UnimplementedUserServer) BindEmail(context.Context, *BindEmailRequest) (*BindEmailReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BindEmail not implemented")
+}
+func (UnimplementedUserServer) LoginOrRegister(context.Context, *LoginOrRegisterRequest) (*LoginOrRegisterReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoginOrRegister not implemented")
+}
+func (UnimplementedUserServer) GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -161,6 +225,78 @@ func _User_SendSms_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_SendEmailCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendEmailCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).SendEmailCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_SendEmailCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).SendEmailCode(ctx, req.(*SendEmailCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_BindEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BindEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).BindEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_BindEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).BindEmail(ctx, req.(*BindEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_LoginOrRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginOrRegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).LoginOrRegister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_LoginOrRegister_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).LoginOrRegister(ctx, req.(*LoginOrRegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_GetUserInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetUserInfo(ctx, req.(*GetUserInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -179,6 +315,22 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendSms",
 			Handler:    _User_SendSms_Handler,
+		},
+		{
+			MethodName: "SendEmailCode",
+			Handler:    _User_SendEmailCode_Handler,
+		},
+		{
+			MethodName: "BindEmail",
+			Handler:    _User_BindEmail_Handler,
+		},
+		{
+			MethodName: "LoginOrRegister",
+			Handler:    _User_LoginOrRegister_Handler,
+		},
+		{
+			MethodName: "GetUserInfo",
+			Handler:    _User_GetUserInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

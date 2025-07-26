@@ -6,6 +6,30 @@ info:
     title: User API
     version: 0.0.1
 paths:
+    /bind/email:
+        post:
+            tags:
+                - User
+            operationId: User_BindEmail
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/BindEmailRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BindEmailReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /bind/phone:
         post:
             tags:
@@ -24,6 +48,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/BindPhoneReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /sendEmailCode:
+        post:
+            tags:
+                - User
+            operationId: User_SendEmailCode
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendEmailCodeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SendEmailCodeReply'
                 default:
                     description: Default error response
                     content:
@@ -78,8 +126,70 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /user/info:
+        get:
+            tags:
+                - User
+            operationId: User_GetUserInfo
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserInfoReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /user/login:
+        post:
+            tags:
+                - User
+            operationId: User_LoginOrRegister
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/LoginOrRegisterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/LoginOrRegisterReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
+        BindEmailReply:
+            type: object
+            properties:
+                Success:
+                    type: string
+                UserId:
+                    type: string
+        BindEmailRequest:
+            type: object
+            properties:
+                UserId:
+                    type: string
+                Type:
+                    type: string
+                Value:
+                    type: string
+                Extra:
+                    type: string
+                Code:
+                    type: string
         BindPhoneReply:
             type: object
             properties:
@@ -114,6 +224,25 @@ components:
                     type: string
                 Password:
                     type: string
+        GetUserInfoReply:
+            type: object
+            properties:
+                UserId:
+                    type: string
+                Name:
+                    type: string
+                Mobile:
+                    type: string
+                Email:
+                    type: string
+                Gender:
+                    type: integer
+                    format: int32
+                Birthday:
+                    type: string
+                Grade:
+                    type: integer
+                    format: int32
         GoogleProtobufAny:
             type: object
             properties:
@@ -122,6 +251,38 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        LoginOrRegisterReply:
+            type: object
+            properties:
+                Message:
+                    type: string
+                Token:
+                    type: string
+                IsNewUser:
+                    type: boolean
+        LoginOrRegisterRequest:
+            type: object
+            properties:
+                Account:
+                    type: string
+                Password:
+                    type: string
+                Name:
+                    type: string
+                sex:
+                    type: string
+        SendEmailCodeReply:
+            type: object
+            properties:
+                Message:
+                    type: string
+        SendEmailCodeRequest:
+            type: object
+            properties:
+                Email:
+                    type: string
+                Source:
+                    type: string
         SendSmsReply:
             type: object
             properties:

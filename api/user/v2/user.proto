@@ -27,6 +27,29 @@ service User {
 			body:"*"
 		};
 	};
+	rpc SendEmailCode (SendEmailCodeRequest) returns (SendEmailCodeReply){
+		option (google.api.http) = {
+			post: "/sendEmailCode"
+			body:"*"
+		};
+	};
+	rpc BindEmail (BindEmailRequest) returns (BindEmailReply){
+		option (google.api.http) = {
+			post: "/bind/email"
+			body:"*"
+		};
+	};
+	rpc LoginOrRegister (LoginOrRegisterRequest) returns (LoginOrRegisterReply){
+		option (google.api.http) = {
+			post: "/user/login"
+			body:"*"
+		};
+	};
+	rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoReply){
+		option (google.api.http) = {
+			get: "/user/info"
+		};
+	};
 }
 
 message CreateUserRequest {
@@ -55,4 +78,50 @@ message SendSmsRequest {
 }
 message SendSmsReply {
 	string sms =1;
+}
+
+message SendEmailCodeRequest {
+	string Email =1;
+	string Source =2;
+}
+message SendEmailCodeReply {
+	string Message =1;
+}
+
+message BindEmailRequest {
+	int64 UserId =1;
+	string Type =2;
+	string Value =3;
+	string Extra =4;
+	string Code =5;
+}
+message BindEmailReply {
+	string Success =1;
+	int64 UserId =2;
+}
+
+message LoginOrRegisterRequest {
+	string Account =1;    // 账号（手机号或邮箱）
+	string Password =2;   // 密码
+	string Name =3;       // 用户昵称（注册时使用）
+	string sex=4; //用户性别
+}
+message LoginOrRegisterReply {
+	string Message =1;    // 响应消息
+	string Token =2;      // JWT token
+	bool IsNewUser =3;    // 是否为新用户
+}
+
+message GetUserInfoRequest {
+	// 空请求，从JWT token中获取用户信息
+}
+
+message GetUserInfoReply {
+	int64 UserId =1;      // 用户ID
+	string Name =2;       // 用户昵称
+	string Mobile =3;     // 手机号
+	string Email =4;      // 邮箱
+	int32 Gender =5;      // 性别
+	int64 Birthday =6;    // 生日
+	int32 Grade =7;       // 等级
 }

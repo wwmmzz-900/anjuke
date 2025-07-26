@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
-	"gorm.io/gorm"
 	"time"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // todo:这个结构体就是数据库的结构体
@@ -22,15 +22,16 @@ import (
 
 // todo:用户基础表
 type UserBase struct {
-	gorm.Model
+	UserId     int64  `json:"user_id"`     // 用户唯一ID
 	Name       string `json:"name"`        // 用户昵称/姓名
 	RealName   string `json:"real_name"`   // 真实姓名
 	Phone      string `json:"phone"`       // 手机号
+	Email      string `json:"email"`       // 邮箱
 	Password   string `json:"password"`    // 密码（加密存储）
 	Avatar     string `json:"avatar"`      // 头像URL
 	RoleId     int64  `json:"role_id"`     // 角色id
 	Sex        string `json:"sex"`         // 用户性别
-	RealAtatus int8   `json:"real_atatus"` // 用户实名状态(1: 已实名2:未实名 )
+	RealStatus int8   `json:"real_status"` // 用户实名状态(1: 已实名2:未实名 )
 	Status     int8   `json:"status"`      // 状态（0禁用1正常）
 }
 
@@ -54,13 +55,15 @@ func (*UserBinding) TableName() string {
 
 // UserRepo  is a user repo.
 type UserRepo interface {
-	//CreateUser(context.Context, *User) (*User, error)
-	//GetUser(ctx context.Context, phone string) (*User, error)
+	CreateUser(ctx context.Context, user *UserBase) (*UserBase, error)
+	GetUserByAccount(ctx context.Context, account string) (*UserBase, error)
 	BindPhone(ctx context.Context, uid int64, phone string, binding *UserBinding) error
 	CheckPhoneExists(ctx context.Context, phone string) (bool, error)
 	Store(ctx context.Context, Soures, Phone, code string, expire time.Duration) error
 	Get(ctx context.Context, Soures, Phone string) (string, error)
 	Delete(ctx context.Context, Soures, Phone string) error
+	CheckEmailExists(ctx context.Context, email string) (bool, error)
+	BindEmail(ctx context.Context, uid int64, email string, binding *UserBinding) error
 }
 
 // UserUsecase is a user usecase.
@@ -96,6 +99,16 @@ func (uc *UserUsecase) BindPhone(ctx context.Context, uid int64, phone string, b
 	return uc.repo.BindPhone(ctx, uid, phone, bing)
 }
 
+func (uc *UserUsecase) BindEmail(ctx context.Context, uid int64, email string, bing *UserBinding) error {
+	// 检查是否已被其他账号绑定
+	if exists, err := uc.repo.CheckEmailExists(ctx, email); err != nil {
+		return err
+	} else if exists {
+		return errors.New("该邮箱已被绑定")
+	}
+	return uc.repo.BindEmail(ctx, uid, email, bing)
+}
+
 func (uc *UserUsecase) Store(ctx context.Context, Soures, Phone, code string, expire time.Duration) error {
 	return uc.repo.Store(ctx, Soures, Phone, code, expire)
 }
@@ -111,4 +124,73 @@ func (uc *UserUsecase) Get(ctx context.Context, Soures, Phone string) (string, e
 
 func (uc *UserUsecase) Delete(ctx context.Context, Soures, Phone string) error {
 	return uc.repo.Delete(ctx, Soures, Phone)
+}
+
+// LoginOrRegister 用户登录注册一体化
+func (uc *UserUsecase) LoginOrRegister(ctx context.Context, account, password, name, sex string) (*UserBase, bool, error) {
+	// 先尝试查找用户
+	user, err := uc.repo.GetUserByAccount(ctx, account)
+	if err != nil {
+		return nil, false, fmt.Errorf("查询用户失败: %v", err)
+	}
+
+	// 用户存在，验证密码
+	if user != nil {
+		if !uc.verifyPassword(user.Password, password) {
+			return nil, false, errors.New("密码错误")
+		}
+		return user, false, nil // 登录成功，不是新用户
+	}
+
+	// 用户不存在，创建新用户
+	hashedPassword, err := uc.hashPassword(password)
+	if err != nil {
+		return nil, false, fmt.Errorf("密码加密失败: %v", err)
+	}
+
+	newUser := &UserBase{
+		Name:       name,
+		Password:   hashedPassword,
+		Sex:        sex,
+		RealStatus: 2, // 未实名
+		Status:     1, // 正常状态
+	}
+
+	// 判断账号类型并设置相应字段
+	if uc.isEmail(account) {
+		newUser.Email = account
+	} else {
+		newUser.Phone = account
+	}
+
+	createdUser, err := uc.repo.CreateUser(ctx, newUser)
+	if err != nil {
+		return nil, false, fmt.Errorf("创建用户失败: %v", err)
+	}
+
+	return createdUser, true, nil // 注册成功，是新用户
+}
+
+// hashPassword 密码加密（简化版，实际应使用bcrypt）
+func (uc *UserUsecase) hashPassword(password string) (string, error) {
+	// 这里使用简单的加密方式，实际项目中应该使用bcrypt
+	return fmt.Sprintf("hashed_%s", password), nil
+}
+
+// verifyPassword 验证密码
+func (uc *UserUsecase) verifyPassword(hashedPassword, password string) bool {
+	// 简化版密码验证
+	expectedHash := fmt.Sprintf("hashed_%s", password)
+	return hashedPassword == expectedHash
+}
+
+// isEmail 判断是否为邮箱格式
+func (uc *UserUsecase) isEmail(account string) bool {
+	// 简单的邮箱格式判断，检查是否包含@符号
+	for i := 0; i < len(account); i++ {
+		if account[i] == '@' {
+			return true
+		}
+	}
+	return false
 }

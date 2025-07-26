@@ -8,18 +8,22 @@ import (
 	v4 "anjuke/api/transaction/v4"
 	v2 "anjuke/api/user/v2"
 	"anjuke/internal/conf"
+	"anjuke/internal/middleware"
+	"anjuke/internal/pkg/jwt"
 	"anjuke/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
 )
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, logger log.Logger) *http.Server {
+	// 创建JWT实例
+	jwtIns := jwt.NewJwt(c.JwtSecret)
+
 	var opts = []http.ServerOption{
 		http.Middleware(
-			recovery.Recovery(),
+			middleware.JWTMiddleware(jwtIns),
 		),
 	}
 	if c.Http.Network != "" {
