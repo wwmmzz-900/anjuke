@@ -15,6 +15,94 @@ service User {
 			body:"*"
 				};
 	};
+
+	// todo 登录/注册
+	rpc Login (LoginRequest) returns (LoginReply){
+		option (google.api.http) = {
+			post: "/user/login"
+			body:"*"
+		};
+	}
+
+	// todo 短信验证码
+	rpc SendSms (SendSmsRequest) returns (SendSmsReply){
+		option (google.api.http) = {
+			post: "/user/sms"
+			body:"*"
+		};
+	}
+
+	// todo 用户个人信息修改
+	rpc UpdateUserInfo (UpdateUserInfoRequest) returns (UpdateUserInfoReply){
+		option (google.api.http) = {
+			post: "/user/update_info"
+			body:"*"
+		};
+	}
+
+	// todo 用户密码修改
+	rpc UpdateUserPws (UpdateUserPwsRequest) returns (UpdateUserPwsReply){
+		option (google.api.http) = {
+			post: "/user/update_pws"
+			body:"*"
+		};
+	}
+
+	// todo 支付宝人脸识别实名认证初始化
+	rpc FaceCertify (FaceCertifyRequest) returns (FaceCertifyReply){
+		option (google.api.http) = {
+			post: "/user/face_certify"
+			body:"*"
+		};
+	}
+
+	// todo 支付宝实名认证回调
+	rpc CertifyNotify (CertifyNotifyRequest) returns (CertifyNotifyReply){
+		option (google.api.http) = {
+			post: "/user/certify_notify"
+			body:"*"
+		};
+	}
+
+	// todo 查询实名认证结果
+	rpc QueryCertify (QueryCertifyRequest) returns (QueryCertifyReply){
+		option (google.api.http) = {
+			post: "/user/query_certify"
+			body:"*"
+		};
+	}
+
+	// todo 密码重置
+	rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordReply){
+		option (google.api.http) = {
+			post: "/user/reset_password"
+			body:"*"
+		};
+	}
+
+	// todo 账号冻结
+	rpc FreezeAccount (FreezeAccountRequest) returns (FreezeAccountReply){
+		option (google.api.http) = {
+			post: "/user/freeze_account"
+			body:"*"
+		};
+	}
+
+	// todo 账号解冻
+	rpc UnfreezeAccount (UnfreezeAccountRequest) returns (UnfreezeAccountReply){
+		option (google.api.http) = {
+			post: "/user/unfreeze_account"
+			body:"*"
+		};
+	}
+
+	// todo 获取登录日志
+	rpc GetLoginLogs (GetLoginLogsRequest) returns (GetLoginLogsReply){
+		option (google.api.http) = {
+			post: "/user/login_logs"
+			body:"*"
+		};
+	}
 }
 
 message CreateUserRequest {
@@ -24,4 +112,155 @@ message CreateUserRequest {
 }
 message CreateUserReply {
 	string Success=1;
+}
+
+// todo 登录/注册
+message LoginRequest {
+	string name = 1; // 用户名
+	string phone = 2; // 手机号
+	string password = 3; // 密码
+	string sendSmsCode = 4; // 验证码
+	string sex = 5; // 性别
+}
+message LoginReply {
+	int64 user_id = 1; // 用户ID
+	string token = 2; // JWT token
+	int32  status = 4; // 用户状态
+}
+
+// todo 短信验证码
+message SendSmsRequest {
+	string phone = 1;
+	string source = 2;
+}
+message SendSmsReply {
+	string Success = 1;
+}
+
+// todo 用户个人信息修改
+message UpdateUserInfoRequest {
+	int64 id = 1; // 用户id
+	string name = 2; // 新昵称
+	string phone = 3; // 手机号
+	string sex = 4; // 性别
+	int64 role_id = 5; // 角色id
+	string avatar = 6; // 头像
+}
+message UpdateUserInfoReply {
+	int64 id = 1; // 修改是否成功
+	bool success = 2; // 消息提示
+}
+
+// todo 用户密码修改
+message UpdateUserPwsRequest {
+	int64 id = 1; // 用户id
+	string phone = 3; // 手机号
+	string old_password = 4; // 旧密码
+	string password = 5; // 新密码
+	string confirm_password = 6; // 确认密码
+	string send_sms_code = 7; // 验证码
+}
+message UpdateUserPwsReply {
+	bool success = 2; // 消息提示
+}
+
+// todo 支付宝人脸识别实名认证
+message FaceCertifyRequest {
+	int64 user_id = 1; // 用户ID
+	string real_name = 2; // 真实姓名
+	string id_card_number = 3; // 身份证号
+	string return_url = 4; // 认证完成后的回调地址（可选）
+}
+message FaceCertifyReply {
+	string certify_id = 1; // 认证ID
+	string certify_url = 2; // 认证URL，用户需要访问此URL完成人脸识别
+	bool success = 3; // 是否成功
+	string message = 4; // 响应消息
+}
+
+// todo 支付宝实名认证回调
+message CertifyNotifyRequest {
+	string notify_type = 1; // 通知类型
+	string notify_id = 2; // 通知ID
+	string sign_type = 3; // 签名类型
+	string sign = 4; // 签名
+	string charset = 5; // 字符集
+	string biz_content = 6; // 业务内容
+}
+message CertifyNotifyReply {
+	string result = 1; // 处理结果
+}
+
+// todo 查询实名认证结果
+message QueryCertifyRequest {
+	string certify_id = 1; // 认证ID
+	int64 user_id = 2; // 用户ID
+}
+message QueryCertifyReply {
+	bool passed = 1; // 认证是否通过
+	string status = 2; // 认证状态：INITIAL(初始化), PROCESSING(处理中), SUCCESS(成功), FAIL(失败)
+	string real_name = 3; // 真实姓名
+	string id_card_number = 4; // 身份证号
+	string fail_reason = 5; // 失败原因（如果认证失败）
+	string message = 6; // 响应消息
+}
+
+// todo 密码重置
+message ResetPasswordRequest {
+	string phone = 1; // 手机号
+	string sms_code = 2; // 短信验证码
+	string new_password = 3; // 新密码
+	string confirm_password = 4; // 确认密码
+}
+message ResetPasswordReply {
+	bool success = 1; // 是否成功
+	string message = 2; // 响应消息
+}
+
+// todo 账号冻结
+message FreezeAccountRequest {
+	int64 user_id = 1; // 用户ID
+	string reason = 2; // 冻结原因
+	int64 admin_id = 3; // 操作管理员ID
+}
+message FreezeAccountReply {
+	bool success = 1; // 是否成功
+	string message = 2; // 响应消息
+}
+
+// todo 账号解冻
+message UnfreezeAccountRequest {
+	int64 user_id = 1; // 用户ID
+	string reason = 2; // 解冻原因
+	int64 admin_id = 3; // 操作管理员ID
+}
+message UnfreezeAccountReply {
+	bool success = 1; // 是否成功
+	string message = 2; // 响应消息
+}
+
+// todo 获取登录日志
+message GetLoginLogsRequest {
+	int64 user_id = 1; // 用户ID
+	int32 page = 2; // 页码
+	int32 page_size = 3; // 每页数量
+}
+message GetLoginLogsReply {
+	repeated LoginLog logs = 1; // 登录日志列表
+	int32 total = 2; // 总数量
+	int32 page = 3; // 当前页码
+	int32 page_size = 4; // 每页数量
+}
+
+// 登录日志信息
+message LoginLog {
+	int64 id = 1; // 日志ID
+	int64 user_id = 2; // 用户ID
+	string ip_address = 3; // IP地址
+	string user_agent = 4; // 用户代理
+	string device_info = 5; // 设备信息
+	string location = 6; // 登录地点
+	int32 login_status = 7; // 登录状态 (1:成功 0:失败)
+	string fail_reason = 8; // 失败原因
+	int64 login_time = 9; // 登录时间戳
 }

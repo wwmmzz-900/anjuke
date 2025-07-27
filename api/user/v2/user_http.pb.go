@@ -19,15 +19,59 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationUserCertifyNotify = "/api.user.v2.User/CertifyNotify"
 const OperationUserCreateUser = "/api.user.v2.User/CreateUser"
+const OperationUserFaceCertify = "/api.user.v2.User/FaceCertify"
+const OperationUserFreezeAccount = "/api.user.v2.User/FreezeAccount"
+const OperationUserGetLoginLogs = "/api.user.v2.User/GetLoginLogs"
+const OperationUserLogin = "/api.user.v2.User/Login"
+const OperationUserQueryCertify = "/api.user.v2.User/QueryCertify"
+const OperationUserResetPassword = "/api.user.v2.User/ResetPassword"
+const OperationUserSendSms = "/api.user.v2.User/SendSms"
+const OperationUserUnfreezeAccount = "/api.user.v2.User/UnfreezeAccount"
+const OperationUserUpdateUserInfo = "/api.user.v2.User/UpdateUserInfo"
+const OperationUserUpdateUserPws = "/api.user.v2.User/UpdateUserPws"
 
 type UserHTTPServer interface {
+	// CertifyNotify todo 支付宝实名认证回调
+	CertifyNotify(context.Context, *CertifyNotifyRequest) (*CertifyNotifyReply, error)
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserReply, error)
+	// FaceCertify todo 支付宝人脸识别实名认证初始化
+	FaceCertify(context.Context, *FaceCertifyRequest) (*FaceCertifyReply, error)
+	// FreezeAccount todo 账号冻结
+	FreezeAccount(context.Context, *FreezeAccountRequest) (*FreezeAccountReply, error)
+	// GetLoginLogs todo 获取登录日志
+	GetLoginLogs(context.Context, *GetLoginLogsRequest) (*GetLoginLogsReply, error)
+	// Login todo 登录/注册
+	Login(context.Context, *LoginRequest) (*LoginReply, error)
+	// QueryCertify todo 查询实名认证结果
+	QueryCertify(context.Context, *QueryCertifyRequest) (*QueryCertifyReply, error)
+	// ResetPassword todo 密码重置
+	ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordReply, error)
+	// SendSms todo 短信验证码
+	SendSms(context.Context, *SendSmsRequest) (*SendSmsReply, error)
+	// UnfreezeAccount todo 账号解冻
+	UnfreezeAccount(context.Context, *UnfreezeAccountRequest) (*UnfreezeAccountReply, error)
+	// UpdateUserInfo todo 用户个人信息修改
+	UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error)
+	// UpdateUserPws todo 用户密码修改
+	UpdateUserPws(context.Context, *UpdateUserPwsRequest) (*UpdateUserPwsReply, error)
 }
 
 func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r := s.Route("/")
 	r.POST("/user/create", _User_CreateUser0_HTTP_Handler(srv))
+	r.POST("/user/login", _User_Login0_HTTP_Handler(srv))
+	r.POST("/user/sms", _User_SendSms0_HTTP_Handler(srv))
+	r.POST("/user/update_info", _User_UpdateUserInfo0_HTTP_Handler(srv))
+	r.POST("/user/update_pws", _User_UpdateUserPws0_HTTP_Handler(srv))
+	r.POST("/user/face_certify", _User_FaceCertify0_HTTP_Handler(srv))
+	r.POST("/user/certify_notify", _User_CertifyNotify0_HTTP_Handler(srv))
+	r.POST("/user/query_certify", _User_QueryCertify0_HTTP_Handler(srv))
+	r.POST("/user/reset_password", _User_ResetPassword0_HTTP_Handler(srv))
+	r.POST("/user/freeze_account", _User_FreezeAccount0_HTTP_Handler(srv))
+	r.POST("/user/unfreeze_account", _User_UnfreezeAccount0_HTTP_Handler(srv))
+	r.POST("/user/login_logs", _User_GetLoginLogs0_HTTP_Handler(srv))
 }
 
 func _User_CreateUser0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -52,8 +96,261 @@ func _User_CreateUser0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) e
 	}
 }
 
+func _User_Login0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in LoginRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserLogin)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.Login(ctx, req.(*LoginRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*LoginReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_SendSms0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SendSmsRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserSendSms)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SendSms(ctx, req.(*SendSmsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SendSmsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_UpdateUserInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateUserInfoRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserUpdateUserInfo)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateUserInfo(ctx, req.(*UpdateUserInfoRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateUserInfoReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_UpdateUserPws0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateUserPwsRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserUpdateUserPws)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateUserPws(ctx, req.(*UpdateUserPwsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateUserPwsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_FaceCertify0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in FaceCertifyRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserFaceCertify)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.FaceCertify(ctx, req.(*FaceCertifyRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*FaceCertifyReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_CertifyNotify0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CertifyNotifyRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserCertifyNotify)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CertifyNotify(ctx, req.(*CertifyNotifyRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CertifyNotifyReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_QueryCertify0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in QueryCertifyRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserQueryCertify)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.QueryCertify(ctx, req.(*QueryCertifyRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*QueryCertifyReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_ResetPassword0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ResetPasswordRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserResetPassword)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ResetPassword(ctx, req.(*ResetPasswordRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ResetPasswordReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_FreezeAccount0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in FreezeAccountRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserFreezeAccount)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.FreezeAccount(ctx, req.(*FreezeAccountRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*FreezeAccountReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_UnfreezeAccount0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UnfreezeAccountRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserUnfreezeAccount)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UnfreezeAccount(ctx, req.(*UnfreezeAccountRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UnfreezeAccountReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_GetLoginLogs0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetLoginLogsRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserGetLoginLogs)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetLoginLogs(ctx, req.(*GetLoginLogsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetLoginLogsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserHTTPClient interface {
+	CertifyNotify(ctx context.Context, req *CertifyNotifyRequest, opts ...http.CallOption) (rsp *CertifyNotifyReply, err error)
 	CreateUser(ctx context.Context, req *CreateUserRequest, opts ...http.CallOption) (rsp *CreateUserReply, err error)
+	FaceCertify(ctx context.Context, req *FaceCertifyRequest, opts ...http.CallOption) (rsp *FaceCertifyReply, err error)
+	FreezeAccount(ctx context.Context, req *FreezeAccountRequest, opts ...http.CallOption) (rsp *FreezeAccountReply, err error)
+	GetLoginLogs(ctx context.Context, req *GetLoginLogsRequest, opts ...http.CallOption) (rsp *GetLoginLogsReply, err error)
+	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
+	QueryCertify(ctx context.Context, req *QueryCertifyRequest, opts ...http.CallOption) (rsp *QueryCertifyReply, err error)
+	ResetPassword(ctx context.Context, req *ResetPasswordRequest, opts ...http.CallOption) (rsp *ResetPasswordReply, err error)
+	SendSms(ctx context.Context, req *SendSmsRequest, opts ...http.CallOption) (rsp *SendSmsReply, err error)
+	UnfreezeAccount(ctx context.Context, req *UnfreezeAccountRequest, opts ...http.CallOption) (rsp *UnfreezeAccountReply, err error)
+	UpdateUserInfo(ctx context.Context, req *UpdateUserInfoRequest, opts ...http.CallOption) (rsp *UpdateUserInfoReply, err error)
+	UpdateUserPws(ctx context.Context, req *UpdateUserPwsRequest, opts ...http.CallOption) (rsp *UpdateUserPwsReply, err error)
 }
 
 type UserHTTPClientImpl struct {
@@ -64,11 +361,154 @@ func NewUserHTTPClient(client *http.Client) UserHTTPClient {
 	return &UserHTTPClientImpl{client}
 }
 
+func (c *UserHTTPClientImpl) CertifyNotify(ctx context.Context, in *CertifyNotifyRequest, opts ...http.CallOption) (*CertifyNotifyReply, error) {
+	var out CertifyNotifyReply
+	pattern := "/user/certify_notify"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserCertifyNotify))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *UserHTTPClientImpl) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...http.CallOption) (*CreateUserReply, error) {
 	var out CreateUserReply
 	pattern := "/user/create"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserCreateUser))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) FaceCertify(ctx context.Context, in *FaceCertifyRequest, opts ...http.CallOption) (*FaceCertifyReply, error) {
+	var out FaceCertifyReply
+	pattern := "/user/face_certify"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserFaceCertify))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) FreezeAccount(ctx context.Context, in *FreezeAccountRequest, opts ...http.CallOption) (*FreezeAccountReply, error) {
+	var out FreezeAccountReply
+	pattern := "/user/freeze_account"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserFreezeAccount))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) GetLoginLogs(ctx context.Context, in *GetLoginLogsRequest, opts ...http.CallOption) (*GetLoginLogsReply, error) {
+	var out GetLoginLogsReply
+	pattern := "/user/login_logs"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserGetLoginLogs))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*LoginReply, error) {
+	var out LoginReply
+	pattern := "/user/login"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserLogin))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) QueryCertify(ctx context.Context, in *QueryCertifyRequest, opts ...http.CallOption) (*QueryCertifyReply, error) {
+	var out QueryCertifyReply
+	pattern := "/user/query_certify"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserQueryCertify))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...http.CallOption) (*ResetPasswordReply, error) {
+	var out ResetPasswordReply
+	pattern := "/user/reset_password"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserResetPassword))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) SendSms(ctx context.Context, in *SendSmsRequest, opts ...http.CallOption) (*SendSmsReply, error) {
+	var out SendSmsReply
+	pattern := "/user/sms"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserSendSms))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) UnfreezeAccount(ctx context.Context, in *UnfreezeAccountRequest, opts ...http.CallOption) (*UnfreezeAccountReply, error) {
+	var out UnfreezeAccountReply
+	pattern := "/user/unfreeze_account"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserUnfreezeAccount))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...http.CallOption) (*UpdateUserInfoReply, error) {
+	var out UpdateUserInfoReply
+	pattern := "/user/update_info"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserUpdateUserInfo))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) UpdateUserPws(ctx context.Context, in *UpdateUserPwsRequest, opts ...http.CallOption) (*UpdateUserPwsReply, error) {
+	var out UpdateUserPwsReply
+	pattern := "/user/update_pws"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserUpdateUserPws))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

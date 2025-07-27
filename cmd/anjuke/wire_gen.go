@@ -24,15 +24,19 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	db,err:=data.MysqlInit(confData,logger)
+	db, err := data.MysqlInit(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	rdb,err:=data.ExampleClient(confData,logger)
+	rdb, err := data.ExampleClient(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	dataData, cleanup, err := data.NewData(confData, logger,db,rdb)
+	alipay, err := data.NewAlipayClient(confData, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+	dataData, cleanup, err := data.NewData(confData, logger, db, rdb, alipay)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -44,24 +48,24 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	userUsecase := biz.NewUserUsecase(userRepo, logger)
 	userService := service.NewUserService(userUsecase)
 	//todo:house
-	houseRepo:=data.NewHouseRepo(dataData, logger)
+	houseRepo := data.NewHouseRepo(dataData, logger)
 	houseUsecase := biz.NewHouseUsecase(houseRepo, logger)
 	houseService := service.NewHouseService(houseUsecase)
 	//todo:transaction
-	transaction:=data.NewTransactionRepo(dataData, logger)
+	transaction := data.NewTransactionRepo(dataData, logger)
 	transactionUsecase := biz.NewTransactionUsecase(transaction, logger)
 	transactionService := service.NewTransactionService(transactionUsecase)
 	//todo:points
-	points:=data.NewPointsRepo(dataData, logger)
+	points := data.NewPointsRepo(dataData, logger)
 	pointsUsecase := biz.NewPointsUsecase(points, logger)
 	pointsService := service.NewPointsService(pointsUsecase)
 	//todo:Customer
-	customer:=data.NewCustomerRepo(dataData, logger)
+	customer := data.NewCustomerRepo(dataData, logger)
 	customerUsecase := biz.NewCustomerUsecase(customer, logger)
 	customerService := service.NewCustomerService(customerUsecase)
 
-	grpcServer := server.NewGRPCServer(confServer, greeterService, userService,houseService,transactionService,pointsService,customerService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, userService,houseService,transactionService,pointsService,customerService, logger)
+	grpcServer := server.NewGRPCServer(confServer, greeterService, userService, houseService, transactionService, pointsService, customerService, logger)
+	httpServer := server.NewHTTPServer(confServer, greeterService, userService, houseService, transactionService, pointsService, customerService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

@@ -8,6 +8,7 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  JWT jwt = 3;
 }
 
 message Server {
@@ -25,6 +26,21 @@ message Server {
   GRPC grpc = 2;
 }
 
+message Alipay {
+  string app_id = 1;
+  string private_key = 2;
+  bool is_production = 3;
+  string app_public_cert_path = 4;
+  string alipay_root_cert_path = 5;
+  string alipay_public_cert_path = 6;
+}
+
+message JWT {
+  string secret = 1;
+  google.protobuf.Duration token_expire = 2;
+  google.protobuf.Duration refresh_expire = 3;
+}
+
 message Data {
   message Database {
     string driver = 1;
@@ -39,4 +55,5 @@ message Data {
   }
   Database database = 1;
   Redis redis = 2;
+  Alipay alipay = 3;
 }
