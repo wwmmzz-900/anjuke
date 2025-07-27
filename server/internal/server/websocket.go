@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -55,6 +56,8 @@ func (s *Server) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s.log.Infof("WebSocket连接请求: uploadID=%s", uploadID)
+
 	// 升级HTTP连接为WebSocket
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -67,13 +70,18 @@ func (s *Server) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	if _, exists := GlobalProgressHub.connections[uploadID]; !exists {
 		GlobalProgressHub.connections[uploadID] = make([]*websocket.Conn, 0)
 		GlobalProgressHub.progress[uploadID] = 0
+		s.log.Infof("创建新的进度跟踪: uploadID=%s", uploadID)
 	}
 	GlobalProgressHub.connections[uploadID] = append(GlobalProgressHub.connections[uploadID], conn)
 	currentProgress := GlobalProgressHub.progress[uploadID]
+	connectionCount := len(GlobalProgressHub.connections[uploadID])
 	GlobalProgressHub.mu.Unlock()
 
+	s.log.Infof("WebSocket连接已注册: uploadID=%s, 当前进度=%.2f, 连接数=%d", uploadID, currentProgress, connectionCount)
+
 	// 发送当前进度
-	sendProgressUpdate(conn, uploadID, currentProgress, "")
+	s.log.Infof("发送初始进度: uploadID=%s, progress=%.2f", uploadID, currentProgress)
+	sendProgressUpdate(conn, uploadID, currentProgress, "连接已建立")
 
 	// 监听关闭
 	go func() {
@@ -97,6 +105,7 @@ func (s *Server) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 				if len(GlobalProgressHub.connections[uploadID]) == 0 {
 					delete(GlobalProgressHub.connections, uploadID)
 					delete(GlobalProgressHub.progress, uploadID)
+					s.log.Infof("清理uploadID=%s的连接数据", uploadID)
 				}
 				GlobalProgressHub.mu.Unlock()
 				break
@@ -111,22 +120,71 @@ func (h *ProgressHub) UpdateProgress(uploadID string, progress float64, status s
 	defer h.mu.Unlock()
 
 	h.progress[uploadID] = progress
-	if conns, exists := h.connections[uploadID]; exists {
+	h.log.Infof("更新进度: uploadID=%s, progress=%.2f, status=%s", uploadID, progress, status)
+
+	if conns, exists := h.connections[uploadID]; exists && len(conns) > 0 {
+		h.log.Infof("通知 %d 个客户端", len(conns))
+		activeConnections := 0
 		for _, conn := range conns {
-			sendProgressUpdate(conn, uploadID, progress, status)
+			if conn != nil {
+				err := sendProgressUpdate(conn, uploadID, progress, status)
+				if err == nil {
+					activeConnections++
+				} else {
+					h.log.Errorf("发送进度更新失败: uploadID=%s, error=%v", uploadID, err)
+				}
+			}
 		}
+		h.log.Infof("成功通知 %d/%d 个客户端", activeConnections, len(conns))
+	} else {
+		h.log.Warnf("没有找到uploadID=%s的连接，可能连接尚未建立或已断开", uploadID)
 	}
 }
 
 // 发送进度更新到客户端
-func sendProgressUpdate(conn *websocket.Conn, uploadID string, progress float64, status string) {
+func sendProgressUpdate(conn *websocket.Conn, uploadID string, progress float64, status string) error {
+	// 确保状态不为空
+	if status == "" {
+		status = "处理中"
+	}
+
 	message := map[string]interface{}{
 		"uploadID": uploadID,
-		"progress": progress,
+		"progress": int(progress), // 转换为整数
 		"status":   status,
 	}
 
-	conn.WriteJSON(message)
+	err := conn.WriteJSON(message)
+	if err != nil {
+		fmt.Printf("发送WebSocket消息失败: %v\n", err)
+		return err
+	} else {
+		fmt.Printf("发送WebSocket消息成功: uploadID=%s, progress=%.0f, status=%s\n", uploadID, progress, status)
+		return nil
+	}
+}
+
+// CleanupUpload 清理特定上传ID的连接
+func (h *ProgressHub) CleanupUpload(uploadID string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	if conns, exists := h.connections[uploadID]; exists {
+		h.log.Infof("清理uploadID=%s的连接，共%d个连接", uploadID, len(conns))
+
+		// 优雅关闭所有连接
+		for _, conn := range conns {
+			if conn != nil {
+				conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "上传完成"))
+				conn.Close()
+			}
+		}
+
+		// 清理数据
+		delete(h.connections, uploadID)
+		delete(h.progress, uploadID)
+		h.log.Infof("已清理uploadID=%s的所有数据", uploadID)
+	}
 }
 
 // 定期清理未使用的上传ID

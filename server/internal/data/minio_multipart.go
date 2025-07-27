@@ -148,6 +148,10 @@ func (p *progressReader) Read(b []byte) (int, error) {
 	n, err := p.r.Read(b)
 	p.read += int64(n)
 	if p.cb != nil {
+		// 添加调试日志，但限制频率
+		if p.read%1024*1024 == 0 || p.read == p.total { // 每1MB记录一次，或者完成时
+			fmt.Printf("进度更新: %d/%d (%.2f%%)\n", p.read, p.total, float64(p.read)/float64(p.total)*100)
+		}
 		p.cb(p.read, p.total)
 	}
 	return n, err

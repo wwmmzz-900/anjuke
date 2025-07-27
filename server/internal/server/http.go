@@ -1,18 +1,15 @@
 package server
 
 import (
-	v6 "anjuke/server/api/customer/v6"
 	v1 "anjuke/server/api/helloworld/v1"
-	v3 "anjuke/server/api/house/v3"
 	v5 "anjuke/server/api/points/v5"
-	v4 "anjuke/server/api/transaction/v4"
 	userv2 "anjuke/server/api/user/v2"
 	"anjuke/server/internal/conf"
+	"anjuke/server/internal/domain"
 	"anjuke/server/internal/service"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -20,14 +17,28 @@ import (
 
 	"anjuke/server/internal/data"
 
-	uploadv1 "anjuke/server/api/upload/v1"
-
-	"anjuke/server/internal/domain"
-
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 )
+
+// 等待WebSocket连接建立的函数
+func waitForWebSocketConnection(uploadID string, timeout time.Duration) {
+	if GlobalProgressHub == nil {
+		return
+	}
+
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		GlobalProgressHub.mu.Lock()
+		if conns, exists := GlobalProgressHub.connections[uploadID]; exists && len(conns) > 0 {
+			GlobalProgressHub.mu.Unlock()
+			return
+		}
+		GlobalProgressHub.mu.Unlock()
+		time.Sleep(100 * time.Millisecond)
+	}
+}
 
 // Server 是HTTP服务器的包装
 type Server struct {
@@ -45,8 +56,13 @@ func randString(n int) string {
 	return string(b)
 }
 
+// 生成唯一的上传ID
+func generateUploadID() string {
+	return time.Now().Format("20060102150405") + "_" + randString(8)
+}
+
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, minioClient *data.MinioClient, logger log.Logger) *kratoshttp.Server {
+func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, points *service.PointsService, minioClient *data.MinioClient, logger log.Logger) *kratoshttp.Server {
 	// 初始化随机数种子
 	rand.Seed(time.Now().UnixNano())
 
@@ -75,23 +91,24 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 	srv := kratoshttp.NewServer(opts...)
 	v1.RegisterGreeterHTTPServer(srv, greeter)
 	userv2.RegisterUserHTTPServer(srv, user)
-	v3.RegisterHouseHTTPServer(srv, house)
-	v4.RegisterTransactionHTTPServer(srv, transaction)
 	v5.RegisterPointsHTTPServer(srv, points)
-	v6.RegisterCustomerHTTPServer(srv, customer)
 
 	// 添加一个支持multipart/form-data的上传接口
 	// 添加WebSocket进度通知端点
 	srv.HandleFunc("/api/upload/progress", s.WebSocketHandler)
 
-	srv.HandleFunc("/api/upload/smart", func(w http.ResponseWriter, r *http.Request) {
+	// 统一文件上传接口
+	srv.HandleFunc("/api/upload", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 
-		// 生成唯一的上传ID，用于跟踪上传进度
-		uploadID := GenerateUploadID()
+		// 从请求中获取uploadID，如果没有提供则自动生成
+		uploadID := r.FormValue("uploadID")
+		if uploadID == "" {
+			uploadID = generateUploadID()
+		}
 
 		// 解析multipart表单
 		err := r.ParseMultipartForm(32 << 20) // 32MB限制
@@ -108,9 +125,13 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		}
 		defer file.Close()
 
+		// 等待WebSocket连接建立（最多等待3秒）
+		waitForWebSocketConnection(uploadID, 3*time.Second)
+
 		// 初始化进度为0
 		if GlobalProgressHub != nil {
 			GlobalProgressHub.UpdateProgress(uploadID, 0, "准备上传")
+			logger.Log(log.LevelInfo, "msg", fmt.Sprintf("初始化进度跟踪: uploadID=%s", uploadID))
 		}
 
 		// 获取文件名和content type
@@ -124,104 +145,58 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		logger.Log(log.LevelInfo, "msg", fmt.Sprintf("开始处理上传: 文件=%s, 大小=%d, 类型=%s",
 			filename, header.Size, contentType))
 
-		// 使用uploadService处理上传
-		uploadService := service.NewUploadService(data.NewMinioRepo(minioClient), logger)
-
-		// 大文件处理策略
-		if header.Size > 5*1024*1024 { // 5MB以上的文件
-			// 创建带有30分钟超时的上下文
-			uploadCtx, cancel := context.WithTimeout(r.Context(), 30*time.Minute)
-			defer cancel()
-
-			// 创建一个进度跟踪函数
-			progressTracker := func(uploaded, total int64) {
-				if GlobalProgressHub != nil {
-					// 计算上传百分比进度
-					progress := float64(uploaded) / float64(total) * 100
-					status := "上传中"
-
-					if uploaded >= total {
-						status = "处理中" // 文件已上传完，但服务器仍在处理
-					}
-
-					GlobalProgressHub.UpdateProgress(uploadID, progress, status)
-				}
-			}
-
-			// 直接将文件流传递给MinIO进行处理，避免将整个文件加载到内存
-			url, err := uploadService.MinioRepo().SmartUpload(
-				uploadCtx, filename, file, header.Size, contentType, progressTracker)
-
-			if err != nil {
-				logger.Log(log.LevelError, "msg", "大文件上传失败", "error", err)
-				// 更新进度状态为失败
-				if GlobalProgressHub != nil {
-					GlobalProgressHub.UpdateProgress(uploadID, 0, "上传失败")
-				}
-				http.Error(w, "上传失败: "+err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			// 更新进度为完成
-			if GlobalProgressHub != nil {
-				GlobalProgressHub.UpdateProgress(uploadID, 100, "上传完成")
-			}
-
-			// 返回成功响应
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"code": 0,
-				"msg":  "上传成功",
-				"data": map[string]interface{}{
-					"url":      url,
-					"uploadID": uploadID, // 返回上传ID，前端可用于跟踪进度
-				},
-			})
-			return
-		}
-
-		// 小文件处理 - 读取到内存中
-		if GlobalProgressHub != nil {
-			GlobalProgressHub.UpdateProgress(uploadID, 10, "读取文件")
-		}
-
-		fileData, err := io.ReadAll(file)
-		if err != nil {
-			if GlobalProgressHub != nil {
-				GlobalProgressHub.UpdateProgress(uploadID, 0, "上传失败")
-			}
-			http.Error(w, "读取文件失败: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if GlobalProgressHub != nil {
-			GlobalProgressHub.UpdateProgress(uploadID, 50, "处理中")
-		}
-
-		// 创建SimpleUploadRequest对象
-		req := &uploadv1.SimpleUploadRequest{
-			Filename:    filename,
-			ContentType: contentType,
-			FileData:    fileData,
-		}
-
-		// 创建带有10分钟超时的上下文
-		uploadCtx, cancel := context.WithTimeout(r.Context(), 10*time.Minute)
+		// 创建带有30分钟超时的上下文
+		uploadCtx, cancel := context.WithTimeout(r.Context(), 30*time.Minute)
 		defer cancel()
 
-		// 调用上传服务
-		resp, err := uploadService.SimpleUpload(uploadCtx, req)
-		if err != nil {
+		// 创建一个进度跟踪函数
+		progressTracker := func(uploaded, total int64) {
 			if GlobalProgressHub != nil {
-				GlobalProgressHub.UpdateProgress(uploadID, 0, "上传失败")
+				// 计算上传百分比进度
+				progress := float64(uploaded) / float64(total) * 100
+				status := "上传中"
+
+				if uploaded >= total {
+					status = "处理中" // 文件已上传完，但服务器仍在处理
+				}
+
+				GlobalProgressHub.UpdateProgress(uploadID, progress, status)
 			}
-			http.Error(w, "上传失败: "+err.Error(), http.StatusInternalServerError)
+		}
+
+		// 直接调用MinIO进行上传，统一处理所有文件大小
+		url, err := minioClient.SmartUpload(
+			uploadCtx, filename, file, header.Size, contentType, progressTracker)
+
+		if err != nil {
+			logger.Log(log.LevelError, "msg", "文件上传失败", "error", err, "filename", filename, "size", header.Size)
+			// 更新进度状态为失败
+			if GlobalProgressHub != nil {
+				GlobalProgressHub.UpdateProgress(uploadID, 0, "上传失败: "+err.Error())
+			}
+
+			// 返回JSON格式的错误响应
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"code": 500,
+				"msg":  "上传失败: " + err.Error(),
+				"data": nil,
+			})
 			return
 		}
 
 		// 更新进度为完成
 		if GlobalProgressHub != nil {
 			GlobalProgressHub.UpdateProgress(uploadID, 100, "上传完成")
+			// 延迟发送最终状态，确保前端能收到，然后关闭连接
+			go func() {
+				time.Sleep(2 * time.Second)
+				GlobalProgressHub.UpdateProgress(uploadID, 100, "处理完成")
+				// 再等待1秒后清理连接
+				time.Sleep(1 * time.Second)
+				GlobalProgressHub.CleanupUpload(uploadID)
+			}()
 		}
 
 		// 返回成功响应
@@ -230,7 +205,7 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 			"code": 0,
 			"msg":  "上传成功",
 			"data": map[string]interface{}{
-				"url":      resp.Url,
+				"url":      url,
 				"uploadID": uploadID, // 返回上传ID，前端可用于跟踪进度
 			},
 		})
@@ -272,35 +247,51 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		})
 	})
 
-	// 多文件上传接口
-	srv.HandleFunc("/user/uploadFiles", func(w http.ResponseWriter, r *http.Request) {
+	// 单文件上传接口
+	srv.HandleFunc("/api/user/uploadFile", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		err := r.ParseMultipartForm(32 << 20) // 32MB
 		if err != nil {
 			http.Error(w, "表单解析失败", http.StatusBadRequest)
 			return
 		}
-		files := r.MultipartForm.File["files"]
-		var results []map[string]interface{}
-		for _, header := range files {
-			file, err := header.Open()
-			if err != nil {
-				continue
-			}
-			defer file.Close()
-			contentType := header.Header.Get("Content-Type")
-			url, err := user.UploadToMinioWithProgress(r.Context(), header.Filename, file, header.Size, contentType, nil)
-			if err != nil {
-				continue
-			}
-			results = append(results, map[string]interface{}{
-				"url":          url,
-				"filename":     header.Filename,
-				"size":         header.Size,
-				"content_type": contentType,
-			})
+
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			http.Error(w, "无法获取上传文件", http.StatusBadRequest)
+			return
 		}
+		defer file.Close()
+
+		contentType := header.Header.Get("Content-Type")
+		if contentType == "" {
+			contentType = "application/octet-stream"
+		}
+
+		// 创建带超时的上下文，30分钟超时
+		ctx, cancel := context.WithTimeout(r.Context(), 30*time.Minute)
+		defer cancel()
+
+		// 直接调用MinIO进行上传
+		url, err := minioClient.SmartUpload(ctx, header.Filename, file, header.Size, contentType, nil)
+		if err != nil {
+			http.Error(w, "上传失败: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// 返回成功响应
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{"code": 0, "msg": "上传成功", "data": results})
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code": 0,
+			"msg":  "上传成功",
+			"data": map[string]interface{}{
+				"url": url,
+			},
+		})
 	})
 
 	srv.HandleFunc("/admin/cleanupIncompleteUploads", func(w http.ResponseWriter, r *http.Request) {
@@ -479,8 +470,7 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		json.NewEncoder(w).Encode(response)
 	})
 
-	uploadService := service.NewUploadService(data.NewMinioRepo(minioClient), logger)
-	uploadv1.RegisterUploadServiceHTTPServer(srv, uploadService)
+	// 移除Service相关代码，统一使用HTTP方式
 
 	return srv
 }

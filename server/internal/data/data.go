@@ -1,7 +1,6 @@
 package data
 
 import (
-	"anjuke/server/internal/biz"
 	"anjuke/server/internal/conf"
 	"anjuke/server/internal/domain"
 	"context"
@@ -35,14 +34,9 @@ var ProviderSet = wire.NewSet(
 	NewShumaiSmsSenderWithDeps,
 	NewUserRepo,
 	NewGreeterRepo,
-	NewHouseRepo,
-	NewTransactionRepo,
 	NewPointsRepo,
-	NewCustomerRepo,
 	NewSmsRepo,
 	wire.Bind(new(domain.MinioRepo), new(*MinioClient)),
-	wire.Bind(new(biz.HouseRepo), new(*HouseRepo)),
-	wire.Bind(new(biz.CustomerRepo), new(*CustomerRepo)),
 )
 
 // Data .

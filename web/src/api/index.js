@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 // 创建 axios 实例
 const api = axios.create({
   baseURL: '/api',
-  timeout: 30000 // 增加到30秒，上传接口会单独设置更长的超时
+  timeout: 300000 // 增加到5分钟，上传接口需要更长的超时时间
 })
 
 // 请求拦截器
@@ -24,16 +24,17 @@ api.interceptors.request.use(
 // 响应拦截器
 api.interceptors.response.use(
   response => {
-    // 文件上传等特殊接口可能直接返回数据
-    if (response?.config?.url && response.config.url.includes('upload')) {
-      return response.data || {}
-    }
+    console.log('API响应:', response.data)
     
     // 安全地处理响应数据
     if (response?.data && typeof response.data === 'object') {
       const { code, msg, data } = response.data
+      console.log('解析响应:', { code, msg, data })
+      
       if (code === 0 || code === undefined) {
-        return data !== undefined ? data : response.data
+        const result = data !== undefined ? data : response.data
+        console.log('返回结果:', result)
+        return result
       } else {
         ElMessage.error(msg || '请求失败')
         return Promise.reject(new Error(msg || '请求失败'))

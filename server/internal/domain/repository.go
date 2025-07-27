@@ -26,7 +26,7 @@ type UserBase struct {
 	Password   string         `gorm:"type:char(32);not null;comment:密码（加密存储）" json:"-"`
 	Avatar     string         `gorm:"type:text;comment:头像URL" json:"avatar,omitempty"`
 	RoleID     uint64         `gorm:"not null;comment:角色id" json:"role_id"`
-	Sex        Sex            `gorm:"type:enum('男','女');comment:用户性别" json:"sex,omitempty"`
+	Sex        Sex            `gorm:"type:enum('男','女');default:null;comment:用户性别" json:"sex,omitempty"`
 	RealStatus RealStatus     `gorm:"type:tinyint;comment:用户实名状态(1:已实名2:未实名)" json:"real_status,omitempty"`
 	Status     Status         `gorm:"type:tinyint;not null;default:1;comment:状态（0禁用1正常）" json:"status"`
 	CreatedAt  time.Time      `gorm:"column:created_at;autoCreateTime;comment:注册时间" json:"created_at"`
@@ -175,16 +175,6 @@ type UserRepo interface {
 	GetUserByPhone(ctx context.Context, phone string) (*UserBase, error)
 }
 
-// HouseRepo is a house repo.
-type HouseRepo interface {
-	// TODO: 添加房屋相关的仓储方法
-}
-
-// TransactionRepo is a transaction repo.
-type TransactionRepo interface {
-	// TODO: 添加交易相关的仓储方法
-}
-
 // PointsRepo 定义了积分模块的仓储接口
 type PointsRepo interface {
 	// 查询用户积分余额
@@ -252,9 +242,4 @@ type FileInfo struct {
 	ContentType  string    `json:"contentType"`
 	ETag         string    `json:"etag"`
 	URL          string    `json:"url"`
-}
-
-// CustomerRepo is a customer repo.
-type CustomerRepo interface {
-	// TODO: 添加客户相关的仓储方法
 }

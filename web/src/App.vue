@@ -9,13 +9,12 @@
           text-color="#fff"
           active-text-color="#ffd04b"
         >
-          <el-menu-item index="/upload">
-            <el-icon><Upload /></el-icon>
-            <span>文件管理</span>
+          <el-menu-item index="/home">
+            <el-icon><House /></el-icon>
+            <span>首页</span>
           </el-menu-item>
-
-          <el-menu-item index="/upload/test">
-            <el-icon><Setting /></el-icon>
+          <el-menu-item index="/upload-test">
+            <el-icon><Upload /></el-icon>
             <span>上传测试</span>
           </el-menu-item>
 
@@ -24,7 +23,7 @@
       <el-container>
         <el-header>
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>文件上传管理系统</h2>
+            <h2>安居客管理系统</h2>
           </div>
         </el-header>
         <el-main>
@@ -36,13 +35,13 @@
 </template>
 
 <script>
-import { Upload, Setting } from '@element-plus/icons-vue'
+import { House, Upload } from '@element-plus/icons-vue'
 
 export default {
   name: 'App',
   components: {
-    Upload,
-    Setting
+    House,
+    Upload
   }
 }
 </script>

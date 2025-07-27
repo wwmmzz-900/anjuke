@@ -63,39 +63,21 @@
         </el-col>
       </el-row>
 
-      <!-- 上传区域 -->
-      <el-row :gutter="20">
-        <el-col :span="12">
+      <!-- 智能上传区域 -->
+      <el-row>
+        <el-col :span="24">
           <el-card>
             <template #header>
-              <span>单文件上传</span>
+              <span>智能上传测试</span>
             </template>
             <FileUpload
-              v-model="singleFileList"
-              :multiple="false"
-              :drag="true"
-              :max-size="100"
-              accept="image/*,.pdf,.doc,.docx,.txt"
-              tip="支持图片、PDF、Word、文本文件，最大100MB"
-              @success="handleSingleUploadSuccess"
-              @error="handleUploadError"
-            />
-          </el-card>
-        </el-col>
-        <el-col :span="12">
-          <el-card>
-            <template #header>
-              <span>多文件上传</span>
-            </template>
-            <FileUpload
-              v-model="multipleFileList"
+              v-model="smartFileList"
               :multiple="true"
               :limit="10"
-              :max-size="50"
-              action="/api/user/uploadFiles"
+              :max-size="100"
               accept="*"
-              tip="最多上传10个文件，每个文件最大50MB"
-              @success="handleMultipleUploadSuccess"
+              tip="智能上传：小文件直接上传，大文件分片上传，最多10个文件，每个文件最大100MB"
+              @success="handleSmartUploadSuccess"
               @error="handleUploadError"
             />
           </el-card>
@@ -230,8 +212,7 @@ export default {
     FileUpload
   },
   setup() {
-    const singleFileList = ref([])
-    const multipleFileList = ref([])
+    const smartFileList = ref([])
     const fileList = ref([])
     const searchKeyword = ref('')
     const loading = ref(false)

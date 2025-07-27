@@ -511,7 +511,7 @@
   ```
 
 ### 1.2 多文件上传
-- **接口地址**：`POST /user/uploadFiles`
+
 - **请求类型**：`multipart/form-data`
 - **参数**：`files`（form-data 多文件字段）
 - **说明**：每个文件都走智能上传（SmartUploadWithProgress），支持大文件分片，返回每个文件的 url、文件名、大小、类型。
@@ -583,7 +583,7 @@ url, err := minioClient.ResumeMultipartUpload(ctx, info, fileReader)
 
 ## 4. 典型调用流程
 
-1. 前端调用 `/user/uploadFile` 或 `/user/uploadFiles`，上传文件。
+1. 前端调用 `/user/uploadFile`，上传文件。
 2. 后端 handler 调用 `user.UploadToMinioWithProgress`，底层统一用 `SmartUploadWithProgress`，自动适配分片上传。
 3. 进度回调参数当前为 `nil`，如需进度可扩展。
 

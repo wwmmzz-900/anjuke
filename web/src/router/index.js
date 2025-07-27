@@ -3,18 +3,17 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
-    redirect: '/upload'
-  },
-  // 文件上传
-  {
-    path: '/upload',
-    name: 'FileUpload',
-    component: () => import('../views/upload/FileUploadPage.vue')
+    redirect: '/home'
   },
   {
-    path: '/upload/test',
+    path: '/home',
+    name: 'Home',
+    component: () => import('../views/Home.vue')
+  },
+  {
+    path: '/upload-test',
     name: 'UploadTest',
-    component: () => import('../views/upload/UploadTest.vue')
+    component: () => import('../views/UploadTest.vue')
   }
 ]
 

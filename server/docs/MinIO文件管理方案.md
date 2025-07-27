@@ -18,7 +18,7 @@ MinIO 对象存储
 
 ### 1. 文件上传
 - `POST /user/uploadFile` - 单文件上传
-- `POST /user/uploadFiles` - 多文件上传
+
 
 ### 2. 文件管理
 - `GET /user/fileList` - 获取文件列表
