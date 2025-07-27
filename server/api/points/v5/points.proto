@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+package api.points.v5;
+import "google/api/annotations.proto";
+import "common/v1/common.proto";
+option go_package = "anjuke/server/api/points/v5;v5";
+option java_multiple_files = true;
+option java_package = "api.points.v5";
+option java_outer_classname = "PointsProtoV5";
+
+service Points {
+	// 查询用户积分余额
+	rpc GetUserPoints (GetUserPointsRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			get: "/points/balance/{user_id}"
+		};
+	}
+	
+	// 查询积分明细记录
+	rpc GetPointsHistory (GetPointsHistoryRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			get: "/points/history/{user_id}"
+		};
+	}
+	
+	// 签到获取积分
+	rpc CheckIn (CheckInRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			post: "/points/checkin"
+			body: "*"
+		};
+	}
+	
+	// 消费获取积分
+	rpc EarnPointsByConsume (EarnPointsByConsumeRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			post: "/points/earn/consume"
+			body: "*"
+		};
+	}
+	
+	// 使用积分抵扣
+	rpc UsePoints (UsePointsRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			post: "/points/use"
+			body: "*"
+		};
+	}
+}
+
+// 查询用户积分余额
+message GetUserPointsRequest {
+	uint64 user_id = 1;
+}
+
+// 用户积分余额响应数据
+message GetUserPointsData {
+	uint64 user_id = 1;
+	int64 total_points = 2;      // 总积分
+}
+
+// 查询积分明细记录
+message GetPointsHistoryRequest {
+	uint64 user_id = 1;
+	int32 page = 2;      // 页码，从1开始
+	int32 page_size = 3; // 每页数量，默认20
+	string type = 4;     // 类型筛选：earn(获取) 或 use(消费)，空表示全部
+}
+
+// 积分明细记录响应数据
+message GetPointsHistoryData {
+	repeated PointsRecord records = 1;
+	api.common.v1.PageInfo page_info = 2;
+}
+
+// 积分记录
+message PointsRecord {
+	uint64 id = 1;
+	uint64 user_id = 2;
+	string type = 3;           // 类型：checkin, consume, use
+	int64 points = 4;          // 积分变动数量（正数为获得，负数为消费）
+	string description = 5;    // 描述
+	string order_id = 6;       // 关联订单ID（消费获得积分时）
+	int64 amount = 7;          // 关联金额（分为单位）
+	string created_at = 8;     // 创建时间
+}
+
+// 签到获取积分
+message CheckInRequest {
+	uint64 user_id = 1;
+}
+
+// 签到响应数据
+message CheckInData {
+	int64 points_earned = 1;   // 获得的积分
+	int64 total_points = 2;    // 签到后总积分
+	int32 consecutive_days = 3; // 连续签到天数
+}
+
+// 消费获取积分
+message EarnPointsByConsumeRequest {
+	uint64 user_id = 1;
+	string order_id = 2;       // 订单ID
+	int64 amount = 3;          // 消费金额（分为单位）
+}
+
+// 消费获取积分响应数据
+message EarnPointsByConsumeData {
+	int64 points_earned = 1;   // 获得的积分
+	int64 total_points = 2;    // 获得积分后的总积分
+}
+
+// 使用积分抵扣
+message UsePointsRequest {
+	uint64 user_id = 1;
+	int64 points = 2;          // 要使用的积分数量
+	string order_id = 3;       // 关联订单ID
+	string description = 4;    // 使用描述
+}
+
+// 使用积分响应数据
+message UsePointsData {
+	int64 points_used = 1;     // 实际使用的积分
+	int64 amount_deducted = 2; // 抵扣的金额（分为单位）
+	int64 total_points = 3;    // 剩余总积分
+}

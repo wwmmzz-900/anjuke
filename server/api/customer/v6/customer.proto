@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package api.customer.v6;
+import "google/api/annotations.proto";
+import "common/v1/common.proto";
+option go_package = "anjuke/server/api/customer/v6;v6";
+option java_multiple_files = true;
+option java_package = "api.customer.v6";
+option java_outer_classname = "CustomerProtoV6";
+
+service Customer {
+	rpc CreateCustomer (CreateCustomerRequest) returns (api.common.v1.BaseResponse){
+		option (google.api.http) = {
+			post: "/customer/create"
+			body:"*"
+		};
+	};
+}
+
+message CreateCustomerRequest {
+	string name = 1;
+	string phone = 2;
+	string email = 3;
+	string address = 4;
+}
+
+// 创建客户响应数据
+message CreateCustomerData {
+	string customer_id = 1;
+	string name = 2;
+	string phone = 3;
+	string email = 4;
+	string address = 5;
+	string created_at = 6;
+}

@@ -1,0 +1,719 @@
+{
+  "info": {
+    "name": "安居客API - 三范式响应格式",
+    "description": "安居客系统API接口测试集合，采用统一的三范式响应格式 {code, msg, data}",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "123456",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "用户服务",
+      "item": [
+        {
+          "name": "创建用户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Mobile\": \"13800138000\",\n  \"NickName\": \"张三\",\n  \"Password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "create"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Mobile\": \"13800138000\",\n  \"NickName\": \"张三\",\n  \"Password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/user/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["user", "create"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"用户创建成功\",\n  \"data\": {\n    \"user_id\": \"user_123456\",\n    \"mobile\": \"13800138000\",\n    \"nick_name\": \"张三\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "实名认证",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"UserId\": {{userId}},\n  \"Name\": \"张三\",\n  \"IdCard\": \"110101199001011234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/realname",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "realname"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"UserId\": 123456,\n  \"Name\": \"张三\",\n  \"IdCard\": \"110101199001011234\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/user/realname",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["user", "realname"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"实名认证成功\",\n  \"data\": {\n    \"user_id\": 123456,\n    \"name\": \"张三\",\n    \"status\": \"verified\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "发送短信验证码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"13800138000\",\n  \"device_id\": \"device123\",\n  \"scene\": \"register\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/sendSms",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "sendSms"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"13800138000\",\n  \"device_id\": \"device123\",\n  \"scene\": \"register\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/user/sendSms",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["user", "sendSms"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"短信发送成功\",\n  \"data\": {\n    \"phone\": \"13800138000\",\n    \"scene\": \"register\",\n    \"expire_time\": 1704067200\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "验证短信验证码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"13800138000\",\n  \"code\": \"123456\",\n  \"scene\": \"register\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/verifySms",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "verifySms"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"13800138000\",\n  \"code\": \"123456\",\n  \"scene\": \"register\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/user/verifySms",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["user", "verifySms"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"验证成功\",\n  \"data\": {\n    \"phone\": \"13800138000\",\n    \"success\": true,\n    \"scene\": \"register\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "积分服务",
+      "item": [
+        {
+          "name": "查询用户积分余额",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/points/balance/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["points", "balance", "{{userId}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/points/balance/123456",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["points", "balance", "123456"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"查询成功\",\n  \"data\": {\n    \"user_id\": 123456,\n    \"total_points\": 1500\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "查询积分明细记录",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/points/history/{{userId}}?page=1&page_size=20&type=earn",
+              "host": ["{{baseUrl}}"],
+              "path": ["points", "history", "{{userId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                },
+                {
+                  "key": "type",
+                  "value": "earn"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/points/history/123456?page=1&page_size=20&type=earn",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["points", "history", "123456"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "page_size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "type",
+                      "value": "earn"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"查询成功\",\n  \"data\": {\n    \"records\": [\n      {\n        \"id\": 1,\n        \"user_id\": 123456,\n        \"type\": \"checkin\",\n        \"points\": 10,\n        \"description\": \"每日签到\",\n        \"order_id\": \"\",\n        \"amount\": 0,\n        \"created_at\": \"2024-01-01 12:00:00\"\n      }\n    ],\n    \"page_info\": {\n      \"page\": 1,\n      \"page_size\": 20,\n      \"total\": 50,\n      \"total_pages\": 3\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "签到获取积分",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/points/checkin",
+              "host": ["{{baseUrl}}"],
+              "path": ["points", "checkin"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": 123456\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/points/checkin",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["points", "checkin"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"签到成功\",\n  \"data\": {\n    \"points_earned\": 10,\n    \"total_points\": 1510,\n    \"consecutive_days\": 5\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "消费获取积分",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{userId}},\n  \"order_id\": \"order_789\",\n  \"amount\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/points/earn/consume",
+              "host": ["{{baseUrl}}"],
+              "path": ["points", "earn", "consume"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": 123456,\n  \"order_id\": \"order_789\",\n  \"amount\": 10000\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/points/earn/consume",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["points", "earn", "consume"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"消费获得积分成功，获得100积分\",\n  \"data\": {\n    \"points_earned\": 100,\n    \"total_points\": 1610\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "使用积分抵扣",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{userId}},\n  \"points\": 100,\n  \"order_id\": \"order_890\",\n  \"description\": \"商品抵扣\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/points/use",
+              "host": ["{{baseUrl}}"],
+              "path": ["points", "use"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": 123456,\n  \"points\": 100,\n  \"order_id\": \"order_890\",\n  \"description\": \"商品抵扣\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/points/use",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["points", "use"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"积分使用成功，抵扣1.00元\",\n  \"data\": {\n    \"points_used\": 100,\n    \"amount_deducted\": 100,\n    \"total_points\": 1510\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "其他服务",
+      "item": [
+        {
+          "name": "HelloWorld",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/helloworld/张三",
+              "host": ["{{baseUrl}}"],
+              "path": ["helloworld", "张三"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/helloworld/张三",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["helloworld", "张三"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"问候成功\",\n  \"data\": {\n    \"message\": \"Hello 张三\",\n    \"name\": \"张三\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "创建交易",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{userId}},\n  \"amount\": 10000,\n  \"type\": \"payment\",\n  \"description\": \"商品购买\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transaction/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["transaction", "create"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": 123456,\n  \"amount\": 10000,\n  \"type\": \"payment\",\n  \"description\": \"商品购买\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transaction/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transaction", "create"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"交易创建成功\",\n  \"data\": {\n    \"transaction_id\": \"txn_123456\",\n    \"user_id\": 123456,\n    \"amount\": 10000,\n    \"type\": \"payment\",\n    \"status\": \"created\",\n    \"created_at\": \"2024-01-01 12:00:00\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "创建房屋",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"精装三居室\",\n  \"address\": \"北京市朝阳区\",\n  \"price\": 5000000,\n  \"type\": \"apartment\",\n  \"area\": 120\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/house/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["house", "create"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"精装三居室\",\n  \"address\": \"北京市朝阳区\",\n  \"price\": 5000000,\n  \"type\": \"apartment\",\n  \"area\": 120\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/house/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["house", "create"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"房屋创建成功\",\n  \"data\": {\n    \"house_id\": \"house_123456\",\n    \"title\": \"精装三居室\",\n    \"address\": \"北京市朝阳区\",\n    \"price\": 5000000,\n    \"type\": \"apartment\",\n    \"area\": 120,\n    \"created_at\": \"2024-01-01 12:00:00\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "创建客户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"李四\",\n  \"phone\": \"13900139000\",\n  \"email\": \"lisi@example.com\",\n  \"address\": \"上海市浦东新区\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "create"]
+            }
+          },
+          "response": [
+            {
+              "name": "成功响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"李四\",\n  \"phone\": \"13900139000\",\n  \"email\": \"lisi@example.com\",\n  \"address\": \"上海市浦东新区\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "create"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 0,\n  \"msg\": \"客户创建成功\",\n  \"data\": {\n    \"customer_id\": \"cust_123456\",\n    \"name\": \"李四\",\n    \"phone\": \"13900139000\",\n    \"email\": \"lisi@example.com\",\n    \"address\": \"上海市浦东新区\",\n    \"created_at\": \"2024-01-01 12:00:00\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "错误场景测试",
+      "item": [
+        {
+          "name": "参数错误 - 缺少user_id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"points\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/points/checkin",
+              "host": ["{{baseUrl}}"],
+              "path": ["points", "checkin"]
+            }
+          },
+          "response": [
+            {
+              "name": "错误响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"points\": 100\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/points/checkin",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["points", "checkin"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 1,\n  \"msg\": \"缺少参数: user_id\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "业务错误 - 积分不足",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{userId}},\n  \"points\": 999999,\n  \"order_id\": \"order_890\",\n  \"description\": \"商品抵扣\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/points/use",
+              "host": ["{{baseUrl}}"],
+              "path": ["points", "use"]
+            }
+          },
+          "response": [
+            {
+              "name": "错误响应",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": 123456,\n  \"points\": 999999,\n  \"order_id\": \"order_890\",\n  \"description\": \"商品抵扣\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/points/use",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["points", "use"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"code\": 1002,\n  \"msg\": \"积分不足\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 可以在这里添加全局的预请求脚本",
+          "console.log('发送请求到:', pm.request.url);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 全局测试脚本 - 验证三范式响应格式",
+          "pm.test('响应状态码为200', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "pm.test('响应包含三范式格式', function () {",
+          "    const jsonData = pm.response.json();",
+          "    pm.expect(jsonData).to.have.property('code');",
+          "    pm.expect(jsonData).to.have.property('msg');",
+          "    pm.expect(jsonData).to.have.property('data');",
+          "});",
+          "",
+          "pm.test('成功响应的code为0', function () {",
+          "    const jsonData = pm.response.json();",
+          "    if (jsonData.code === 0) {",
+          "        pm.expect(jsonData.msg).to.be.a('string');",
+          "        // 成功时data可以为null或对象",
+          "    } else {",
+          "        // 失败时验证错误格式",
+          "        pm.expect(jsonData.code).to.not.equal(0);",
+          "        pm.expect(jsonData.msg).to.be.a('string');",
+          "        pm.expect(jsonData.data).to.be.null;",
+          "    }",
+          "});"
+        ]
+      }
+    }
+  ]
+}

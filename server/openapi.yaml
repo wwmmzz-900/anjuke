@@ -1,0 +1,546 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: ""
+    version: 0.0.1
+paths:
+    /api/upload/smart:
+        post:
+            tags:
+                - UploadService
+            description: 简单上传（小文件）
+            operationId: UploadService_SimpleUpload
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.upload.v1.SimpleUploadRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.upload.v1.SimpleUploadReply'
+    /customer/create:
+        post:
+            tags:
+                - Customer
+            operationId: Customer_CreateCustomer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.customer.v6.CreateCustomerRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /file/{objectName}:
+        delete:
+            tags:
+                - User
+            description: 删除文件
+            operationId: User_DeleteFile
+            parameters:
+                - name: objectName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /helloworld/{name}:
+        get:
+            tags:
+                - Greeter
+            description: Sends a greeting
+            operationId: Greeter_SayHello
+            parameters:
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /house/create:
+        post:
+            tags:
+                - House
+            operationId: House_CreateHouse
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.house.v3.CreateHouseRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /points/balance/{userId}:
+        get:
+            tags:
+                - Points
+            description: 查询用户积分余额
+            operationId: Points_GetUserPoints
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /points/checkin:
+        post:
+            tags:
+                - Points
+            description: 签到获取积分
+            operationId: Points_CheckIn
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.points.v5.CheckInRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /points/earn/consume:
+        post:
+            tags:
+                - Points
+            description: 消费获取积分
+            operationId: Points_EarnPointsByConsume
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.points.v5.EarnPointsByConsumeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /points/history/{userId}:
+        get:
+            tags:
+                - Points
+            description: 查询积分明细记录
+            operationId: Points_GetPointsHistory
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: type
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /points/use:
+        post:
+            tags:
+                - Points
+            description: 使用积分抵扣
+            operationId: Points_UsePoints
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.points.v5.UsePointsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /transaction/create:
+        post:
+            tags:
+                - Transaction
+            operationId: Transaction_CreateTransaction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.transaction.v4.CreateTransactionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /user/create:
+        post:
+            tags:
+                - User
+            operationId: User_CreateUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.user.v2.CreateUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /user/fileList:
+        get:
+            tags:
+                - User
+            description: 获取文件列表
+            operationId: User_GetFileList
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /user/login:
+        post:
+            tags:
+                - User
+            operationId: User_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.user.v2.LoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /user/realname:
+        post:
+            tags:
+                - User
+            operationId: User_RealName
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.user.v2.RealNameRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /user/sendSms:
+        post:
+            tags:
+                - User
+            operationId: User_SendSms
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.user.v2.SendSmsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /user/updateUserStatus:
+        post:
+            tags:
+                - User
+            operationId: User_UpdateUserStatus
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.user.v2.UpdateUserStatusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /user/uploadStats:
+        get:
+            tags:
+                - User
+            description: 获取上传统计
+            operationId: User_GetUploadStats
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /user/verifySms:
+        post:
+            tags:
+                - User
+            operationId: User_VerifySms
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.user.v2.VerifySmsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+components:
+    schemas:
+        api.common.v1.BaseResponse:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                msg:
+                    type: string
+                data:
+                    $ref: '#/components/schemas/google.protobuf.Any'
+            description: 统一响应格式
+        api.customer.v6.CreateCustomerRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                phone:
+                    type: string
+                email:
+                    type: string
+                address:
+                    type: string
+        api.house.v3.CreateHouseRequest:
+            type: object
+            properties:
+                title:
+                    type: string
+                address:
+                    type: string
+                price:
+                    type: string
+                type:
+                    type: string
+                area:
+                    type: integer
+                    format: int32
+        api.points.v5.CheckInRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+            description: 签到获取积分
+        api.points.v5.EarnPointsByConsumeRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+                orderId:
+                    type: string
+                amount:
+                    type: string
+            description: 消费获取积分
+        api.points.v5.UsePointsRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+                points:
+                    type: string
+                orderId:
+                    type: string
+                description:
+                    type: string
+            description: 使用积分抵扣
+        api.transaction.v4.CreateTransactionRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+                amount:
+                    type: string
+                type:
+                    type: string
+                description:
+                    type: string
+        api.upload.v1.SimpleUploadReply:
+            type: object
+            properties:
+                url:
+                    type: string
+            description: 简单上传响应
+        api.upload.v1.SimpleUploadRequest:
+            type: object
+            properties:
+                filename:
+                    type: string
+                contentType:
+                    type: string
+                fileData:
+                    type: string
+                    format: bytes
+            description: 简单上传请求
+        api.user.v2.CreateUserRequest:
+            type: object
+            properties:
+                Mobile:
+                    type: string
+                NickName:
+                    type: string
+                Password:
+                    type: string
+                Code:
+                    type: string
+            description: 创建用户
+        api.user.v2.LoginRequest:
+            type: object
+            properties:
+                loginType:
+                    type: string
+                mobile:
+                    type: string
+                password:
+                    type: string
+                code:
+                    type: string
+            description: 用户登录请求
+        api.user.v2.RealNameRequest:
+            type: object
+            properties:
+                UserId:
+                    type: string
+                Name:
+                    type: string
+                IdCard:
+                    type: string
+        api.user.v2.SendSmsRequest:
+            type: object
+            properties:
+                phone:
+                    type: string
+                deviceId:
+                    type: string
+                scene:
+                    type: string
+        api.user.v2.UpdateUserStatusRequest:
+            type: object
+            properties:
+                UserId:
+                    type: string
+            description: todo:修改实名
+        api.user.v2.VerifySmsRequest:
+            type: object
+            properties:
+                phone:
+                    type: string
+                code:
+                    type: string
+                scene:
+                    type: string
+        google.protobuf.Any:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+tags:
+    - name: Customer
+    - name: Greeter
+      description: The greeting service definition.
+    - name: House
+    - name: Points
+    - name: Transaction
+    - name: UploadService
+      description: 上传服务
+    - name: User

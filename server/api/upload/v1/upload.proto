@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package api.upload.v1;
+
+option go_package = "anjuke/server/api/upload/v1;uploadv1";
+
+import "google/api/annotations.proto";
+
+// 上传服务
+service UploadService {
+  // 初始化分片上传
+  rpc InitUpload(InitUploadRequest) returns (InitUploadReply);
+  // 上传分片
+  rpc UploadPart(UploadPartRequest) returns (UploadPartReply);
+  // 完成上传
+  rpc CompleteUpload(CompleteUploadRequest) returns (CompleteUploadReply);
+  // 查询已上传分片
+  rpc ListParts(ListPartsRequest) returns (ListPartsReply);
+  // 中止上传
+  rpc AbortUpload(AbortUploadRequest) returns (AbortUploadReply);
+  // 简单上传（小文件）
+  rpc SimpleUpload(SimpleUploadRequest) returns (SimpleUploadReply) {
+    option (google.api.http) = {
+      post: "/api/upload/smart"
+      body: "*"
+    };
+  }
+}
+
+// 初始化上传请求
+message InitUploadRequest {
+  string filename = 1;    // 文件名
+  string content_type = 2; // 内容类型
+  int64 total_size = 3;   // 总大小
+}
+
+// 初始化上传响应
+message InitUploadReply {
+  string upload_id = 1;   // 上传ID
+  string object_name = 2; // 对象名称
+  int64 chunk_size = 3;   // 分片大小
+}
+
+// 上传分片请求
+message UploadPartRequest {
+  string upload_id = 1;   // 上传ID
+  string object_name = 2; // 对象名称
+  int32 part_number = 3;  // 分片序号
+  bytes file_data = 4;    // 文件内容
+}
+
+// 上传分片响应
+message UploadPartReply {
+  int32 part_number = 1; // 分片序号
+  string etag = 2;       // ETag
+  int64 size = 3;        // 分片大小
+}
+
+// 分片信息
+message PartInfo {
+  int32 part_number = 1; // 分片序号
+  string etag = 2;       // ETag
+  int64 size = 3;        // 分片大小
+}
+
+// 完成上传请求
+message CompleteUploadRequest {
+  string upload_id = 1;   // 上传ID
+  string object_name = 2; // 对象名称
+  repeated PartInfo parts = 3; // 分片信息
+}
+
+// 完成上传响应
+message CompleteUploadReply {
+  string url = 1; // 文件URL
+}
+
+// 查询分片请求
+message ListPartsRequest {
+  string upload_id = 1;   // 上传ID
+  string object_name = 2; // 对象名称
+}
+
+// 查询分片响应
+message ListPartsReply {
+  repeated PartInfo parts = 1; // 分片信息
+}
+
+// 中止上传请求
+message AbortUploadRequest {
+  string upload_id = 1;   // 上传ID
+  string object_name = 2; // 对象名称
+}
+
+// 中止上传响应
+message AbortUploadReply {
+  bool success = 1; // 是否成功
+}
+
+// 简单上传请求
+message SimpleUploadRequest {
+  string filename = 1;     // 文件名
+  string content_type = 2; // 内容类型
+  bytes file_data = 3;     // 文件内容
+}
+
+// 简单上传响应
+message SimpleUploadReply {
+  string url = 1; // 文件URL
+} 

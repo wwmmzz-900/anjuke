@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package api.house.v3;
+import "google/api/annotations.proto";
+import "common/v1/common.proto";
+option go_package = "anjuke/server/api/house/v3;v3";
+option java_multiple_files = true;
+option java_package = "api.house.v3";
+option java_outer_classname = "HouseProtoV3";
+
+service House {
+	rpc CreateHouse (CreateHouseRequest) returns (api.common.v1.BaseResponse){
+		option (google.api.http) = {
+			post: "/house/create"
+			body:"*"
+		};
+	};
+}
+
+message CreateHouseRequest {
+	string title = 1;
+	string address = 2;
+	int64 price = 3;
+	string type = 4;
+	int32 area = 5;
+}
+
+// 创建房屋响应数据
+message CreateHouseData {
+	string house_id = 1;
+	string title = 2;
+	string address = 3;
+	int64 price = 4;
+	string type = 5;
+	int32 area = 6;
+	string created_at = 7;
+}

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package api.common.v1;
+
+import "google/protobuf/any.proto";
+
+option go_package = "anjuke/server/api/common/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.common.v1";
+option java_outer_classname = "CommonProtoV1";
+
+// 统一响应格式
+message BaseResponse {
+    int32 code = 1;    // 响应码：0表示成功，非0表示失败
+    string msg = 2;    // 响应消息
+    google.protobuf.Any data = 3;  // 响应数据
+}
+
+// 分页信息
+message PageInfo {
+    int32 page = 1;        // 当前页码
+    int32 page_size = 2;   // 每页数量
+    int32 total = 3;       // 总记录数
+    int32 total_pages = 4; // 总页数
+}

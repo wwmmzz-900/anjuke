@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package api.transaction.v4;
+import "google/api/annotations.proto";
+import "common/v1/common.proto";
+option go_package = "anjuke/server/api/transaction/v4;v4";
+option java_multiple_files = true;
+option java_package = "api.transaction.v4";
+option java_outer_classname = "TransactionProtoV4";
+
+service Transaction {
+	rpc CreateTransaction (CreateTransactionRequest) returns (api.common.v1.BaseResponse){
+		option (google.api.http) = {
+			post: "/transaction/create"
+			body:"*"
+		};
+	};
+}
+
+message CreateTransactionRequest {
+	uint64 user_id = 1;
+	int64 amount = 2;
+	string type = 3;
+	string description = 4;
+}
+
+// 创建交易响应数据
+message CreateTransactionData {
+	string transaction_id = 1;
+	uint64 user_id = 2;
+	int64 amount = 3;
+	string type = 4;
+	string status = 5;
+	string created_at = 6;
+}

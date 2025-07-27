@@ -1,0 +1,38 @@
+# 短信模板配置
+sms_templates:
+  register:
+    template_id: "eca797c0c9ac334318e8d3900ef73ac5"
+    content: "注册验证码"
+    description: "用户注册时发送的验证码"
+  
+  login:
+    template_id: "eca797c0c9ac334318e8d3900ef73ac6" 
+    content: "登录验证码"
+    description: "用户登录时发送的验证码"
+  
+  reset_password:
+    template_id: "eca797c0c9ac334318e8d3900ef73ac7"
+    content: "重置密码验证码"
+    description: "用户重置密码时发送的验证码"
+  
+  bind_phone:
+    template_id: "eca797c0c9ac334318e8d3900ef73ac8"
+    content: "绑定手机验证码"
+    description: "用户绑定手机号时发送的验证码"
+  
+  change_phone:
+    template_id: "eca797c0c9ac334318e8d3900ef73ac9"
+    content: "更换手机验证码"
+    description: "用户更换手机号时发送的验证码"
+  
+  real_name:
+    template_id: "eca797c0c9ac334318e8d3900ef73aca"
+    content: "实名认证验证码"
+    description: "用户实名认证时发送的验证码"
+
+# 验证码配置
+sms_config:
+  code_length: 6              # 验证码长度
+  expire_minutes: 5           # 验证码过期时间（分钟）
+  max_retry_times: 3          # 最大重试次数
+  resend_interval_seconds: 60 # 重发间隔（秒）

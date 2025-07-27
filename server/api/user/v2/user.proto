@@ -1,0 +1,206 @@
+syntax = "proto3";
+
+package api.user.v2;
+import "google/api/annotations.proto";
+import "google/api/httpbody.proto";
+import "common/v1/common.proto";
+option go_package = "anjuke/server/api/user/v2;v2";
+option java_multiple_files = true;
+option java_package = "api.user.v2";
+option java_outer_classname = "UserProtoV2";
+
+
+service User {
+	rpc CreateUser (CreateUserRequest) returns (api.common.v1.BaseResponse){
+	option (google.api.http) = {
+			post: "/user/create"
+			body:"*"
+				};
+	};
+	rpc RealName (RealNameRequest) returns (api.common.v1.BaseResponse){
+	option (google.api.http) = {
+			post: "/user/realname"
+			body:"*"
+				};
+	};
+	rpc UpdateUserStatus (UpdateUserStatusRequest) returns (api.common.v1.BaseResponse){
+	option (google.api.http) = {
+			post: "/user/updateUserStatus"
+			body:"*"
+				};
+	};
+	rpc SendSms (SendSmsRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			post: "/user/sendSms"
+			body: "*"
+		};
+	}
+	rpc VerifySms (VerifySmsRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			post: "/user/verifySms"
+			body: "*"
+		};
+	}
+	rpc Login (LoginRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			post: "/user/login"
+			body: "*"
+		};
+	}
+
+	// 上传文件
+	rpc UploadFile (google.api.HttpBody) returns (google.api.HttpBody) {
+	}
+
+	// 获取文件列表
+	rpc GetFileList (GetFileListRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			get: "/user/fileList"
+		};
+	}
+
+	// 获取上传统计
+	rpc GetUploadStats (GetUploadStatsRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			get: "/user/uploadStats"
+		};
+	}
+
+	// 删除文件
+	rpc DeleteFile (DeleteFileRequest) returns (api.common.v1.BaseResponse) {
+		option (google.api.http) = {
+			delete: "/file/{object_name}"
+		};
+	}
+
+}
+
+// 创建用户
+message CreateUserRequest {
+	string 	Mobile=1;
+	string  NickName=2;
+	string Password=3;
+	string Code=4;     // 短信验证码
+}
+
+// 创建用户响应数据
+message CreateUserData {
+	string user_id = 1;
+	string mobile = 2;
+	string nick_name = 3;
+}
+
+message RealNameRequest {
+	uint64 	UserId=1;
+	string  Name=2;
+	string  IdCard=3;
+}
+
+// 实名认证响应数据
+message RealNameData {
+	uint64 user_id = 1;
+	string name = 2;
+	string status = 3; // 认证状态
+}
+
+//todo:修改实名
+message UpdateUserStatusRequest {
+	uint64 	UserId=1;
+}
+
+// 更新用户状态响应数据
+message UpdateUserStatusData {
+	uint64 user_id = 1;
+	string status = 2;
+}
+
+message SendSmsRequest {
+	string phone = 1;
+	string device_id = 2;
+	string scene = 3; // 场景：register, login, reset_password, bind_phone 等
+}
+
+// 发送短信响应数据
+message SendSmsData {
+	string phone = 1;
+	string scene = 2;
+	int64 expire_time = 3; // 验证码过期时间戳
+}
+
+message VerifySmsRequest {
+	string phone = 1;
+	string code = 2; // 用户输入的验证码
+	string scene = 3; // 验证场景，需与发送时一致
+}
+
+// 验证短信响应数据
+message VerifySmsData {
+	string phone = 1;
+	bool success = 2; // 验证是否成功
+	string scene = 3;
+}
+
+// 用户登录请求
+message LoginRequest {
+	string login_type = 1; // 登录类型：password, sms
+	string mobile = 2;     // 手机号
+	string password = 3;   // 密码（密码登录时使用）
+	string code = 4;       // 验证码（短信登录时使用）
+}
+
+// 用户登录响应数据
+message LoginData {
+	string user_id = 1;
+	string mobile = 2;
+	string nick_name = 3;
+	string token = 4;      // JWT token
+	int64 expire_time = 5; // token过期时间戳
+}
+
+// 获取文件列表请求
+message GetFileListRequest {
+	int32 page = 1;        // 页码
+	int32 page_size = 2;   // 每页大小
+	string keyword = 3;    // 搜索关键词
+}
+
+// 文件信息
+message FileInfo {
+	string id = 1;
+	string name = 2;
+	int64 size = 3;
+	string type = 4;
+	string url = 5;
+	string upload_time = 6;
+	string status = 7;
+	string object_name = 8;
+}
+
+// 获取文件列表响应数据
+message GetFileListData {
+	repeated FileInfo list = 1;
+	int32 total = 2;
+}
+
+// 获取上传统计请求
+message GetUploadStatsRequest {
+}
+
+// 获取上传统计响应数据
+message GetUploadStatsData {
+	int32 total_uploads = 1;
+	int32 success_uploads = 2;
+	int64 total_size = 3;
+	int32 today_uploads = 4;
+}
+
+// 删除文件请求
+message DeleteFileRequest {
+	string object_name = 1; // 文件对象名称
+}
+
+// 删除文件响应数据
+message DeleteFileData {
+	string object_name = 1;
+	bool success = 2;
+}
