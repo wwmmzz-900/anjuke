@@ -19,7 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	House_CreateHouse_FullMethodName = "/api.house.v3.House/CreateHouse"
+	House_CreateHouse_FullMethodName          = "/api.house.v3.House/CreateHouse"
+	House_LikeProperty_FullMethodName         = "/api.house.v3.House/LikeProperty"
+	House_UnlikeProperty_FullMethodName       = "/api.house.v3.House/UnlikeProperty"
+	House_IsPropertyLiked_FullMethodName      = "/api.house.v3.House/IsPropertyLiked"
+	House_GetPropertyLikeCount_FullMethodName = "/api.house.v3.House/GetPropertyLikeCount"
+	House_GetUserLikeList_FullMethodName      = "/api.house.v3.House/GetUserLikeList"
 )
 
 // HouseClient is the client API for House service.
@@ -27,6 +32,16 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HouseClient interface {
 	CreateHouse(ctx context.Context, in *CreateHouseRequest, opts ...grpc.CallOption) (*CreateHouseReply, error)
+	// 点赞房源
+	LikeProperty(ctx context.Context, in *LikePropertyRequest, opts ...grpc.CallOption) (*LikePropertyReply, error)
+	// 取消点赞房源
+	UnlikeProperty(ctx context.Context, in *UnlikePropertyRequest, opts ...grpc.CallOption) (*UnlikePropertyReply, error)
+	// 检查用户是否已点赞
+	IsPropertyLiked(ctx context.Context, in *IsPropertyLikedRequest, opts ...grpc.CallOption) (*IsPropertyLikedReply, error)
+	// 获取房源点赞数
+	GetPropertyLikeCount(ctx context.Context, in *GetPropertyLikeCountRequest, opts ...grpc.CallOption) (*GetPropertyLikeCountReply, error)
+	// 获取用户点赞列表
+	GetUserLikeList(ctx context.Context, in *GetUserLikeListRequest, opts ...grpc.CallOption) (*GetUserLikeListReply, error)
 }
 
 type houseClient struct {
@@ -47,11 +62,71 @@ func (c *houseClient) CreateHouse(ctx context.Context, in *CreateHouseRequest, o
 	return out, nil
 }
 
+func (c *houseClient) LikeProperty(ctx context.Context, in *LikePropertyRequest, opts ...grpc.CallOption) (*LikePropertyReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LikePropertyReply)
+	err := c.cc.Invoke(ctx, House_LikeProperty_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *houseClient) UnlikeProperty(ctx context.Context, in *UnlikePropertyRequest, opts ...grpc.CallOption) (*UnlikePropertyReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UnlikePropertyReply)
+	err := c.cc.Invoke(ctx, House_UnlikeProperty_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *houseClient) IsPropertyLiked(ctx context.Context, in *IsPropertyLikedRequest, opts ...grpc.CallOption) (*IsPropertyLikedReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(IsPropertyLikedReply)
+	err := c.cc.Invoke(ctx, House_IsPropertyLiked_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *houseClient) GetPropertyLikeCount(ctx context.Context, in *GetPropertyLikeCountRequest, opts ...grpc.CallOption) (*GetPropertyLikeCountReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPropertyLikeCountReply)
+	err := c.cc.Invoke(ctx, House_GetPropertyLikeCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *houseClient) GetUserLikeList(ctx context.Context, in *GetUserLikeListRequest, opts ...grpc.CallOption) (*GetUserLikeListReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserLikeListReply)
+	err := c.cc.Invoke(ctx, House_GetUserLikeList_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HouseServer is the server API for House service.
 // All implementations must embed UnimplementedHouseServer
 // for forward compatibility
 type HouseServer interface {
 	CreateHouse(context.Context, *CreateHouseRequest) (*CreateHouseReply, error)
+	// 点赞房源
+	LikeProperty(context.Context, *LikePropertyRequest) (*LikePropertyReply, error)
+	// 取消点赞房源
+	UnlikeProperty(context.Context, *UnlikePropertyRequest) (*UnlikePropertyReply, error)
+	// 检查用户是否已点赞
+	IsPropertyLiked(context.Context, *IsPropertyLikedRequest) (*IsPropertyLikedReply, error)
+	// 获取房源点赞数
+	GetPropertyLikeCount(context.Context, *GetPropertyLikeCountRequest) (*GetPropertyLikeCountReply, error)
+	// 获取用户点赞列表
+	GetUserLikeList(context.Context, *GetUserLikeListRequest) (*GetUserLikeListReply, error)
 	mustEmbedUnimplementedHouseServer()
 }
 
@@ -61,6 +136,21 @@ type UnimplementedHouseServer struct {
 
 func (UnimplementedHouseServer) CreateHouse(context.Context, *CreateHouseRequest) (*CreateHouseReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateHouse not implemented")
+}
+func (UnimplementedHouseServer) LikeProperty(context.Context, *LikePropertyRequest) (*LikePropertyReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LikeProperty not implemented")
+}
+func (UnimplementedHouseServer) UnlikeProperty(context.Context, *UnlikePropertyRequest) (*UnlikePropertyReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnlikeProperty not implemented")
+}
+func (UnimplementedHouseServer) IsPropertyLiked(context.Context, *IsPropertyLikedRequest) (*IsPropertyLikedReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsPropertyLiked not implemented")
+}
+func (UnimplementedHouseServer) GetPropertyLikeCount(context.Context, *GetPropertyLikeCountRequest) (*GetPropertyLikeCountReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPropertyLikeCount not implemented")
+}
+func (UnimplementedHouseServer) GetUserLikeList(context.Context, *GetUserLikeListRequest) (*GetUserLikeListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserLikeList not implemented")
 }
 func (UnimplementedHouseServer) mustEmbedUnimplementedHouseServer() {}
 
@@ -93,6 +183,96 @@ func _House_CreateHouse_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _House_LikeProperty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LikePropertyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).LikeProperty(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_LikeProperty_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).LikeProperty(ctx, req.(*LikePropertyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _House_UnlikeProperty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnlikePropertyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).UnlikeProperty(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_UnlikeProperty_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).UnlikeProperty(ctx, req.(*UnlikePropertyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _House_IsPropertyLiked_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsPropertyLikedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).IsPropertyLiked(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_IsPropertyLiked_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).IsPropertyLiked(ctx, req.(*IsPropertyLikedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _House_GetPropertyLikeCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPropertyLikeCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).GetPropertyLikeCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_GetPropertyLikeCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).GetPropertyLikeCount(ctx, req.(*GetPropertyLikeCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _House_GetUserLikeList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserLikeListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).GetUserLikeList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_GetUserLikeList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).GetUserLikeList(ctx, req.(*GetUserLikeListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // House_ServiceDesc is the grpc.ServiceDesc for House service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -103,6 +283,26 @@ var House_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateHouse",
 			Handler:    _House_CreateHouse_Handler,
+		},
+		{
+			MethodName: "LikeProperty",
+			Handler:    _House_LikeProperty_Handler,
+		},
+		{
+			MethodName: "UnlikeProperty",
+			Handler:    _House_UnlikeProperty_Handler,
+		},
+		{
+			MethodName: "IsPropertyLiked",
+			Handler:    _House_IsPropertyLiked_Handler,
+		},
+		{
+			MethodName: "GetPropertyLikeCount",
+			Handler:    _House_GetPropertyLikeCount_Handler,
+		},
+		{
+			MethodName: "GetUserLikeList",
+			Handler:    _House_GetUserLikeList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

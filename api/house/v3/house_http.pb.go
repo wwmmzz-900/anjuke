@@ -20,14 +20,35 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationHouseCreateHouse = "/api.house.v3.House/CreateHouse"
+const OperationHouseGetPropertyLikeCount = "/api.house.v3.House/GetPropertyLikeCount"
+const OperationHouseGetUserLikeList = "/api.house.v3.House/GetUserLikeList"
+const OperationHouseIsPropertyLiked = "/api.house.v3.House/IsPropertyLiked"
+const OperationHouseLikeProperty = "/api.house.v3.House/LikeProperty"
+const OperationHouseUnlikeProperty = "/api.house.v3.House/UnlikeProperty"
 
 type HouseHTTPServer interface {
 	CreateHouse(context.Context, *CreateHouseRequest) (*CreateHouseReply, error)
+	// GetPropertyLikeCount 获取房源点赞数
+	GetPropertyLikeCount(context.Context, *GetPropertyLikeCountRequest) (*GetPropertyLikeCountReply, error)
+	// GetUserLikeList 获取用户点赞列表
+	GetUserLikeList(context.Context, *GetUserLikeListRequest) (*GetUserLikeListReply, error)
+	// IsPropertyLiked 检查用户是否已点赞
+	IsPropertyLiked(context.Context, *IsPropertyLikedRequest) (*IsPropertyLikedReply, error)
+	// LikeProperty 点赞房源
+	LikeProperty(context.Context, *LikePropertyRequest) (*LikePropertyReply, error)
+	// UnlikeProperty 取消点赞房源
+	UnlikeProperty(context.Context, *UnlikePropertyRequest) (*UnlikePropertyReply, error)
 }
 
 func RegisterHouseHTTPServer(s *http.Server, srv HouseHTTPServer) {
 	r := s.Route("/")
 	r.POST("/house/create", _House_CreateHouse0_HTTP_Handler(srv))
+	r.POST("/house/{property_id}/like", _House_LikeProperty0_HTTP_Handler(srv))
+	r.POST("/house/{property_id}/unlike", _House_UnlikeProperty0_HTTP_Handler(srv))
+	r.GET("/house/{property_id}/like/status/{user_id}", _House_IsPropertyLiked0_HTTP_Handler(srv))
+	r.GET("/house/{property_id}/like/status", _House_IsPropertyLiked1_HTTP_Handler(srv))
+	r.GET("/house/{property_id}/like/count", _House_GetPropertyLikeCount0_HTTP_Handler(srv))
+	r.GET("/house/user/{user_id}/like/list", _House_GetUserLikeList0_HTTP_Handler(srv))
 }
 
 func _House_CreateHouse0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
@@ -52,8 +73,151 @@ func _House_CreateHouse0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context
 	}
 }
 
+func _House_LikeProperty0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in LikePropertyRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseLikeProperty)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.LikeProperty(ctx, req.(*LikePropertyRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*LikePropertyReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _House_UnlikeProperty0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UnlikePropertyRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseUnlikeProperty)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UnlikeProperty(ctx, req.(*UnlikePropertyRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UnlikePropertyReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _House_IsPropertyLiked0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in IsPropertyLikedRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseIsPropertyLiked)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.IsPropertyLiked(ctx, req.(*IsPropertyLikedRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*IsPropertyLikedReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _House_IsPropertyLiked1_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in IsPropertyLikedRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseIsPropertyLiked)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.IsPropertyLiked(ctx, req.(*IsPropertyLikedRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*IsPropertyLikedReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _House_GetPropertyLikeCount0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetPropertyLikeCountRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseGetPropertyLikeCount)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetPropertyLikeCount(ctx, req.(*GetPropertyLikeCountRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetPropertyLikeCountReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _House_GetUserLikeList0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetUserLikeListRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseGetUserLikeList)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetUserLikeList(ctx, req.(*GetUserLikeListRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetUserLikeListReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type HouseHTTPClient interface {
 	CreateHouse(ctx context.Context, req *CreateHouseRequest, opts ...http.CallOption) (rsp *CreateHouseReply, err error)
+	GetPropertyLikeCount(ctx context.Context, req *GetPropertyLikeCountRequest, opts ...http.CallOption) (rsp *GetPropertyLikeCountReply, err error)
+	GetUserLikeList(ctx context.Context, req *GetUserLikeListRequest, opts ...http.CallOption) (rsp *GetUserLikeListReply, err error)
+	IsPropertyLiked(ctx context.Context, req *IsPropertyLikedRequest, opts ...http.CallOption) (rsp *IsPropertyLikedReply, err error)
+	LikeProperty(ctx context.Context, req *LikePropertyRequest, opts ...http.CallOption) (rsp *LikePropertyReply, err error)
+	UnlikeProperty(ctx context.Context, req *UnlikePropertyRequest, opts ...http.CallOption) (rsp *UnlikePropertyReply, err error)
 }
 
 type HouseHTTPClientImpl struct {
@@ -69,6 +233,71 @@ func (c *HouseHTTPClientImpl) CreateHouse(ctx context.Context, in *CreateHouseRe
 	pattern := "/house/create"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationHouseCreateHouse))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *HouseHTTPClientImpl) GetPropertyLikeCount(ctx context.Context, in *GetPropertyLikeCountRequest, opts ...http.CallOption) (*GetPropertyLikeCountReply, error) {
+	var out GetPropertyLikeCountReply
+	pattern := "/house/{property_id}/like/count"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationHouseGetPropertyLikeCount))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *HouseHTTPClientImpl) GetUserLikeList(ctx context.Context, in *GetUserLikeListRequest, opts ...http.CallOption) (*GetUserLikeListReply, error) {
+	var out GetUserLikeListReply
+	pattern := "/house/user/{user_id}/like/list"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationHouseGetUserLikeList))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *HouseHTTPClientImpl) IsPropertyLiked(ctx context.Context, in *IsPropertyLikedRequest, opts ...http.CallOption) (*IsPropertyLikedReply, error) {
+	var out IsPropertyLikedReply
+	pattern := "/house/{property_id}/like/status"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationHouseIsPropertyLiked))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *HouseHTTPClientImpl) LikeProperty(ctx context.Context, in *LikePropertyRequest, opts ...http.CallOption) (*LikePropertyReply, error) {
+	var out LikePropertyReply
+	pattern := "/house/{property_id}/like"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationHouseLikeProperty))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *HouseHTTPClientImpl) UnlikeProperty(ctx context.Context, in *UnlikePropertyRequest, opts ...http.CallOption) (*UnlikePropertyReply, error) {
+	var out UnlikePropertyReply
+	pattern := "/house/{property_id}/unlike"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationHouseUnlikeProperty))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

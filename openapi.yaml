@@ -3,19 +3,19 @@
 
 openapi: 3.0.3
 info:
-    title: User API
+    title: House API
     version: 0.0.1
 paths:
-    /bind/email:
+    /house/create:
         post:
             tags:
-                - User
-            operationId: User_BindEmail
+                - House
+            operationId: House_CreateHouse
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/BindEmailRequest'
+                            $ref: '#/components/schemas/CreateHouseRequest'
                 required: true
             responses:
                 "200":
@@ -23,137 +23,65 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/BindEmailReply'
+                                $ref: '#/components/schemas/CreateHouseReply'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /bind/phone:
-        post:
-            tags:
-                - User
-            operationId: User_BindPhone
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/BindPhoneRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/BindPhoneReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /sendEmailCode:
-        post:
-            tags:
-                - User
-            operationId: User_SendEmailCode
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/SendEmailCodeRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/SendEmailCodeReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /sendSms:
-        post:
-            tags:
-                - User
-            operationId: User_SendSms
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/SendSmsRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/SendSmsReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /user/create:
-        post:
-            tags:
-                - User
-            operationId: User_CreateUser
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateUserRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/CreateUserReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /user/info:
+    /house/user/{userId}/like/list:
         get:
             tags:
-                - User
-            operationId: User_GetUserInfo
+                - House
+            description: 获取用户点赞列表
+            operationId: House_GetUserLikeList
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/GetUserInfoReply'
+                                $ref: '#/components/schemas/GetUserLikeListReply'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /user/login:
+    /house/{propertyId}/like:
         post:
             tags:
-                - User
-            operationId: User_LoginOrRegister
+                - House
+            description: 点赞房源
+            operationId: House_LikeProperty
+            parameters:
+                - name: propertyId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/LoginOrRegisterRequest'
+                            $ref: '#/components/schemas/LikePropertyRequest'
                 required: true
             responses:
                 "200":
@@ -161,7 +89,122 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/LoginOrRegisterReply'
+                                $ref: '#/components/schemas/LikePropertyReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /house/{propertyId}/like/count:
+        get:
+            tags:
+                - House
+            description: 获取房源点赞数
+            operationId: House_GetPropertyLikeCount
+            parameters:
+                - name: propertyId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetPropertyLikeCountReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /house/{propertyId}/like/status:
+        get:
+            tags:
+                - House
+            description: 检查用户是否已点赞
+            operationId: House_IsPropertyLiked
+            parameters:
+                - name: propertyId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: userId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/IsPropertyLikedReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /house/{propertyId}/like/status/{userId}:
+        get:
+            tags:
+                - House
+            description: 检查用户是否已点赞
+            operationId: House_IsPropertyLiked
+            parameters:
+                - name: propertyId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/IsPropertyLikedReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /house/{propertyId}/unlike:
+        post:
+            tags:
+                - House
+            description: 取消点赞房源
+            operationId: House_UnlikeProperty
+            parameters:
+                - name: propertyId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UnlikePropertyRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UnlikePropertyReply'
                 default:
                     description: Default error response
                     content:
@@ -170,79 +213,34 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        BindEmailReply:
+        CreateHouseReply:
+            type: object
+            properties: {}
+        CreateHouseRequest:
+            type: object
+            properties: {}
+        GetPropertyLikeCountReply:
             type: object
             properties:
-                Success:
+                count:
                     type: string
-                UserId:
-                    type: string
-        BindEmailRequest:
+            description: 获取房源点赞数响应
+        GetUserLikeListReply:
             type: object
             properties:
-                UserId:
+                properties:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PropertyLike'
+                totalCount:
                     type: string
-                Type:
-                    type: string
-                Value:
-                    type: string
-                Extra:
-                    type: string
-                Code:
-                    type: string
-        BindPhoneReply:
-            type: object
-            properties:
-                Success:
-                    type: string
-                userid:
-                    type: string
-        BindPhoneRequest:
-            type: object
-            properties:
-                UserId:
-                    type: string
-                Type:
-                    type: string
-                Value:
-                    type: string
-                Extra:
-                    type: string
-                code:
-                    type: string
-        CreateUserReply:
-            type: object
-            properties:
-                Success:
-                    type: string
-        CreateUserRequest:
-            type: object
-            properties:
-                Mobile:
-                    type: string
-                NickName:
-                    type: string
-                Password:
-                    type: string
-        GetUserInfoReply:
-            type: object
-            properties:
-                UserId:
-                    type: string
-                Name:
-                    type: string
-                Mobile:
-                    type: string
-                Email:
-                    type: string
-                Gender:
+                page:
                     type: integer
                     format: int32
-                Birthday:
-                    type: string
-                Grade:
+                pageSize:
                     type: integer
                     format: int32
+            description: 获取用户点赞列表响应
         GoogleProtobufAny:
             type: object
             properties:
@@ -251,50 +249,51 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        LoginOrRegisterReply:
+        IsPropertyLikedReply:
             type: object
             properties:
-                Message:
-                    type: string
-                Token:
-                    type: string
-                IsNewUser:
+                liked:
                     type: boolean
-        LoginOrRegisterRequest:
+                likeCount:
+                    type: string
+            description: 检查用户是否已点赞响应
+        LikePropertyReply:
             type: object
             properties:
-                Account:
+                success:
+                    type: boolean
+                message:
                     type: string
-                Password:
+                likeCount:
                     type: string
-                Name:
-                    type: string
-                sex:
-                    type: string
-        SendEmailCodeReply:
+            description: 点赞房源响应
+        LikePropertyRequest:
             type: object
             properties:
-                Message:
+                propertyId:
                     type: string
-        SendEmailCodeRequest:
+                userId:
+                    type: string
+            description: 点赞房源请求
+        PropertyLike:
             type: object
             properties:
-                Email:
+                id:
                     type: string
-                Source:
+                propertyId:
                     type: string
-        SendSmsReply:
-            type: object
-            properties:
-                sms:
+                userId:
                     type: string
-        SendSmsRequest:
-            type: object
-            properties:
-                Phone:
+                createdAt:
                     type: string
-                Soures:
+                propertyTitle:
                     type: string
+                propertyImage:
+                    type: string
+                propertyPrice:
+                    type: number
+                    format: double
+            description: 点赞的房源信息
         Status:
             type: object
             properties:
@@ -311,5 +310,23 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        UnlikePropertyReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                likeCount:
+                    type: string
+            description: 取消点赞房源响应
+        UnlikePropertyRequest:
+            type: object
+            properties:
+                propertyId:
+                    type: string
+                userId:
+                    type: string
+            description: 取消点赞房源请求
 tags:
-    - name: User
+    - name: House

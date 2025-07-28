@@ -85,7 +85,7 @@ func (s *UserService) BindPhone(ctx context.Context, req *v2.BindPhoneRequest) (
 	// 验证验证码
 	get, err := s.v2uc.Get(ctx, "phone", req.Value)
 	if err != nil {
-		return nil, fmt.Errorf("获取验证码错误" + err.Error())
+		return nil, fmt.Errorf("%s", "获取验证码错误"+err.Error())
 	}
 	if get != req.Code {
 		return nil, fmt.Errorf("验证码错误")
@@ -97,7 +97,7 @@ func (s *UserService) BindPhone(ctx context.Context, req *v2.BindPhoneRequest) (
 		Extra:  req.Extra,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("用户绑定失败" + err.Error())
+		return nil, fmt.Errorf("%s", "用户绑定失败"+err.Error())
 	}
 	_ = s.v2uc.Delete(ctx, "phone", req.Value)
 	return &v2.BindPhoneReply{
@@ -111,8 +111,10 @@ func (s *UserService) BindEmail(ctx context.Context, req *v2.BindEmailRequest) (
 	// 验证验证码
 	get, err := s.v2uc.Get(ctx, "email", req.Value)
 	if err != nil {
-		return nil, fmt.Errorf("获取验证码错误" + err.Error())
+		return nil, fmt.Errorf("%s", "获取验证码错误"+err.Error())
 	}
+	fmt.Printf("email:%s", get)
+	fmt.Printf("emailreq:%s", req.Code)
 	if get != req.Code {
 		return nil, fmt.Errorf("验证码错误")
 	}
@@ -123,7 +125,7 @@ func (s *UserService) BindEmail(ctx context.Context, req *v2.BindEmailRequest) (
 		Extra:  req.Extra,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("用户绑定失败" + err.Error())
+		return nil, fmt.Errorf("%s", "用户绑定失败"+err.Error())
 	}
 	_ = s.v2uc.Delete(ctx, "email", req.Value)
 	return &v2.BindEmailReply{
