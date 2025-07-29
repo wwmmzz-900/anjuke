@@ -57,8 +57,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	blacklistRepo := data.NewBlacklistRepo(dataData, logger)
 	blacklistUsecase := biz.NewBlacklistUsecase(blacklistRepo, logger)
 	blacklistService := service.NewBlacklistService(blacklistUsecase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, userService, houseService, transactionService, pointsService, customerService, blacklistService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, userService, houseService, transactionService, pointsService, customerService, blacklistService, logger)
+	permissionRepo := data.NewPermissionRepo(dataData, logger)
+	permissionUsecase := biz.NewPermissionUsecase(permissionRepo, logger)
+	permissionService := service.NewPermissionService(permissionUsecase, logger)
+	grpcServer := server.NewGRPCServer(confServer, greeterService, userService, houseService, transactionService, pointsService, customerService, blacklistService, permissionService, logger)
+	httpServer := server.NewHTTPServer(confServer, greeterService, userService, houseService, transactionService, pointsService, customerService, blacklistService, permissionService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

@@ -5,6 +5,7 @@ import (
 	v6 "anjuke/api/customer/v6"
 	v1 "anjuke/api/helloworld/v1"
 	v3 "anjuke/api/house/v3"
+	permissionv1 "anjuke/api/permission/v1"
 	v5 "anjuke/api/points/v5"
 	v4 "anjuke/api/transaction/v4"
 	v2 "anjuke/api/user/v2"
@@ -17,7 +18,7 @@ import (
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, blacklist *service.BlacklistService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, blacklist *service.BlacklistService, permission *service.PermissionService, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
@@ -40,5 +41,6 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 	v5.RegisterPointsHTTPServer(srv, points)
 	v6.RegisterCustomerHTTPServer(srv, customer)
 	blacklistv1.RegisterBlacklistHTTPServer(srv, blacklist)
+	permissionv1.RegisterPermissionHTTPServer(srv, permission)
 	return srv
 }

@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package api.permission.v1;
+import "google/api/annotations.proto";
+
+option go_package = "anjuke/api/permission/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.permission.v1";
+option java_outer_classname = "PermissionProtoV1";
+
+service Permission {
+    // 修改用户权限
+    rpc UpdateUserPermission (UpdateUserPermissionRequest) returns (UpdateUserPermissionReply) {
+        option (google.api.http) = {
+            put: "/permission/user/{user_id}"
+            body: "*"
+        };
+    }
+    
+    // 获取用户权限
+    rpc GetUserPermission (GetUserPermissionRequest) returns (GetUserPermissionReply) {
+        option (google.api.http) = {
+            get: "/permission/user/{user_id}"
+        };
+    }
+    
+    // 批量修改用户权限
+    rpc BatchUpdateUserPermission (BatchUpdateUserPermissionRequest) returns (BatchUpdateUserPermissionReply) {
+        option (google.api.http) = {
+            put: "/permission/batch"
+            body: "*"
+        };
+    }
+    
+    // 获取所有权限列表
+    rpc GetPermissionList (GetPermissionListRequest) returns (GetPermissionListReply) {
+        option (google.api.http) = {
+            get: "/permission/list"
+        };
+    }
+    
+    // 获取角色权限
+    rpc GetRolePermissions (GetRolePermissionsRequest) returns (GetRolePermissionsReply) {
+        option (google.api.http) = {
+            get: "/permission/role/{role_id}"
+        };
+    }
+}
+
+// 权限类型枚举
+enum PermissionType {
+    UNKNOWN = 0;
+    READ = 1;           // 读取权限
+    WRITE = 2;          // 写入权限
+    DELETE = 3;         // 删除权限
+    ADMIN = 4;          // 管理员权限
+    PUBLISH_HOUSE = 5;  // 发布房源权限
+    MANAGE_USER = 6;    // 用户管理权限
+    MANAGE_TRANSACTION = 7; // 交易管理权限
+    CUSTOMER_SERVICE = 8;   // 客服权限
+}
+
+// 用户角色枚举
+enum UserRole {
+    ROLE_GUEST = 0;          // 游客
+    ROLE_NORMAL_USER = 1;    // 普通用户
+    ROLE_VIP_USER = 2;       // VIP用户
+    ROLE_LANDLORD = 3;       // 房东
+    ROLE_AGENT = 4;          // 经纪人
+    ROLE_ADMIN = 5;          // 管理员
+    ROLE_SUPER_ADMIN = 6;    // 超级管理员
+}
+
+message UpdateUserPermissionRequest {
+    int64 user_id = 1;                          // 用户ID
+    repeated PermissionType permissions = 2;     // 权限列表
+    UserRole role = 3;                          // 用户角色
+    string reason = 4;                          // 修改原因
+    int64 operator_id = 5;                      // 操作者ID
+}
+
+message UpdateUserPermissionReply {
+    bool success = 1;
+    string message = 2;
+    int64 permission_id = 3;                    // 权限记录ID
+}
+
+message GetUserPermissionRequest {
+    int64 user_id = 1;                          // 用户ID
+}
+
+message UserPermissionInfo {
+    int64 user_id = 1;                          // 用户ID
+    repeated PermissionType permissions = 2;     // 权限列表
+    UserRole role = 3;                          // 用户角色
+    string created_at = 4;                      // 创建时间
+    string updated_at = 5;                      // 更新时间
+    int64 operator_id = 6;                      // 最后操作者ID
+    string operator_name = 7;                   // 最后操作者姓名
+}
+
+message GetUserPermissionReply {
+    UserPermissionInfo permission_info = 1;
+}
+
+message BatchUpdateUserPermissionRequest {
+    repeated UpdateUserPermissionRequest updates = 1;
+}
+
+message BatchUpdateUserPermissionReply {
+    bool success = 1;
+    string message = 2;
+    int32 success_count = 3;                    // 成功数量
+    int32 failed_count = 4;                     // 失败数量
+    repeated string error_messages = 5;         // 错误信息列表
+}
+
+message GetPermissionListRequest {
+    int32 page = 1;                             // 页码
+    int32 page_size = 2;                        // 每页大小
+    UserRole role_filter = 3;                   // 角色筛选
+}
+
+message PermissionItem {
+    int64 id = 1;                               // 权限记录ID
+    int64 user_id = 2;                          // 用户ID
+    string user_name = 3;                       // 用户姓名
+    string phone = 4;                           // 用户手机号
+    repeated PermissionType permissions = 5;     // 权限列表
+    UserRole role = 6;                          // 用户角色
+    string created_at = 7;                      // 创建时间
+    string updated_at = 8;                      // 更新时间
+    int64 operator_id = 9;                      // 操作者ID
+    string operator_name = 10;                  // 操作者姓名
+}
+
+message GetPermissionListReply {
+    repeated PermissionItem items = 1;
+    int32 total = 2;                            // 总数
+    int32 page = 3;                             // 当前页
+    int32 page_size = 4;                        // 每页大小
+}
+
+message GetRolePermissionsRequest {
+    UserRole role_id = 1;                       // 角色ID
+}
+
+message GetRolePermissionsReply {
+    UserRole role = 1;                          // 角色
+    repeated PermissionType permissions = 2;     // 该角色默认权限
+    string description = 3;                     // 角色描述
+}

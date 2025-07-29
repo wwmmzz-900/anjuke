@@ -3,19 +3,20 @@
 
 openapi: 3.0.3
 info:
-    title: House API
+    title: Permission API
     version: 0.0.1
 paths:
-    /house/create:
-        post:
+    /permission/batch:
+        put:
             tags:
-                - House
-            operationId: House_CreateHouse
+                - Permission
+            description: 批量修改用户权限
+            operationId: Permission_BatchUpdateUserPermission
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CreateHouseRequest'
+                            $ref: '#/components/schemas/BatchUpdateUserPermissionRequest'
                 required: true
             responses:
                 "200":
@@ -23,7 +24,123 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/CreateHouseReply'
+                                $ref: '#/components/schemas/BatchUpdateUserPermissionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /permission/list:
+        get:
+            tags:
+                - Permission
+            description: 获取所有权限列表
+            operationId: Permission_GetPermissionList
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: roleFilter
+                  in: query
+                  schema:
+                    type: integer
+                    format: enum
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetPermissionListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /permission/role/{roleId}:
+        get:
+            tags:
+                - Permission
+            description: 获取角色权限
+            operationId: Permission_GetRolePermissions
+            parameters:
+                - name: roleId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: enum
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetRolePermissionsReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /permission/user/{userId}:
+        get:
+            tags:
+                - Permission
+            description: 获取用户权限
+            operationId: Permission_GetUserPermission
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserPermissionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - Permission
+            description: 修改用户权限
+            operationId: Permission_UpdateUserPermission
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateUserPermissionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateUserPermissionReply'
                 default:
                     description: Default error response
                     content:
@@ -32,46 +149,64 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        CreateHouseReply:
+        BatchUpdateUserPermissionReply:
             type: object
             properties:
-                houseId:
-                    type: string
+                success:
+                    type: boolean
                 message:
                     type: string
-        CreateHouseRequest:
+                successCount:
+                    type: integer
+                    format: int32
+                failedCount:
+                    type: integer
+                    format: int32
+                errorMessages:
+                    type: array
+                    items:
+                        type: string
+        BatchUpdateUserPermissionRequest:
             type: object
             properties:
-                title:
-                    type: string
+                updates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UpdateUserPermissionRequest'
+        GetPermissionListReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PermissionItem'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+        GetRolePermissionsReply:
+            type: object
+            properties:
+                role:
+                    type: integer
+                    format: enum
+                permissions:
+                    type: array
+                    items:
+                        type: integer
+                        format: enum
                 description:
                     type: string
-                landlordId:
-                    type: string
-                address:
-                    type: string
-                regionId:
-                    type: string
-                communityId:
-                    type: string
-                price:
-                    type: number
-                    format: double
-                area:
-                    type: number
-                    format: float
-                layout:
-                    type: string
-                floor:
-                    type: string
-                ownershipCertificateUrl:
-                    type: string
-                orientation:
-                    type: string
-                decoration:
-                    type: string
-                facilities:
-                    type: string
+        GetUserPermissionReply:
+            type: object
+            properties:
+                permissionInfo:
+                    $ref: '#/components/schemas/UserPermissionInfo'
         GoogleProtobufAny:
             type: object
             properties:
@@ -80,6 +215,33 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        PermissionItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                userId:
+                    type: string
+                userName:
+                    type: string
+                phone:
+                    type: string
+                permissions:
+                    type: array
+                    items:
+                        type: integer
+                        format: enum
+                role:
+                    type: integer
+                    format: enum
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+                operatorId:
+                    type: string
+                operatorName:
+                    type: string
         Status:
             type: object
             properties:
@@ -96,5 +258,52 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        UpdateUserPermissionReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                permissionId:
+                    type: string
+        UpdateUserPermissionRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+                permissions:
+                    type: array
+                    items:
+                        type: integer
+                        format: enum
+                role:
+                    type: integer
+                    format: enum
+                reason:
+                    type: string
+                operatorId:
+                    type: string
+        UserPermissionInfo:
+            type: object
+            properties:
+                userId:
+                    type: string
+                permissions:
+                    type: array
+                    items:
+                        type: integer
+                        format: enum
+                role:
+                    type: integer
+                    format: enum
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+                operatorId:
+                    type: string
+                operatorName:
+                    type: string
 tags:
-    - name: House
+    - name: Permission
