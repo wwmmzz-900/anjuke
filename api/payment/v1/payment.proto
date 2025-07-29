@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package api.payment.v1;
+
+option go_package = "anjuke/api/payment/v1;v1";
+
+service Payment {
+  // 发起支付宝支付
+  rpc AlipayPay (AlipayPayRequest) returns (AlipayPayReply);
+  // 查询支付宝支付结果
+  rpc AlipayQuery (AlipayQueryRequest) returns (AlipayQueryReply);
+}
+
+message AlipayPayRequest {
+  string order_id = 1;      // 订单号
+  string amount = 2;        // 金额
+}
+
+message AlipayPayReply {
+  string pay_url = 1;       // 支付跳转链接（支付宝沙箱环境）
+  string qr_code = 2;       // 二维码内容（可选）
+}
+
+message AlipayQueryRequest {
+  string order_id = 1;      // 订单号
+}
+
+message AlipayQueryReply {
+  string order_id = 1;
+  string status = 2;        // 支付状态（如：SUCCESS、WAIT、FAIL）
+  string trade_no = 3;      // 支付宝交易号
+  string pay_time = 4;      // 支付时间
+} 
