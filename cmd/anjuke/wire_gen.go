@@ -60,7 +60,12 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	customerUsecase := biz.NewCustomerUsecase(customer, logger)
 	customerService := service.NewCustomerService(customerUsecase)
 
-	grpcServer := server.NewGRPCServer(confServer, greeterService, userService,houseService,transactionService,pointsService,customerService, logger)
+	//todo:payment
+	payment:=data.NewAlipayRepo()
+	paymentUsecase := biz.NewPaymentUsecase(payment)
+	paymentService := service.NewPaymentService(paymentUsecase)
+
+	grpcServer := server.NewGRPCServer(confServer, greeterService, userService,houseService,transactionService,pointsService,customerService,paymentService, logger)
 	httpServer := server.NewHTTPServer(confServer, greeterService, userService,houseService,transactionService,pointsService,customerService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
