@@ -1,47 +1,28 @@
-# Reference https://github.com/github/gitignore/blob/master/Go.gitignore
-# Binaries for programs and plugins
+# 编译产物
 *.exe
-*.exe~
 *.dll
-*.dylib
+/dist/
+/build/
 
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# Dependency directories
-vendor/
-
-# Go workspace file
-go.work
-
-# Compiled Object files, Static and Dynamic libs (Shared Objects)
-*.o
-*.a
-*.so
-
-# OS General
-Thumbs.db
-.DS_Store
-
-# IDE 配置
-.idea/
-.vscode/
-*.swp
-
-# 项目特定文件
-*.cert
-*.key
+# 日志文件
 *.log
-bin/
-config.yaml
+logs/
 
-# 测试覆盖率报告
-coverage.html
-coverage.out
+# 配置文件
+config.local.*
+.env.local
+.env.development
+
+# IDE 文件
+.vscode/settings.json
+.idea/workspace.xml
+
+# 依赖文件
+node_modules/
+vendor/
 
 # 临时文件
 *.tmp
 *.temp
+.DS_Store
+Thumbs.db

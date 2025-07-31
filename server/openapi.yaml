@@ -6,6 +6,562 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /api/companies:
+        get:
+            tags:
+                - Company
+            description: 查询公司列表
+            operationId: Company_ListCompanies
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        post:
+            tags:
+                - Company
+            description: 创建公司
+            operationId: Company_CreateCompany
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.company.v1.CreateCompanyRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/companies/{companyId}/stores:
+        get:
+            tags:
+                - Company
+            description: 获取公司下的门店列表
+            operationId: Company_GetCompanyStores
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/companies/{companyId}/stores/page:
+        get:
+            tags:
+                - Company
+            description: 获取公司下的门店列表（分页）
+            operationId: Company_GetStoresByCompanyID
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: isActive
+                  in: query
+                  schema:
+                    type: boolean
+                - name: sortField
+                  in: query
+                  schema:
+                    type: string
+                - name: sortDesc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/companies/{id}:
+        get:
+            tags:
+                - Company
+            description: 获取公司详情
+            operationId: Company_GetCompany
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        put:
+            tags:
+                - Company
+            description: 更新公司信息
+            operationId: Company_UpdateCompany
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.company.v1.UpdateCompanyRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        delete:
+            tags:
+                - Company
+            description: 删除公司
+            operationId: Company_DeleteCompany
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/realtors:
+        get:
+            tags:
+                - Realtor
+            description: 查询经纪人列表
+            operationId: Realtor_ListRealtors
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: storeId
+                  in: query
+                  schema:
+                    type: string
+                - name: companyId
+                  in: query
+                  schema:
+                    type: string
+                - name: sortField
+                  in: query
+                  schema:
+                    type: string
+                - name: sortDesc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        post:
+            tags:
+                - Realtor
+            description: 创建经纪人
+            operationId: Realtor_CreateRealtor
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.company.v1.CreateRealtorRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/realtors/{id}:
+        get:
+            tags:
+                - Realtor
+            description: 获取经纪人详情
+            operationId: Realtor_GetRealtor
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        put:
+            tags:
+                - Realtor
+            description: 更新经纪人信息
+            operationId: Realtor_UpdateRealtor
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.company.v1.UpdateRealtorRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        delete:
+            tags:
+                - Realtor
+            description: 删除经纪人
+            operationId: Realtor_DeleteRealtor
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/realtors/{realtorId}/status:
+        get:
+            tags:
+                - Realtor
+            description: 获取经纪人状态
+            operationId: Realtor_GetRealtorStatus
+            parameters:
+                - name: realtorId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        put:
+            tags:
+                - Realtor
+            description: 更新经纪人状态
+            operationId: Realtor_UpdateRealtorStatus
+            parameters:
+                - name: realtorId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.company.v1.UpdateRealtorStatusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/stores:
+        get:
+            tags:
+                - Store
+            description: 查询门店列表
+            operationId: Store_ListStores
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: companyId
+                  in: query
+                  schema:
+                    type: string
+                - name: isActive
+                  in: query
+                  schema:
+                    type: boolean
+                - name: sortField
+                  in: query
+                  schema:
+                    type: string
+                - name: sortDesc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        post:
+            tags:
+                - Store
+            description: 创建门店
+            operationId: Store_CreateStore
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.company.v1.CreateStoreRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/stores/available:
+        get:
+            tags:
+                - Store
+            description: 获取可预约门店列表（包含预约相关信息）
+            operationId: Store_ListAvailableStores
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: date
+                  in: query
+                  schema:
+                    type: string
+                - name: timeSlot
+                  in: query
+                  schema:
+                    type: string
+                - name: area
+                  in: query
+                  schema:
+                    type: string
+                - name: companyId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/stores/{id}:
+        get:
+            tags:
+                - Store
+            description: 获取门店详情
+            operationId: Store_GetStore
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        put:
+            tags:
+                - Store
+            description: 更新门店信息
+            operationId: Store_UpdateStore
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.company.v1.UpdateStoreRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+        delete:
+            tags:
+                - Store
+            description: 删除门店
+            operationId: Store_DeleteStore
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/stores/{storeId}/realtors:
+        get:
+            tags:
+                - Store
+            description: 获取门店下的经纪人列表
+            operationId: Store_GetStoreRealtors
+            parameters:
+                - name: storeId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
+    /api/stores/{storeId}/realtors/page:
+        get:
+            tags:
+                - Store
+            description: 获取门店下的经纪人列表（分页）
+            operationId: Store_GetRealtorsByStoreID
+            parameters:
+                - name: storeId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: sortField
+                  in: query
+                  schema:
+                    type: string
+                - name: sortDesc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.common.v1.BaseResponse'
     /api/upload/smart:
         post:
             tags:
@@ -25,6 +581,276 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.upload.v1.SimpleUploadReply'
+    /api/v1/appointment/appointments:
+        post:
+            tags:
+                - AppointmentService
+            description: 创建预约
+            operationId: AppointmentService_CreateAppointment
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.appointment.v1.CreateAppointmentRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.CreateAppointmentResponse'
+    /api/v1/appointment/appointments/{appointmentId}:
+        get:
+            tags:
+                - AppointmentService
+            description: 获取预约详情
+            operationId: AppointmentService_GetAppointment
+            parameters:
+                - name: appointmentId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.GetAppointmentResponse'
+    /api/v1/appointment/appointments/{appointmentId}/accept:
+        post:
+            tags:
+                - AppointmentService
+            description: 经纪人接单
+            operationId: AppointmentService_AcceptAppointment
+            parameters:
+                - name: appointmentId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.appointment.v1.AcceptAppointmentRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.AcceptAppointmentResponse'
+    /api/v1/appointment/appointments/{appointmentId}/cancel:
+        post:
+            tags:
+                - AppointmentService
+            description: 取消预约
+            operationId: AppointmentService_CancelAppointment
+            parameters:
+                - name: appointmentId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.appointment.v1.CancelAppointmentRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.CancelAppointmentResponse'
+    /api/v1/appointment/appointments/{appointmentId}/complete:
+        post:
+            tags:
+                - AppointmentService
+            description: 完成服务
+            operationId: AppointmentService_CompleteAppointment
+            parameters:
+                - name: appointmentId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.appointment.v1.CompleteAppointmentRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.CompleteAppointmentResponse'
+    /api/v1/appointment/appointments/{appointmentId}/confirm:
+        post:
+            tags:
+                - AppointmentService
+            description: 经纪人确认服务
+            operationId: AppointmentService_ConfirmAppointment
+            parameters:
+                - name: appointmentId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.appointment.v1.ConfirmAppointmentRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.ConfirmAppointmentResponse'
+    /api/v1/appointment/realtor/appointments:
+        get:
+            tags:
+                - AppointmentService
+            description: 获取经纪人预约列表
+            operationId: AppointmentService_ListRealtorAppointments
+            parameters:
+                - name: realtorId
+                  in: query
+                  schema:
+                    type: string
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+                - name: date
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.ListRealtorAppointmentsResponse'
+    /api/v1/appointment/realtor/status:
+        post:
+            tags:
+                - AppointmentService
+            description: 更新经纪人状态
+            operationId: AppointmentService_UpdateRealtorStatus
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.appointment.v1.UpdateRealtorStatusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.UpdateRealtorStatusResponse'
+    /api/v1/appointment/stores:
+        get:
+            tags:
+                - AppointmentService
+            description: 获取可预约门店列表
+            operationId: AppointmentService_ListAvailableStores
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: companyId
+                  in: query
+                  schema:
+                    type: string
+                - name: isActive
+                  in: query
+                  schema:
+                    type: boolean
+                - name: sortField
+                  in: query
+                  schema:
+                    type: string
+                - name: sortDesc
+                  in: query
+                  schema:
+                    type: boolean
+                - name: latitude
+                  in: query
+                  schema:
+                    type: number
+                    format: double
+                - name: longitude
+                  in: query
+                  schema:
+                    type: number
+                    format: double
+                - name: radiusKm
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.ListStoresResponse'
+    /api/v1/appointment/stores/{storeId}/slots:
+        get:
+            tags:
+                - AppointmentService
+            description: 获取门店可预约时段
+            operationId: AppointmentService_GetAvailableSlots
+            parameters:
+                - name: storeId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: startDate
+                  in: query
+                  schema:
+                    type: string
+                - name: days
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.appointment.v1.GetAvailableSlotsResponse'
     /customer/create:
         post:
             tags:
@@ -377,6 +1203,262 @@ paths:
                                 $ref: '#/components/schemas/api.common.v1.BaseResponse'
 components:
     schemas:
+        api.appointment.v1.AcceptAppointmentRequest:
+            type: object
+            properties:
+                appointmentId:
+                    type: string
+                realtorId:
+                    type: string
+            description: 经纪人接单请求
+        api.appointment.v1.AcceptAppointmentResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: 经纪人接单响应
+        api.appointment.v1.AppointmentInfo:
+            type: object
+            properties:
+                appointmentId:
+                    type: string
+                appointmentCode:
+                    type: string
+                userId:
+                    type: string
+                storeId:
+                    type: string
+                realtorId:
+                    type: string
+                realtorName:
+                    type: string
+                realtorPhone:
+                    type: string
+                customerName:
+                    type: string
+                customerPhone:
+                    type: string
+                appointmentDate:
+                    type: string
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                durationMinutes:
+                    type: integer
+                    format: int32
+                requirements:
+                    type: string
+                status:
+                    type: integer
+                    format: enum
+                queuePosition:
+                    type: integer
+                    format: int32
+                estimatedWaitMinutes:
+                    type: integer
+                    format: int32
+                createdAt:
+                    type: string
+                    format: date-time
+                confirmedAt:
+                    type: string
+                    format: date-time
+            description: 预约信息
+        api.appointment.v1.CancelAppointmentRequest:
+            type: object
+            properties:
+                appointmentId:
+                    type: string
+                reason:
+                    type: string
+            description: 取消预约请求
+        api.appointment.v1.CancelAppointmentResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: 取消预约响应
+        api.appointment.v1.CompleteAppointmentRequest:
+            type: object
+            properties:
+                appointmentId:
+                    type: string
+                realtorId:
+                    type: string
+                serviceNotes:
+                    type: string
+            description: 完成服务请求
+        api.appointment.v1.CompleteAppointmentResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: 完成服务响应
+        api.appointment.v1.ConfirmAppointmentRequest:
+            type: object
+            properties:
+                appointmentId:
+                    type: string
+                realtorId:
+                    type: string
+            description: 经纪人确认服务请求
+        api.appointment.v1.ConfirmAppointmentResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: 经纪人确认服务响应
+        api.appointment.v1.CreateAppointmentRequest:
+            type: object
+            properties:
+                storeId:
+                    type: string
+                customerName:
+                    type: string
+                customerPhone:
+                    type: string
+                appointmentDate:
+                    type: string
+                startTime:
+                    type: string
+                durationMinutes:
+                    type: integer
+                    format: int32
+                requirements:
+                    type: string
+            description: 创建预约请求
+        api.appointment.v1.CreateAppointmentResponse:
+            type: object
+            properties:
+                appointment:
+                    $ref: '#/components/schemas/api.appointment.v1.AppointmentInfo'
+                needQueue:
+                    type: boolean
+                message:
+                    type: string
+            description: 创建预约响应
+        api.appointment.v1.GetAppointmentResponse:
+            type: object
+            properties:
+                appointment:
+                    $ref: '#/components/schemas/api.appointment.v1.AppointmentInfo'
+            description: 获取预约详情响应
+        api.appointment.v1.GetAvailableSlotsResponse:
+            type: object
+            properties:
+                slots:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.appointment.v1.TimeSlot'
+            description: 获取可预约时段响应
+        api.appointment.v1.ListRealtorAppointmentsResponse:
+            type: object
+            properties:
+                appointments:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.appointment.v1.AppointmentInfo'
+            description: 获取经纪人预约列表响应
+        api.appointment.v1.ListStoresResponse:
+            type: object
+            properties:
+                stores:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.appointment.v1.StoreInfo'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+            description: 获取门店列表响应
+        api.appointment.v1.StoreInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                storeName:
+                    type: string
+                companyId:
+                    type: string
+                address:
+                    type: string
+                phone:
+                    type: string
+                businessHours:
+                    type: string
+                rating:
+                    type: number
+                    format: double
+                reviewCount:
+                    type: integer
+                    format: int32
+                isActive:
+                    type: boolean
+                createdTime:
+                    type: string
+                updatedTime:
+                    type: string
+                onlineRealtors:
+                    type: integer
+                    format: int32
+                availableSlotsToday:
+                    type: integer
+                    format: int32
+            description: 门店信息
+        api.appointment.v1.TimeSlot:
+            type: object
+            properties:
+                date:
+                    type: string
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                available:
+                    type: boolean
+                availableRealtors:
+                    type: integer
+                    format: int32
+                totalCapacity:
+                    type: integer
+                    format: int32
+                bookedCount:
+                    type: integer
+                    format: int32
+                queueCount:
+                    type: integer
+                    format: int32
+            description: 可预约时段
+        api.appointment.v1.UpdateRealtorStatusRequest:
+            type: object
+            properties:
+                realtorId:
+                    type: string
+                status:
+                    type: string
+            description: 更新经纪人状态请求
+        api.appointment.v1.UpdateRealtorStatusResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: 更新经纪人状态响应
         api.common.v1.BaseResponse:
             type: object
             properties:
@@ -388,6 +1470,174 @@ components:
                 data:
                     $ref: '#/components/schemas/google.protobuf.Any'
             description: 统一响应格式
+        api.company.v1.CreateCompanyRequest:
+            type: object
+            properties:
+                fullName:
+                    type: string
+                shortName:
+                    type: string
+                businessScope:
+                    type: string
+                address:
+                    type: string
+                phone:
+                    type: string
+                companyLogo:
+                    type: string
+            description: 创建公司请求
+        api.company.v1.CreateRealtorRequest:
+            type: object
+            properties:
+                realtorName:
+                    type: string
+                businessArea:
+                    type: array
+                    items:
+                        type: string
+                secondHandScore:
+                    type: integer
+                    format: int32
+                rentalScore:
+                    type: integer
+                    format: int32
+                serviceYears:
+                    type: string
+                servicePeopleCount:
+                    type: integer
+                    format: int32
+                mainBusinessArea:
+                    type: array
+                    items:
+                        type: string
+                mainResidentialAreas:
+                    type: array
+                    items:
+                        type: string
+                companyId:
+                    type: string
+                storeId:
+                    type: string
+                phone:
+                    type: string
+                avatar:
+                    type: string
+            description: 创建经纪人请求
+        api.company.v1.CreateStoreRequest:
+            type: object
+            properties:
+                storeName:
+                    type: string
+                companyId:
+                    type: string
+                address:
+                    type: string
+                phone:
+                    type: string
+                businessHours:
+                    type: string
+                rating:
+                    type: number
+                    format: double
+                reviewCount:
+                    type: integer
+                    format: int32
+                isActive:
+                    type: boolean
+            description: 创建门店请求
+        api.company.v1.UpdateCompanyRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                fullName:
+                    type: string
+                shortName:
+                    type: string
+                businessScope:
+                    type: string
+                address:
+                    type: string
+                phone:
+                    type: string
+                companyLogo:
+                    type: string
+            description: 更新公司请求
+        api.company.v1.UpdateRealtorRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                realtorName:
+                    type: string
+                businessArea:
+                    type: array
+                    items:
+                        type: string
+                secondHandScore:
+                    type: integer
+                    format: int32
+                rentalScore:
+                    type: integer
+                    format: int32
+                serviceYears:
+                    type: string
+                servicePeopleCount:
+                    type: integer
+                    format: int32
+                mainBusinessArea:
+                    type: array
+                    items:
+                        type: string
+                mainResidentialAreas:
+                    type: array
+                    items:
+                        type: string
+                companyId:
+                    type: string
+                storeId:
+                    type: string
+                phone:
+                    type: string
+                avatar:
+                    type: string
+            description: 更新经纪人请求
+        api.company.v1.UpdateRealtorStatusRequest:
+            type: object
+            properties:
+                realtorId:
+                    type: string
+                status:
+                    type: integer
+                    format: enum
+                maxLoad:
+                    type: integer
+                    format: int32
+            description: 更新经纪人状态请求
+        api.company.v1.UpdateStoreRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                storeName:
+                    type: string
+                companyId:
+                    type: string
+                address:
+                    type: string
+                phone:
+                    type: string
+                businessHours:
+                    type: string
+                rating:
+                    type: number
+                    format: double
+                reviewCount:
+                    type: integer
+                    format: int32
+                isActive:
+                    type: boolean
+            description: 更新门店请求
         api.customer.v6.CreateCustomerRequest:
             type: object
             properties:
@@ -535,11 +1785,19 @@ components:
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
 tags:
+    - name: AppointmentService
+      description: 预约服务
+    - name: Company
+      description: 公司管理服务
     - name: Customer
     - name: Greeter
       description: The greeting service definition.
     - name: House
     - name: Points
+    - name: Realtor
+      description: 经纪人管理服务
+    - name: Store
+      description: 门店管理服务
     - name: Transaction
     - name: UploadService
       description: 上传服务

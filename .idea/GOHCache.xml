@@ -1,0 +1,1587 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GoORMHelperCache">
+    <option name="schemaMapping">
+      <map>
+        <entry key="AbortUploadReply">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="AbortUploadRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="BaseResponse">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/common/v1/common.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Bootstrap">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CheckInData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CheckInRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CompleteUploadReply">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CompleteUploadRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateCustomerData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/customer/v6/customer.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateCustomerRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/customer/v6/customer.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateHouseData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/house/v3/house.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateHouseRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/house/v3/house.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateTransactionData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/transaction/v4/transaction.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateTransactionRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/transaction/v4/transaction.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateUserData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateUserRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CustomerHTTPClientImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/customer/v6/customer_http.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Data">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Data_AliyunSms">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Data_Database">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Data_Minio">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Data_MongoDB">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Data_Redis">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Data_ShumaiSms">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Data_TencentYunRealName">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="DeleteFileData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="DeleteFileRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="EarnPointsByConsumeData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="EarnPointsByConsumeRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="FileInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetFileListData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetFileListRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetPointsHistoryData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetPointsHistoryRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetUploadStatsData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetUploadStatsRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetUserPointsData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetUserPointsRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GreeterHTTPClientImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/helloworld/v1/greeter_http.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GreeterService">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/service/greeter.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GreeterUsecase">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/biz/greeter.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="HelloData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/helloworld/v1/greeter.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="HelloRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/helloworld/v1/greeter.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="HouseHTTPClientImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/house/v3/house_http.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="InitUploadReply">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="InitUploadRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ListPartsReply">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ListPartsRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LoginData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LoginRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MinioClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/minio.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MockDB">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/points_simple_test.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MockMinioRepo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/biz/user_test.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MockPointsRepo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/biz/points_test.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MockPointsUsecase">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/service/points_test.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MockSmsRepo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/biz/user_test.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MockUserRepo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/biz/user_test.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MockUserUsecase">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/service/user_test.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="PageInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/common/v1/common.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="PartInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="PointsHTTPClientImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points_http.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="PointsRecord">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="PointsRepo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/points.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="PointsService">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/service/points.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="PointsUsecase">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/biz/points.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ProgressHub">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/server/websocket.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="RealNameData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="RealNameRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="RealNameResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/realname.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="RealNameSDK">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/realname.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="SendSmsData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="SendSmsRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Server">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/internal/server/http.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Server_GRPC">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Server_HTTP">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ShumaiSmsSender">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/sms.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="SimpleUploadReply">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="SimpleUploadRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="SmsCodeInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/sms.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="SmsTemplate">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/sms.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="TransactionHTTPClientImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/transaction/v4/transaction_http.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UnimplementedCustomerServer">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/customer/v6/customer_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UnimplementedGreeterServer">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/helloworld/v1/greeter_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UnimplementedHouseServer">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/house/v3/house_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UnimplementedPointsServer">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UnimplementedTransactionServer">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/transaction/v4/transaction_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UnimplementedUploadServiceServer">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UnimplementedUserServer">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UpdateUserStatusData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UpdateUserStatusRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UploadPartReply">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UploadPartRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UploadServiceHTTPClientImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload_http.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UsePointsData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UsePointsRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UserHTTPClientImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user_http.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UserRepo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UserService">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/service/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UserUsecase">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/biz/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="VerifySmsData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="VerifySmsRequest">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="customerClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/customer/v6/customer_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="greeterClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/helloworld/v1/greeter_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="greeterRepo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/greeter.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="houseClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/house/v3/house_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="pointsClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="progressReader">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/internal/data/minio.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="transactionClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/transaction/v4/transaction_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="uploadServiceClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="userClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user_grpc.pb.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="x">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/api/common/v1/common.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/api/customer/v6/customer.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/api/helloworld/v1/error_reason.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/api/helloworld/v1/greeter.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/api/house/v3/house.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/api/transaction/v4/transaction.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go" />
+              <option value="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go" />
+            </set>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="scannedPathMapping">
+      <map>
+        <entry key="file://$PROJECT_DIR$/demo.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753878640332" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/common/v1/common.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753842910771" />
+              <option name="schema">
+                <list>
+                  <option value="BaseResponse" />
+                  <option value="PageInfo" />
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/customer/v6/customer.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875520834" />
+              <option name="schema">
+                <list>
+                  <option value="CreateCustomerRequest" />
+                  <option value="CreateCustomerData" />
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/customer/v6/customer_grpc.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875520953" />
+              <option name="schema">
+                <list>
+                  <option value="customerClient" />
+                  <option value="UnimplementedCustomerServer" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/customer/v6/customer_http.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521000" />
+              <option name="schema">
+                <list>
+                  <option value="CustomerHTTPClientImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/helloworld/v1/error_reason.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753842910772" />
+              <option name="schema">
+                <list>
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/helloworld/v1/greeter.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521086" />
+              <option name="schema">
+                <list>
+                  <option value="HelloRequest" />
+                  <option value="HelloData" />
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/helloworld/v1/greeter_grpc.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521126" />
+              <option name="schema">
+                <list>
+                  <option value="greeterClient" />
+                  <option value="UnimplementedGreeterServer" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/helloworld/v1/greeter_http.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521203" />
+              <option name="schema">
+                <list>
+                  <option value="GreeterHTTPClientImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/house/v3/house.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521302" />
+              <option name="schema">
+                <list>
+                  <option value="CreateHouseRequest" />
+                  <option value="CreateHouseData" />
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/house/v3/house_grpc.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521345" />
+              <option name="schema">
+                <list>
+                  <option value="houseClient" />
+                  <option value="UnimplementedHouseServer" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/house/v3/house_http.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521469" />
+              <option name="schema">
+                <list>
+                  <option value="HouseHTTPClientImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/points/v5/points.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521777" />
+              <option name="schema">
+                <list>
+                  <option value="GetUserPointsRequest" />
+                  <option value="GetUserPointsData" />
+                  <option value="GetPointsHistoryRequest" />
+                  <option value="GetPointsHistoryData" />
+                  <option value="PointsRecord" />
+                  <option value="CheckInRequest" />
+                  <option value="CheckInData" />
+                  <option value="EarnPointsByConsumeRequest" />
+                  <option value="EarnPointsByConsumeData" />
+                  <option value="UsePointsRequest" />
+                  <option value="UsePointsData" />
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/points/v5/points_grpc.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521851" />
+              <option name="schema">
+                <list>
+                  <option value="pointsClient" />
+                  <option value="UnimplementedPointsServer" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/points/v5/points_http.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521901" />
+              <option name="schema">
+                <list>
+                  <option value="PointsHTTPClientImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/transaction/v4/transaction.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521942" />
+              <option name="schema">
+                <list>
+                  <option value="CreateTransactionRequest" />
+                  <option value="CreateTransactionData" />
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/transaction/v4/transaction_grpc.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875521978" />
+              <option name="schema">
+                <list>
+                  <option value="transactionClient" />
+                  <option value="UnimplementedTransactionServer" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/transaction/v4/transaction_http.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875522010" />
+              <option name="schema">
+                <list>
+                  <option value="TransactionHTTPClientImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/upload/v1/upload.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753842910774" />
+              <option name="schema">
+                <list>
+                  <option value="InitUploadRequest" />
+                  <option value="InitUploadReply" />
+                  <option value="UploadPartRequest" />
+                  <option value="UploadPartReply" />
+                  <option value="PartInfo" />
+                  <option value="CompleteUploadRequest" />
+                  <option value="CompleteUploadReply" />
+                  <option value="ListPartsRequest" />
+                  <option value="ListPartsReply" />
+                  <option value="AbortUploadRequest" />
+                  <option value="AbortUploadReply" />
+                  <option value="SimpleUploadRequest" />
+                  <option value="SimpleUploadReply" />
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/upload/v1/upload_grpc.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753842910774" />
+              <option name="schema">
+                <list>
+                  <option value="uploadServiceClient" />
+                  <option value="UnimplementedUploadServiceServer" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/upload/v1/upload_http.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753842910774" />
+              <option name="schema">
+                <list>
+                  <option value="UploadServiceHTTPClientImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/user/v2/user.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875522321" />
+              <option name="schema">
+                <list>
+                  <option value="CreateUserRequest" />
+                  <option value="CreateUserData" />
+                  <option value="RealNameRequest" />
+                  <option value="RealNameData" />
+                  <option value="UpdateUserStatusRequest" />
+                  <option value="UpdateUserStatusData" />
+                  <option value="SendSmsRequest" />
+                  <option value="SendSmsData" />
+                  <option value="VerifySmsRequest" />
+                  <option value="VerifySmsData" />
+                  <option value="LoginRequest" />
+                  <option value="LoginData" />
+                  <option value="GetFileListRequest" />
+                  <option value="FileInfo" />
+                  <option value="GetFileListData" />
+                  <option value="GetUploadStatsRequest" />
+                  <option value="GetUploadStatsData" />
+                  <option value="DeleteFileRequest" />
+                  <option value="DeleteFileData" />
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/user/v2/user_grpc.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875522392" />
+              <option name="schema">
+                <list>
+                  <option value="userClient" />
+                  <option value="UnimplementedUserServer" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/api/user/v2/user_http.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875522459" />
+              <option name="schema">
+                <list>
+                  <option value="UserHTTPClientImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/biz/biz.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753794785766" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/biz/greeter.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753431899871" />
+              <option name="schema">
+                <list>
+                  <option value="GreeterUsecase" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/biz/points.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875520691" />
+              <option name="schema">
+                <list>
+                  <option value="PointsUsecase" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/biz/points_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753627232318" />
+              <option name="schema">
+                <list>
+                  <option value="MockPointsRepo" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/biz/user.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753439829915" />
+              <option name="schema">
+                <list>
+                  <option value="UserUsecase" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/biz/user_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753662806421" />
+              <option name="schema">
+                <list>
+                  <option value="MockUserRepo" />
+                  <option value="MockSmsRepo" />
+                  <option value="MockMinioRepo" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/common/utils.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753686476223" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/conf/conf.pb.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753841527580" />
+              <option name="schema">
+                <list>
+                  <option value="Bootstrap" />
+                  <option value="Server" />
+                  <option value="Data" />
+                  <option value="Server_HTTP" />
+                  <option value="Server_GRPC" />
+                  <option value="Data_Database" />
+                  <option value="Data_Redis" />
+                  <option value="Data_MongoDB" />
+                  <option value="Data_Minio" />
+                  <option value="Data_TencentYunRealName" />
+                  <option value="Data_AliyunSms" />
+                  <option value="Data_ShumaiSms" />
+                  <option value="x" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/data/greeter.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753428976009" />
+              <option name="schema">
+                <list>
+                  <option value="greeterRepo" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/data/minio.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753689140855" />
+              <option name="schema">
+                <list>
+                  <option value="MinioClient" />
+                  <option value="progressReader" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/data/points.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753426724241" />
+              <option name="schema">
+                <list>
+                  <option value="PointsRepo" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/data/points_simple_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753663537983" />
+              <option name="schema">
+                <list>
+                  <option value="MockDB" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/data/realname.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875520448" />
+              <option name="schema">
+                <list>
+                  <option value="RealNameSDK" />
+                  <option value="RealNameResp" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/data/sms.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875520113" />
+              <option name="schema">
+                <list>
+                  <option value="SmsTemplate" />
+                  <option value="SmsCodeInfo" />
+                  <option value="ShumaiSmsSender" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/data/sms_simple_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753663649311" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/data/user.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753783004525" />
+              <option name="schema">
+                <list>
+                  <option value="UserRepo" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/data/user_simple_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753663579678" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/server/grpc.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753792663314" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/server/http.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753800615883" />
+              <option name="schema">
+                <list>
+                  <option value="Server" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/server/server.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1752811690229" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/server/websocket.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753686525448" />
+              <option name="schema">
+                <list>
+                  <option value="ProgressHub" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/service/greeter.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875519061" />
+              <option name="schema">
+                <list>
+                  <option value="GreeterService" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/service/points.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875517723" />
+              <option name="schema">
+                <list>
+                  <option value="PointsService" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/service/points_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753663044973" />
+              <option name="schema">
+                <list>
+                  <option value="MockPointsUsecase" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/service/response.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753875516611" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/service/response_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753662205490" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/service/service.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753794908218" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/service/user.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753686579980" />
+              <option name="schema">
+                <list>
+                  <option value="UserService" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/internal/service/user_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753662899759" />
+              <option name="schema">
+                <list>
+                  <option value="MockUserUsecase" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/migrate.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1753194530258" />
+            </ScannedPath>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="tableStructMapping">
+      <map>
+        <entry key="abort_upload_reply" value="AbortUploadReply" />
+        <entry key="abort_upload_request" value="AbortUploadRequest" />
+        <entry key="base_response" value="BaseResponse" />
+        <entry key="bootstrap" value="Bootstrap" />
+        <entry key="check_in_data" value="CheckInData" />
+        <entry key="check_in_request" value="CheckInRequest" />
+        <entry key="complete_upload_reply" value="CompleteUploadReply" />
+        <entry key="complete_upload_request" value="CompleteUploadRequest" />
+        <entry key="create_customer_data" value="CreateCustomerData" />
+        <entry key="create_customer_request" value="CreateCustomerRequest" />
+        <entry key="create_house_data" value="CreateHouseData" />
+        <entry key="create_house_request" value="CreateHouseRequest" />
+        <entry key="create_transaction_data" value="CreateTransactionData" />
+        <entry key="create_transaction_request" value="CreateTransactionRequest" />
+        <entry key="create_user_data" value="CreateUserData" />
+        <entry key="create_user_request" value="CreateUserRequest" />
+        <entry key="customer_client" value="customerClient" />
+        <entry key="customer_http_client_impl" value="CustomerHTTPClientImpl" />
+        <entry key="data" value="Data" />
+        <entry key="data__aliyun_sms" value="Data_AliyunSms" />
+        <entry key="data__database" value="Data_Database" />
+        <entry key="data__minio" value="Data_Minio" />
+        <entry key="data__mongo_db" value="Data_MongoDB" />
+        <entry key="data__redis" value="Data_Redis" />
+        <entry key="data__shumai_sms" value="Data_ShumaiSms" />
+        <entry key="data__tencent_yun_real_name" value="Data_TencentYunRealName" />
+        <entry key="delete_file_data" value="DeleteFileData" />
+        <entry key="delete_file_request" value="DeleteFileRequest" />
+        <entry key="earn_points_by_consume_data" value="EarnPointsByConsumeData" />
+        <entry key="earn_points_by_consume_request" value="EarnPointsByConsumeRequest" />
+        <entry key="file_info" value="FileInfo" />
+        <entry key="get_file_list_data" value="GetFileListData" />
+        <entry key="get_file_list_request" value="GetFileListRequest" />
+        <entry key="get_points_history_data" value="GetPointsHistoryData" />
+        <entry key="get_points_history_request" value="GetPointsHistoryRequest" />
+        <entry key="get_upload_stats_data" value="GetUploadStatsData" />
+        <entry key="get_upload_stats_request" value="GetUploadStatsRequest" />
+        <entry key="get_user_points_data" value="GetUserPointsData" />
+        <entry key="get_user_points_request" value="GetUserPointsRequest" />
+        <entry key="greeter_client" value="greeterClient" />
+        <entry key="greeter_http_client_impl" value="GreeterHTTPClientImpl" />
+        <entry key="greeter_repo" value="greeterRepo" />
+        <entry key="greeter_service" value="GreeterService" />
+        <entry key="greeter_usecase" value="GreeterUsecase" />
+        <entry key="hello_data" value="HelloData" />
+        <entry key="hello_request" value="HelloRequest" />
+        <entry key="house_client" value="houseClient" />
+        <entry key="house_http_client_impl" value="HouseHTTPClientImpl" />
+        <entry key="init_upload_reply" value="InitUploadReply" />
+        <entry key="init_upload_request" value="InitUploadRequest" />
+        <entry key="list_parts_reply" value="ListPartsReply" />
+        <entry key="list_parts_request" value="ListPartsRequest" />
+        <entry key="login_data" value="LoginData" />
+        <entry key="login_request" value="LoginRequest" />
+        <entry key="minio_client" value="MinioClient" />
+        <entry key="mock_db" value="MockDB" />
+        <entry key="mock_minio_repo" value="MockMinioRepo" />
+        <entry key="mock_points_repo" value="MockPointsRepo" />
+        <entry key="mock_points_usecase" value="MockPointsUsecase" />
+        <entry key="mock_sms_repo" value="MockSmsRepo" />
+        <entry key="mock_user_repo" value="MockUserRepo" />
+        <entry key="mock_user_usecase" value="MockUserUsecase" />
+        <entry key="page_info" value="PageInfo" />
+        <entry key="part_info" value="PartInfo" />
+        <entry key="points_client" value="pointsClient" />
+        <entry key="points_http_client_impl" value="PointsHTTPClientImpl" />
+        <entry key="points_record" value="PointsRecord" />
+        <entry key="points_repo" value="PointsRepo" />
+        <entry key="points_service" value="PointsService" />
+        <entry key="points_usecase" value="PointsUsecase" />
+        <entry key="progress_hub" value="ProgressHub" />
+        <entry key="progress_reader" value="progressReader" />
+        <entry key="real_name_data" value="RealNameData" />
+        <entry key="real_name_request" value="RealNameRequest" />
+        <entry key="real_name_resp" value="RealNameResp" />
+        <entry key="real_name_sdk" value="RealNameSDK" />
+        <entry key="send_sms_data" value="SendSmsData" />
+        <entry key="send_sms_request" value="SendSmsRequest" />
+        <entry key="server" value="Server" />
+        <entry key="server_grpc" value="Server_GRPC" />
+        <entry key="server_http" value="Server_HTTP" />
+        <entry key="shumai_sms_sender" value="ShumaiSmsSender" />
+        <entry key="simple_upload_reply" value="SimpleUploadReply" />
+        <entry key="simple_upload_request" value="SimpleUploadRequest" />
+        <entry key="sms_code_info" value="SmsCodeInfo" />
+        <entry key="sms_template" value="SmsTemplate" />
+        <entry key="transaction_client" value="transactionClient" />
+        <entry key="transaction_http_client_impl" value="TransactionHTTPClientImpl" />
+        <entry key="unimplemented_customer_server" value="UnimplementedCustomerServer" />
+        <entry key="unimplemented_greeter_server" value="UnimplementedGreeterServer" />
+        <entry key="unimplemented_house_server" value="UnimplementedHouseServer" />
+        <entry key="unimplemented_points_server" value="UnimplementedPointsServer" />
+        <entry key="unimplemented_transaction_server" value="UnimplementedTransactionServer" />
+        <entry key="unimplemented_upload_service_server" value="UnimplementedUploadServiceServer" />
+        <entry key="unimplemented_user_server" value="UnimplementedUserServer" />
+        <entry key="update_user_status_data" value="UpdateUserStatusData" />
+        <entry key="update_user_status_request" value="UpdateUserStatusRequest" />
+        <entry key="upload_part_reply" value="UploadPartReply" />
+        <entry key="upload_part_request" value="UploadPartRequest" />
+        <entry key="upload_service_client" value="uploadServiceClient" />
+        <entry key="upload_service_http_client_impl" value="UploadServiceHTTPClientImpl" />
+        <entry key="use_points_data" value="UsePointsData" />
+        <entry key="use_points_request" value="UsePointsRequest" />
+        <entry key="user_client" value="userClient" />
+        <entry key="user_http_client_impl" value="UserHTTPClientImpl" />
+        <entry key="user_repo" value="UserRepo" />
+        <entry key="user_service" value="UserService" />
+        <entry key="user_usecase" value="UserUsecase" />
+        <entry key="verify_sms_data" value="VerifySmsData" />
+        <entry key="verify_sms_request" value="VerifySmsRequest" />
+        <entry key="x" value="x" />
+      </map>
+    </option>
+    <option name="lastTimeChecked" value="1753878132702" />
+  </component>
+</project>

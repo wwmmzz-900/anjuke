@@ -1,0 +1,313 @@
+syntax = "proto3";
+
+package api.appointment.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+option go_package = "anjuke/server/api/appointment/v1;v1";
+
+// 预约状态枚举
+enum AppointmentStatus {
+  APPOINTMENT_STATUS_UNSPECIFIED = 0;  // 未指定
+  APPOINTMENT_STATUS_PENDING = 1;     // 待确认
+  APPOINTMENT_STATUS_CONFIRMED = 2;   // 已确认
+  APPOINTMENT_STATUS_IN_PROGRESS = 3; // 进行中
+  APPOINTMENT_STATUS_COMPLETED = 4;   // 已完成
+  APPOINTMENT_STATUS_CANCELLED = 5;   // 已取消
+}
+
+// 经纪人状态枚举
+enum RealtorStatus {
+  REALTOR_STATUS_UNSPECIFIED = 0;  // 未指定
+  REALTOR_STATUS_ONLINE = 1;       // 在线
+  REALTOR_STATUS_OFFLINE = 2;     // 离线
+  REALTOR_STATUS_BUSY = 3;         // 忙碌
+}
+
+// 预约服务
+service AppointmentService {
+  // 获取可预约门店列表
+  rpc ListAvailableStores(ListStoresRequest) returns (ListStoresResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/appointment/stores"
+    };
+  }
+
+  // 获取门店可预约时段
+  rpc GetAvailableSlots(GetAvailableSlotsRequest) returns (GetAvailableSlotsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/appointment/stores/{store_id}/slots"
+    };
+  }
+
+  // 创建预约
+  rpc CreateAppointment(CreateAppointmentRequest) returns (CreateAppointmentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/appointment/appointments"
+      body: "*"
+    };
+  }
+
+  // 获取预约详情
+  rpc GetAppointment(GetAppointmentRequest) returns (GetAppointmentResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/appointment/appointments/{appointment_id}"
+    };
+  }
+
+  // 取消预约
+  rpc CancelAppointment(CancelAppointmentRequest) returns (CancelAppointmentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/appointment/appointments/{appointment_id}/cancel"
+      body: "*"
+    };
+  }
+
+  // 经纪人接单
+  rpc AcceptAppointment(AcceptAppointmentRequest) returns (AcceptAppointmentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/appointment/appointments/{appointment_id}/accept"
+      body: "*"
+    };
+  }
+
+  // 经纪人确认服务
+  rpc ConfirmAppointment(ConfirmAppointmentRequest) returns (ConfirmAppointmentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/appointment/appointments/{appointment_id}/confirm"
+      body: "*"
+    };
+  }
+
+  // 完成服务
+  rpc CompleteAppointment(CompleteAppointmentRequest) returns (CompleteAppointmentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/appointment/appointments/{appointment_id}/complete"
+      body: "*"
+    };
+  }
+
+  // 获取经纪人预约列表
+  rpc ListRealtorAppointments(ListRealtorAppointmentsRequest) returns (ListRealtorAppointmentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/appointment/realtor/appointments"
+    };
+  }
+
+  // 更新经纪人状态
+  rpc UpdateRealtorStatus(UpdateRealtorStatusRequest) returns (UpdateRealtorStatusResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/appointment/realtor/status"
+      body: "*"
+    };
+  }
+}
+
+// 门店信息
+message StoreInfo {
+  string id = 1;                          // 门店唯一标识ID（MongoDB ObjectID）
+  string store_name = 2;                  // 门店名称
+  string company_id = 3;                  // 所属公司ID（MongoDB ObjectID）
+  string address = 4;                     // 门店地址
+  string phone = 5;                       // 门店联系电话
+  string business_hours = 6;              // 营业时间
+  double rating = 7;                      // 评分
+  int32 review_count = 8;                 // 评价数量
+  bool is_active = 9;                     // 是否激活
+  string created_time = 10;               // 创建时间
+  string updated_time = 11;               // 更新时间
+  int32 online_realtors = 12;             // 当前在线经纪人数量
+  int32 available_slots_today = 13;       // 今日剩余可预约名额
+}
+
+// 可预约时段
+message TimeSlot {
+  string date = 1;                        // 预约日期（格式：YYYY-MM-DD）
+  string start_time = 2;                  // 开始时间（格式：HH:MM）
+  string end_time = 3;                    // 结束时间（格式：HH:MM）
+  bool available = 4;                     // 是否可预约
+  int32 available_realtors = 5;           // 该时段可用经纪人数量
+  int32 total_capacity = 6;               // 总容量
+  int32 booked_count = 7;                 // 已预约数量
+  int32 queue_count = 8;                  // 排队数量
+}
+
+// 经纪人基础信息
+message RealtorBasicInfo {
+  string id = 1;                          // 经纪人ID
+  string name = 2;                        // 经纪人姓名
+  string phone = 3;                       // 经纪人电话
+  string email = 4;                       // 经纪人邮箱
+  bool is_active = 5;                     // 是否激活
+}
+
+// 经纪人状态信息
+message RealtorStatusInfo {
+  string realtor_id = 1;                  // 经纪人ID
+  RealtorStatus status = 2;               // 经纪人状态
+  int32 current_load = 3;                 // 当前负载
+  int32 max_load = 4;                     // 最大负载
+  google.protobuf.Timestamp last_active_at = 5;  // 最后活跃时间
+}
+
+// 预约信息
+message AppointmentInfo {
+  string appointment_id = 1;              // 预约唯一标识ID（MongoDB ObjectID）
+  string appointment_code = 2;            // 预约码（6位数字，用户凭证）
+  int64 user_id = 3;                      // 用户ID
+  string store_id = 4;                    // 门店ID（MongoDB ObjectID）
+  string realtor_id = 5;                  // 经纪人ID（MongoDB ObjectID，可为空）
+  string realtor_name = 6;                // 经纪人姓名（分配后填充）
+  string realtor_phone = 7;               // 经纪人电话（分配后填充）
+  string customer_name = 8;               // 客户姓名
+  string customer_phone = 9;              // 客户手机号
+  string appointment_date = 10;           // 预约日期（格式：YYYY-MM-DD）
+  string start_time = 11;                 // 预约开始时间（格式：HH:MM）
+  string end_time = 12;                   // 预约结束时间（格式：HH:MM）
+  int32 duration_minutes = 13;            // 预约时长（分钟：30/60/90）
+  string requirements = 14;               // 客户需求描述
+  AppointmentStatus status = 15;          // 预约状态
+  int32 queue_position = 16;              // 排队位置（0表示未排队）
+  int32 estimated_wait_minutes = 17;      // 预估等待时间（分钟）
+  google.protobuf.Timestamp created_at = 18;    // 创建时间
+  google.protobuf.Timestamp confirmed_at = 19;  // 确认时间（可为空）
+}
+
+// 请求和响应消息
+
+// 获取门店列表请求
+message ListStoresRequest {
+  int32 page = 1;                         // 页码（从1开始，默认1）
+  int32 page_size = 2;                    // 每页数量（默认20，最大100）
+  string keyword = 3;                     // 搜索关键词（可选，支持门店名称、地址模糊搜索）
+  string company_id = 4;                  // 公司ID过滤（可选）
+  bool is_active = 5;                     // 是否激活过滤（可选，默认true）
+  string sort_field = 6;                  // 排序字段（可选，如：rating, review_count）
+  bool sort_desc = 7;                     // 是否降序（可选，默认true）
+  double latitude = 8;                    // 用户位置纬度（可选，用于距离排序）
+  double longitude = 9;                   // 用户位置经度（可选，用于距离排序）
+  int32 radius_km = 10;                   // 搜索半径（公里，可选）
+}
+
+// 获取门店列表响应
+message ListStoresResponse {
+  repeated StoreInfo stores = 1;          // 门店列表
+  int32 total = 2;                        // 总记录数
+  int32 page = 3;                         // 当前页码
+  int32 page_size = 4;                    // 每页数量
+}
+
+// 获取可预约时段请求
+message GetAvailableSlotsRequest {
+  string store_id = 1 [(validate.rules).string.min_len = 1];     // 门店ID（必填）
+  string start_date = 2;                  // 开始日期（格式：YYYY-MM-DD，默认今天）
+  int32 days = 3;                         // 查询天数（默认7天，最多7天）
+}
+
+// 获取可预约时段响应
+message GetAvailableSlotsResponse {
+  repeated TimeSlot slots = 1;            // 可预约时段列表
+}
+
+// 创建预约请求
+message CreateAppointmentRequest {
+  string store_id = 1 [(validate.rules).string.min_len = 1];         // 门店ID（必填）
+  string customer_name = 2 [(validate.rules).string.min_len = 1];    // 客户姓名（必填）
+  string customer_phone = 3 [(validate.rules).string.pattern = "^1[3-9]\\d{9}$"];  // 客户手机号（必填，需验证格式）
+  string appointment_date = 4 [(validate.rules).string.min_len = 1]; // 预约日期（必填，格式：YYYY-MM-DD）
+  string start_time = 5 [(validate.rules).string.min_len = 1];       // 预约开始时间（必填，格式：HH:MM）
+  int32 duration_minutes = 6 [(validate.rules).int32 = {in: [30, 60, 90]}];  // 预约时长（必填，只能是30/60/90分钟）
+  string requirements = 7;                // 客户需求描述（可选）
+}
+
+// 创建预约响应
+message CreateAppointmentResponse {
+  AppointmentInfo appointment = 1;        // 创建的预约信息
+  bool need_queue = 2;                    // 是否需要排队
+  string message = 3;                     // 响应消息（成功提示或排队信息）
+}
+
+// 获取预约详情请求
+message GetAppointmentRequest {
+  string appointment_id = 1 [(validate.rules).string.min_len = 1];   // 预约ID（必填）
+}
+
+// 获取预约详情响应
+message GetAppointmentResponse {
+  AppointmentInfo appointment = 1;        // 预约详细信息
+}
+
+// 取消预约请求
+message CancelAppointmentRequest {
+  string appointment_id = 1 [(validate.rules).string.min_len = 1];   // 预约ID（必填）
+  string reason = 2;                      // 取消原因（可选）
+}
+
+// 取消预约响应
+message CancelAppointmentResponse {
+  bool success = 1;                       // 操作是否成功
+  string message = 2;                     // 响应消息
+}
+
+// 经纪人接单请求
+message AcceptAppointmentRequest {
+  string appointment_id = 1 [(validate.rules).string.min_len = 1];   // 预约ID（必填）
+  string realtor_id = 2 [(validate.rules).string.min_len = 1];       // 经纪人ID（必填）
+}
+
+// 经纪人接单响应
+message AcceptAppointmentResponse {
+  bool success = 1;                       // 接单是否成功
+  string message = 2;                     // 响应消息
+}
+
+// 经纪人确认服务请求
+message ConfirmAppointmentRequest {
+  string appointment_id = 1 [(validate.rules).string.min_len = 1];   // 预约ID（必填）
+  string realtor_id = 2 [(validate.rules).string.min_len = 1];       // 经纪人ID（必填）
+}
+
+// 经纪人确认服务响应
+message ConfirmAppointmentResponse {
+  bool success = 1;                       // 确认是否成功
+  string message = 2;                     // 响应消息
+}
+
+// 完成服务请求
+message CompleteAppointmentRequest {
+  string appointment_id = 1 [(validate.rules).string.min_len = 1];   // 预约ID（必填）
+  string realtor_id = 2 [(validate.rules).string.min_len = 1];       // 经纪人ID（必填）
+  string service_notes = 3;               // 服务备注（可选）
+}
+
+// 完成服务响应
+message CompleteAppointmentResponse {
+  bool success = 1;                       // 完成是否成功
+  string message = 2;                     // 响应消息
+}
+
+// 获取经纪人预约列表请求
+message ListRealtorAppointmentsRequest {
+  string realtor_id = 1 [(validate.rules).string.min_len = 1];       // 经纪人ID（必填）
+  string status = 2;                      // 预约状态过滤（可选：pending/confirmed/in_progress/completed）
+  string date = 3;                        // 查询日期（格式：YYYY-MM-DD，默认今天）
+}
+
+// 获取经纪人预约列表响应
+message ListRealtorAppointmentsResponse {
+  repeated AppointmentInfo appointments = 1;    // 预约列表
+}
+
+// 更新经纪人状态请求
+message UpdateRealtorStatusRequest {
+  string realtor_id = 1 [(validate.rules).string.min_len = 1];       // 经纪人ID（必填）
+  string status = 2 [(validate.rules).string = {in: ["online", "offline", "busy"]}];  // 状态（必填：online/offline/busy）
+}
+
+// 更新经纪人状态响应
+message UpdateRealtorStatusResponse {
+  bool success = 1;                       // 更新是否成功
+  string message = 2;                     // 响应消息
+}

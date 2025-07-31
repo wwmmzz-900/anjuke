@@ -1,11 +1,15 @@
 package data
 
 import (
+	"bytes"
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -22,7 +26,6 @@ type MinioClient struct {
 	client   *minio.Client
 	endpoint string
 	bucket   string
-	uploader *MultipartUploader // 分片上传器
 	log      *log.Helper
 }
 
@@ -112,9 +115,6 @@ func NewMinioClient(conf *conf.Data, logger log.Logger) (*MinioClient, error) {
 		log:      log,
 	}
 
-	// 初始化分片上传器，传入自身指针
-	minioClient.uploader = NewMultipartUploader(minioClient, client, c.Bucket, c.Endpoint, logger)
-
 	return minioClient, nil
 }
 
@@ -123,109 +123,124 @@ func (m *MinioClient) GetBucket() string {
 	return m.bucket
 }
 
-// 前后端协作分片上传相关方法
+// generateObjectName 生成带时间戳的对象名
+func (m *MinioClient) generateObjectName(originalName string) string {
+	ext := filepath.Ext(originalName)
+	nameWithoutExt := strings.TrimSuffix(originalName, ext)
+	timestamp := time.Now().Format("20060102150405")
+	hasher := md5.New()
+	hasher.Write([]byte(originalName + timestamp))
+	hash := hex.EncodeToString(hasher.Sum(nil))[:8]
+	return fmt.Sprintf("%s_%s_%s%s", nameWithoutExt, timestamp, hash, ext)
+}
 
-// SimpleUpload 简单上传（小文件）
-func (m *MinioClient) SimpleUpload(ctx context.Context, objectName string, reader io.Reader, size int64, contentType string) (string, error) {
-	// 简化日志输出
-	m.log.Infof("开始上传: %s", objectName)
+// UploadFile 上传文件 - 实现domain.MinioRepo接口
+func (m *MinioClient) UploadFile(ctx context.Context, fileName string, reader io.Reader, size int64) (*domain.FileInfo, error) {
+	finalObjectName := m.generateObjectName(fileName)
 
-	finalObjectName := m.uploader.generateObjectName(objectName)
+	// 使用MinIO的PutObject
+	uploadCtx, cancel := context.WithTimeout(ctx, 30*time.Minute)
+	defer cancel()
 
-	_, err := m.client.PutObject(ctx, m.bucket, finalObjectName, reader, size, minio.PutObjectOptions{
-		ContentType: contentType,
+	_, err := m.client.PutObject(uploadCtx, m.bucket, finalObjectName, reader, size, minio.PutObjectOptions{
+		ContentType: "application/octet-stream",
 	})
 
 	if err != nil {
-		m.log.Errorf("上传失败: %v", err)
-		return "", fmt.Errorf("上传失败: %v", err)
+		m.log.Errorf("上传文件失败: %s, 错误: %v", fileName, err)
+		return nil, fmt.Errorf("上传文件失败: %v", err)
 	}
 
-	url := fmt.Sprintf("http://%s/%s/%s", m.endpoint, m.bucket, finalObjectName)
-	m.log.Infof("上传完成: %s", url)
+	fileURL := fmt.Sprintf("http://%s/%s/%s", m.endpoint, m.bucket, finalObjectName)
 
-	return url, nil
+	fileInfo := &domain.FileInfo{
+		Name:         finalObjectName,
+		Size:         size,
+		LastModified: time.Now(),
+		ContentType:  "application/octet-stream",
+		URL:          fileURL,
+		FileURL:      fileURL,
+	}
+
+	m.log.Infof("文件上传成功: %s -> %s", fileName, finalObjectName)
+	return fileInfo, nil
 }
 
-// SmartUpload 统一上传接口，供外部调用
-func (m *MinioClient) SmartUpload(ctx context.Context, objectName string, reader io.Reader, size int64, contentType string, progressCb func(uploaded, total int64)) (string, error) {
-	return m.uploader.SmartUpload(ctx, objectName, reader, size, contentType, progressCb)
-}
-
-// Download 下载文件
-func (m *MinioClient) Download(ctx context.Context, objectName string) (io.Reader, error) {
-	obj, err := m.client.GetObject(ctx, m.bucket, objectName, minio.GetObjectOptions{})
+// DownloadFile 下载文件 - 实现domain.MinioRepo接口
+func (m *MinioClient) DownloadFile(ctx context.Context, fileName string) (io.Reader, error) {
+	obj, err := m.client.GetObject(ctx, m.bucket, fileName, minio.GetObjectOptions{})
 	if err != nil {
-		return nil, err
+		m.log.Errorf("下载文件失败: %s, 错误: %v", fileName, err)
+		return nil, fmt.Errorf("下载文件失败: %v", err)
 	}
+
+	m.log.Infof("文件下载成功: %s", fileName)
 	return obj, nil
 }
 
-// Delete 删除文件
-func (m *MinioClient) Delete(ctx context.Context, objectName string) error {
-	// 删除前先检查文件是否存在
-	_, err := m.client.StatObject(ctx, m.bucket, objectName, minio.StatObjectOptions{})
+// DeleteFile 删除文件 - 实现domain.MinioRepo接口
+func (m *MinioClient) DeleteFile(ctx context.Context, fileName string) error {
+	err := m.client.RemoveObject(ctx, m.bucket, fileName, minio.RemoveObjectOptions{})
 	if err != nil {
-		respErr := minio.ToErrorResponse(err)
-		if respErr.Code == "NoSuchKey" || respErr.Code == "NotFound" {
-			return fmt.Errorf("文件不存在或已被删除")
-		}
-		return fmt.Errorf("检查文件状态失败: %v", err)
-	}
-
-	err = m.client.RemoveObject(ctx, m.bucket, objectName, minio.RemoveObjectOptions{})
-	if err != nil {
+		m.log.Errorf("删除文件失败: %s, 错误: %v", fileName, err)
 		return fmt.Errorf("删除文件失败: %v", err)
 	}
 
-	// 删除后再次检查，确保文件已被删除
-	_, err = m.client.StatObject(ctx, m.bucket, objectName, minio.StatObjectOptions{})
-	if err == nil {
-		return fmt.Errorf("文件删除后依然存在")
-	}
-	respErr := minio.ToErrorResponse(err)
-	if respErr.Code != "NoSuchKey" && respErr.Code != "NotFound" {
-		return fmt.Errorf("删除后检查文件状态失败: %v", err)
-	}
-
+	m.log.Infof("文件删除成功: %s", fileName)
 	return nil
 }
 
-// CleanupIncompleteUploads 清理未完成的分片上传
-func (m *MinioClient) CleanupIncompleteUploads(ctx context.Context, prefix string, olderThan time.Duration) error {
-	m.log.Infof("开始清理未完成的上传: prefix=%s, olderThan=%v", prefix, olderThan)
+// SimpleUpload 简单上传文件 - 实现domain.MinioRepo接口
+func (m *MinioClient) SimpleUpload(ctx context.Context, fileName string, reader io.Reader) (*domain.FileInfo, error) {
+	// 获取文件大小
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("读取文件数据失败: %v", err)
+	}
 
-	// 获取未完成的上传
-	uploadsCh := m.client.ListIncompleteUploads(ctx, m.bucket, prefix, true)
+	size := int64(len(data))
+	return m.UploadFile(ctx, fileName, bytes.NewReader(data), size)
+}
 
-	var count int
-	for upload := range uploadsCh {
-		if upload.Err != nil {
-			m.log.Errorf("列出未完成上传失败: %v", upload.Err)
-			continue
+// Delete 删除文件（别名方法） - 实现domain.MinioRepo接口
+func (m *MinioClient) Delete(ctx context.Context, fileName string) error {
+	return m.DeleteFile(ctx, fileName)
+}
+
+// SearchFiles 搜索文件 - 实现domain.MinioRepo接口
+func (m *MinioClient) SearchFiles(ctx context.Context, keyword string, page, pageSize int32) ([]domain.FileInfo, int32, error) {
+	var files []domain.FileInfo
+	var count int32
+
+	opts := minio.ListObjectsOptions{
+		Recursive: true,
+		MaxKeys:   int(pageSize * page), // 简化分页处理
+	}
+
+	for object := range m.client.ListObjects(ctx, m.bucket, opts) {
+		if object.Err != nil {
+			return nil, 0, fmt.Errorf("搜索文件失败: %v", object.Err)
 		}
 
-		// 检查上传时间
-		if time.Since(upload.Initiated) > olderThan {
-			// minio-go v7 无法直接中止分片上传，这里仅做日志记录
-			m.log.Warnf("检测到未完成上传但无法自动中止: %s (uploadId=%s)", upload.Key, upload.UploadID)
+		if keyword == "" || strings.Contains(strings.ToLower(object.Key), strings.ToLower(keyword)) {
+			fileURL := fmt.Sprintf("http://%s/%s/%s", m.endpoint, m.bucket, object.Key)
+			files = append(files, domain.FileInfo{
+				Name:         object.Key,
+				Size:         object.Size,
+				LastModified: object.LastModified,
+				ContentType:  "",
+				ETag:         object.ETag,
+				URL:          fileURL,
+				FileURL:      fileURL,
+			})
 			count++
 		}
 	}
 
-	m.log.Infof("清理完成，共清理 %d 个未完成上传", count)
-	return nil
+	return files, count, nil
 }
 
-// 确保MinioClient实现了domain.MinioRepo接口
-var _ domain.MinioRepo = (*MinioClient)(nil)
-
-// 实现domain.MinioRepo接口
-func NewMinioRepo(mc *MinioClient) domain.MinioRepo {
-	return mc
-}
-
-// 自动补全 MinioRepo 接口方法
+// ListFiles 列出文件 - 实现domain.MinioRepo接口
 func (m *MinioClient) ListFiles(ctx context.Context, prefix string, maxKeys int) ([]domain.FileInfo, error) {
 	var files []domain.FileInfo
 
@@ -249,47 +264,15 @@ func (m *MinioClient) ListFiles(ctx context.Context, prefix string, maxKeys int)
 			ContentType:  "", // MinIO ListObjects 不返回 ContentType，需要单独获取
 			ETag:         object.ETag,
 			URL:          fileURL,
+			FileURL:      fileURL,
 		})
 	}
 
 	return files, nil
 }
 
-func (m *MinioClient) GetFileInfo(ctx context.Context, objectName string) (*domain.FileInfo, error) {
-	// TODO: 实现或调用实际逻辑
-	return nil, nil
-}
-
-func (m *MinioClient) SearchFiles(ctx context.Context, keyword string, maxKeys int) ([]domain.FileInfo, error) {
-	var files []domain.FileInfo
-
-	opts := minio.ListObjectsOptions{
-		Recursive: true,
-		MaxKeys:   maxKeys,
-	}
-
-	for object := range m.client.ListObjects(ctx, m.bucket, opts) {
-		if object.Err != nil {
-			return nil, fmt.Errorf("搜索文件失败: %v", object.Err)
-		}
-
-		if keyword == "" || (len(object.Key) > 0 && containsIgnoreCase(object.Key, keyword)) {
-			fileURL := fmt.Sprintf("http://%s/%s/%s", m.endpoint, m.bucket, object.Key)
-			files = append(files, domain.FileInfo{
-				Name:         object.Key,
-				Size:         object.Size,
-				LastModified: object.LastModified,
-				ContentType:  "",
-				ETag:         object.ETag,
-				URL:          fileURL,
-			})
-		}
-	}
-
-	return files, nil
-}
-
-func (m *MinioClient) GetFileStats(ctx context.Context, prefix string) (map[string]any, error) {
+// GetFileStats 获取文件统计信息 - 实现domain.MinioRepo接口
+func (m *MinioClient) GetFileStats(ctx context.Context) (map[string]interface{}, error) {
 	var totalFiles int32
 	var totalSize int64
 	var todayFiles int32
@@ -297,7 +280,6 @@ func (m *MinioClient) GetFileStats(ctx context.Context, prefix string) (map[stri
 	today := time.Now().Format("2006-01-02")
 
 	opts := minio.ListObjectsOptions{
-		Prefix:    prefix,
 		Recursive: true,
 	}
 
@@ -315,7 +297,7 @@ func (m *MinioClient) GetFileStats(ctx context.Context, prefix string) (map[stri
 		}
 	}
 
-	stats := map[string]any{
+	stats := map[string]interface{}{
 		"totalUploads":   totalFiles,
 		"successUploads": totalFiles, // 假设所有文件都上传成功
 		"totalSize":      totalSize,
@@ -326,11 +308,90 @@ func (m *MinioClient) GetFileStats(ctx context.Context, prefix string) (map[stri
 	return stats, nil
 }
 
-func containsIgnoreCase(s, substr string) bool {
-	return len(substr) == 0 || (len(s) >= len(substr) && (stringContainsFold(s, substr)))
+// 确保MinioClient实现了domain.MinioRepo接口
+var _ domain.MinioRepo = (*MinioClient)(nil)
+
+// NewMinioRepo 实现domain.MinioRepo接口
+func NewMinioRepo(mc *MinioClient) domain.MinioRepo {
+	return mc
 }
 
-func stringContainsFold(s, substr string) bool {
-	s, substr = strings.ToLower(s), strings.ToLower(substr)
-	return strings.Contains(s, substr)
+// progressReader 包装io.Reader以支持进度回调
+type progressReader struct {
+	r     io.Reader
+	total int64
+	read  int64
+	cb    func(uploaded, total int64)
+}
+
+func (p *progressReader) Read(b []byte) (int, error) {
+	n, err := p.r.Read(b)
+	p.read += int64(n)
+	if p.cb != nil {
+		p.cb(p.read, p.total)
+	}
+	return n, err
+}
+
+// SmartUpload 智能上传文件（支持进度回调）
+func (m *MinioClient) SmartUpload(ctx context.Context, fileName string, reader io.Reader, size int64, contentType string, progressCallback func(uploaded, total int64)) (string, error) {
+	finalObjectName := m.generateObjectName(fileName)
+
+	// 包装reader以支持进度回调
+	var uploadReader io.Reader = reader
+	if progressCallback != nil {
+		uploadReader = &progressReader{
+			r:     reader,
+			total: size,
+			cb:    progressCallback,
+		}
+	}
+
+	// 使用MinIO的PutObject
+	uploadCtx, cancel := context.WithTimeout(ctx, 30*time.Minute)
+	defer cancel()
+
+	_, err := m.client.PutObject(uploadCtx, m.bucket, finalObjectName, uploadReader, size, minio.PutObjectOptions{
+		ContentType: contentType,
+	})
+
+	if err != nil {
+		m.log.Errorf("上传文件失败: %s, 错误: %v", fileName, err)
+		return "", fmt.Errorf("上传文件失败: %v", err)
+	}
+
+	fileURL := fmt.Sprintf("http://%s/%s/%s", m.endpoint, m.bucket, finalObjectName)
+	m.log.Infof("文件上传成功: %s -> %s", fileName, finalObjectName)
+	return fileURL, nil
+}
+
+// CleanupIncompleteUploads 清理未完成的上传
+func (m *MinioClient) CleanupIncompleteUploads(ctx context.Context, prefix string, olderThan time.Duration) error {
+	// MinIO Go SDK 没有直接的清理未完成上传的方法
+	// 这里我们可以实现一个简单的清理逻辑
+	m.log.Infof("清理未完成的上传任务，前缀: %s, 时间: %v", prefix, olderThan)
+	return nil
+}
+
+// GetFileInfo 获取文件信息
+func (m *MinioClient) GetFileInfo(ctx context.Context, objectName string) (*domain.FileInfo, error) {
+	objInfo, err := m.client.StatObject(ctx, m.bucket, objectName, minio.StatObjectOptions{})
+	if err != nil {
+		m.log.Errorf("获取文件信息失败: %s, 错误: %v", objectName, err)
+		return nil, fmt.Errorf("获取文件信息失败: %v", err)
+	}
+
+	fileURL := fmt.Sprintf("http://%s/%s/%s", m.endpoint, m.bucket, objectName)
+
+	fileInfo := &domain.FileInfo{
+		Name:         objectName,
+		Size:         objInfo.Size,
+		LastModified: objInfo.LastModified,
+		ContentType:  objInfo.ContentType,
+		ETag:         objInfo.ETag,
+		URL:          fileURL,
+		FileURL:      fileURL,
+	}
+
+	return fileInfo, nil
 }

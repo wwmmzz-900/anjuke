@@ -1,0 +1,40 @@
+server:
+  http:
+    addr: 0.0.0.0:8001
+    timeout: 600s
+  grpc:
+    addr: 0.0.0.0:9003
+    timeout: 1s
+data:
+  database:
+    driver: mysql
+    source: root:e10adc3949ba59abbe56e057f20f883e@tcp(14.103.149.201:3306)/anjuke?parseTime=True&loc=Local
+  redis:
+    addr: 14.103.235.216:6379
+    password: 973c951ff2facf82bf69657a61c35299
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+  mysql:
+    host: 14.103.149.201
+    port: 3306
+    username: root
+    password: e10adc3949ba59abbe56e057f20f883e
+    database: anjuke
+    charset: utf8mb4
+    max_idle_conns: 10
+    max_open_conns: 100
+    max_lifetime: 3600
+    auto_migrate: false  # 是否启用自动迁移，生产环境建议设为false
+  minio:
+    endpoint: "14.103.235.216:9000"
+    access_key: "minio_wkzphm"
+    secret_key: "minio_4En3rm"
+    use_ssl: false
+    bucket: "mybucket"
+
+  tencent_yun_real_name:
+    secretId: AKIDe8iO3bWwTahU3F9SmoKMPF3ZndhfYDVkACAK
+    secretKey: GTM1404At35A3bODk28g7Fs2bCq8Y9cLd1e023dO
+
+  shumai_sms:
+    app_code: "60a06269d46644dbb02568e33ff7c623"

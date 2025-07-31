@@ -104,10 +104,11 @@ func (r *PointsRepo) CheckIn(ctx context.Context, userID uint64) (*domain.CheckI
 	today := time.Now().Format("2006-01-02")
 
 	// 1. 创建签到记录
+	checkInDate, _ := time.Parse("2006-01-02", today)
 	checkInRecord := &domain.CheckInRecord{
-		UserID:    userID,
-		CheckDate: today,
-		Points:    int64(points),
+		UserID:      userID,
+		CheckInDate: checkInDate,
+		Points:      int64(points),
 	}
 	if err := tx.Create(checkInRecord).Error; err != nil {
 		tx.Rollback()
@@ -199,9 +200,8 @@ func (r *PointsRepo) EarnPointsByConsume(ctx context.Context, userID uint64, ord
 		UserID:      userID,
 		Type:        domain.PointsTypeConsume,
 		Points:      points,
-		Description: fmt.Sprintf("消费获得积分（订单金额：%.2f元）", float64(points)),
+		Description: fmt.Sprintf("消费获得积分（订单金额：%.2f元）", float64(amount)/100.0),
 		OrderID:     orderID,
-		Amount:      amount,
 	}
 	if err := tx.Create(pointsRecord).Error; err != nil {
 		tx.Rollback()
@@ -243,8 +243,8 @@ func (r *PointsRepo) EarnPointsByConsume(ctx context.Context, userID uint64, ord
 	r.log.Infof("消费获得积分成功: user_id=%d, order_id=%s, amount=%d, points=%d", userID, orderID, amount, points)
 
 	return &domain.EarnResult{
-		PointsEarned: points,
-		TotalPoints:  userPoints.TotalPoints,
+		Points:      points,
+		TotalPoints: userPoints.TotalPoints,
 	}, nil
 }
 
@@ -284,11 +284,10 @@ func (r *PointsRepo) UsePoints(ctx context.Context, userID uint64, points int64,
 	}
 	pointsRecord := &domain.PointsRecord{
 		UserID:      userID,
-		Type:        domain.PointsTypeUse,
+		Type:        "use",   // 使用积分
 		Points:      -points, // 负数表示消费
 		Description: description,
 		OrderID:     orderID,
-		Amount:      amountDeducted,
 	}
 	if err := tx.Create(pointsRecord).Error; err != nil {
 		tx.Rollback()
@@ -310,9 +309,8 @@ func (r *PointsRepo) UsePoints(ctx context.Context, userID uint64, points int64,
 	r.log.Infof("积分使用成功: user_id=%d, points=%d, amount_deducted=%d", userID, points, amountDeducted)
 
 	return &domain.UseResult{
-		PointsUsed:     points,
-		AmountDeducted: amountDeducted,
-		TotalPoints:    userPoints.TotalPoints,
+		Points:      points,
+		TotalPoints: userPoints.TotalPoints,
 	}, nil
 }
 
@@ -354,10 +352,7 @@ func (r *PointsRepo) GetConsecutiveCheckInDays(ctx context.Context, userID uint6
 	yesterday := time.Now().AddDate(0, 0, -1)
 
 	for i, record := range records {
-		checkDate, err := time.Parse("2006-01-02", record.CheckDate)
-		if err != nil {
-			continue
-		}
+		checkDate := record.CheckInDate
 
 		// 期望的日期：昨天、前天、大前天...
 		expectedDate := yesterday.AddDate(0, 0, -i)

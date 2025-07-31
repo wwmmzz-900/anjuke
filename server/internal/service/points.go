@@ -14,14 +14,30 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
+// PointsUsecaseInterface 定义积分用例接口，用于测试时的mock
+type PointsUsecaseInterface interface {
+	GetUserPoints(ctx context.Context, userID uint64) (*domain.UserPoints, error)
+	GetPointsHistory(ctx context.Context, userID uint64, page, pageSize int32, pointsType string) ([]*domain.PointsRecord, int32, error)
+	CheckIn(ctx context.Context, userID uint64) (*domain.CheckInResult, error)
+	EarnPointsByConsume(ctx context.Context, userID uint64, orderID string, amount int64) (*domain.EarnResult, error)
+	UsePoints(ctx context.Context, userID uint64, points int64, orderID, description string) (*domain.UseResult, error)
+}
+
 // PointsService 实现了积分模块的 gRPC 和 HTTP 服务
 type PointsService struct {
 	pb.UnimplementedPointsServer
-	uc *biz.PointsUsecase
+	uc PointsUsecaseInterface
 }
 
 // NewPointsService 创建积分服务
 func NewPointsService(uc *biz.PointsUsecase) *PointsService {
+	return &PointsService{
+		uc: uc,
+	}
+}
+
+// NewPointsServiceWithInterface 用于测试时创建服务
+func NewPointsServiceWithInterface(uc PointsUsecaseInterface) *PointsService {
 	return &PointsService{
 		uc: uc,
 	}

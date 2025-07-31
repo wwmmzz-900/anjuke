@@ -30,6 +30,11 @@ sms_templates:
     content: "实名认证验证码"
     description: "用户实名认证时发送的验证码"
 
+  appointment:
+    template_id: "eca797c0c9ac334318e8d3900ef73acb"
+    content: "预约验证码"
+    description: "用户预约门店服务时发送的验证码"
+
 # 验证码配置
 sms_config:
   code_length: 6              # 验证码长度

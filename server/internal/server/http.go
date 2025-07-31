@@ -1,9 +1,12 @@
 package server
 
 import (
+	appointmentv1 "anjuke/server/api/appointment/v1"
+	companyv1 "anjuke/server/api/company/v1"
 	v1 "anjuke/server/api/helloworld/v1"
 	v5 "anjuke/server/api/points/v5"
 	userv2 "anjuke/server/api/user/v2"
+	"anjuke/server/internal/common"
 	"anjuke/server/internal/conf"
 	"anjuke/server/internal/domain"
 	"anjuke/server/internal/service"
@@ -46,23 +49,8 @@ type Server struct {
 	minioClient *data.MinioClient
 }
 
-// 生成随机字符串，用于生成上传ID
-func randString(n int) string {
-	const letters = "abcdefghijklmnopqrstuvwxyz0123456789"
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
-}
-
-// 生成唯一的上传ID
-func generateUploadID() string {
-	return time.Now().Format("20060102150405") + "_" + randString(8)
-}
-
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, points *service.PointsService, minioClient *data.MinioClient, logger log.Logger) *kratoshttp.Server {
+func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, points *service.PointsService, company *service.CompanyService, store *service.StoreService, realtor *service.RealtorService, appointment *service.AppointmentService, minioClient *data.MinioClient, logger log.Logger) *kratoshttp.Server {
 	// 初始化随机数种子
 	rand.Seed(time.Now().UnixNano())
 
@@ -92,6 +80,10 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 	v1.RegisterGreeterHTTPServer(srv, greeter)
 	userv2.RegisterUserHTTPServer(srv, user)
 	v5.RegisterPointsHTTPServer(srv, points)
+	companyv1.RegisterCompanyHTTPServer(srv, company)
+	companyv1.RegisterStoreHTTPServer(srv, store)
+	companyv1.RegisterRealtorHTTPServer(srv, realtor)
+	appointmentv1.RegisterAppointmentServiceHTTPServer(srv, appointment)
 
 	// 添加一个支持multipart/form-data的上传接口
 	// 添加WebSocket进度通知端点
@@ -107,7 +99,7 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		// 从请求中获取uploadID，如果没有提供则自动生成
 		uploadID := r.FormValue("uploadID")
 		if uploadID == "" {
-			uploadID = generateUploadID()
+			uploadID = common.GenerateUploadID()
 		}
 
 		// 解析multipart表单
@@ -131,7 +123,6 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		// 初始化进度为0
 		if GlobalProgressHub != nil {
 			GlobalProgressHub.UpdateProgress(uploadID, 0, "准备上传")
-			logger.Log(log.LevelInfo, "msg", fmt.Sprintf("初始化进度跟踪: uploadID=%s", uploadID))
 		}
 
 		// 获取文件名和content type
@@ -142,8 +133,8 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		}
 
 		// 日志输出
-		logger.Log(log.LevelInfo, "msg", fmt.Sprintf("开始处理上传: 文件=%s, 大小=%d, 类型=%s",
-			filename, header.Size, contentType))
+		logger.Log(log.LevelInfo, "msg", fmt.Sprintf("开始上传: %s (%.2fMB)",
+			filename, float64(header.Size)/(1024*1024)))
 
 		// 创建带有30分钟超时的上下文
 		uploadCtx, cancel := context.WithTimeout(r.Context(), 30*time.Minute)
@@ -169,10 +160,10 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 			uploadCtx, filename, file, header.Size, contentType, progressTracker)
 
 		if err != nil {
-			logger.Log(log.LevelError, "msg", "文件上传失败", "error", err, "filename", filename, "size", header.Size)
+			logger.Log(log.LevelError, "msg", "上传失败", "error", err, "filename", filename)
 			// 更新进度状态为失败
 			if GlobalProgressHub != nil {
-				GlobalProgressHub.UpdateProgress(uploadID, 0, "上传失败: "+err.Error())
+				GlobalProgressHub.UpdateProgress(uploadID, 0, "上传失败")
 			}
 
 			// 返回JSON格式的错误响应
@@ -216,81 +207,42 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		objectName := r.URL.Query().Get("filename")
 		if objectName == "" && r.Method == "POST" {
 			var req struct {
-				Filename string `json:"filename"`
+				Filename   string `json:"filename"`
+				ObjectName string `json:"objectName"`
 			}
 			err := json.NewDecoder(r.Body).Decode(&req)
 			if err == nil {
-				objectName = req.Filename
+				if req.ObjectName != "" {
+					objectName = req.ObjectName
+				} else {
+					objectName = req.Filename
+				}
 			}
 		}
 		if objectName == "" {
 			http.Error(w, "缺少文件名", http.StatusBadRequest)
 			return
 		}
-		// 文件名格式校验（可选，简单示例）
-		if len(objectName) < 5 || len(objectName) > 128 {
+		// 文件名格式校验
+		if len(objectName) < 1 || len(objectName) > 255 {
 			http.Error(w, "文件名长度非法", http.StatusBadRequest)
 			return
 		}
-		// 日志打印，便于排查
-		fmt.Printf("[删除文件] objectName: %s\n", objectName)
+
+		// 通过正确的调用链路：HTTP -> Service -> Usecase -> Repo
 		err := user.DeleteFromMinio(r.Context(), objectName)
 		if err != nil {
+			logger.Log(log.LevelError, "msg", "删除文件失败", "error", err, "objectName", objectName)
 			http.Error(w, "删除失败: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		logger.Log(log.LevelInfo, "msg", "文件删除成功", "objectName", objectName)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"code": 0,
 			"msg":  "删除成功",
 			"data": map[string]string{"objectName": objectName},
-		})
-	})
-
-	// 单文件上传接口
-	srv.HandleFunc("/api/user/uploadFile", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-
-		err := r.ParseMultipartForm(32 << 20) // 32MB
-		if err != nil {
-			http.Error(w, "表单解析失败", http.StatusBadRequest)
-			return
-		}
-
-		file, header, err := r.FormFile("file")
-		if err != nil {
-			http.Error(w, "无法获取上传文件", http.StatusBadRequest)
-			return
-		}
-		defer file.Close()
-
-		contentType := header.Header.Get("Content-Type")
-		if contentType == "" {
-			contentType = "application/octet-stream"
-		}
-
-		// 创建带超时的上下文，30分钟超时
-		ctx, cancel := context.WithTimeout(r.Context(), 30*time.Minute)
-		defer cancel()
-
-		// 直接调用MinIO进行上传
-		url, err := minioClient.SmartUpload(ctx, header.Filename, file, header.Size, contentType, nil)
-		if err != nil {
-			http.Error(w, "上传失败: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// 返回成功响应
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"code": 0,
-			"msg":  "上传成功",
-			"data": map[string]interface{}{
-				"url": url,
-			},
 		})
 	})
 
@@ -350,7 +302,7 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 
 		if keyword != "" {
 			// 搜索文件
-			files, err = minioClient.SearchFiles(r.Context(), keyword, maxKeys)
+			files, _, err = minioClient.SearchFiles(r.Context(), keyword, int32(page), int32(pageSize))
 		} else {
 			// 列出所有文件
 			files, err = minioClient.ListFiles(r.Context(), "", maxKeys)
@@ -417,7 +369,7 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 			return
 		}
 
-		stats, err := minioClient.GetFileStats(r.Context(), "")
+		stats, err := minioClient.GetFileStats(r.Context())
 		if err != nil {
 			http.Error(w, "获取统计信息失败: "+err.Error(), http.StatusInternalServerError)
 			return
@@ -470,7 +422,16 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		json.NewEncoder(w).Encode(response)
 	})
 
-	// 移除Service相关代码，统一使用HTTP方式
+	// 健康检查接口
+	srv.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":    "healthy",
+			"timestamp": time.Now().Unix(),
+			"version":   "1.0.0",
+		})
+	})
 
 	return srv
 }

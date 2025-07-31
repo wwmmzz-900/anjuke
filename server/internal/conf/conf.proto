@@ -37,6 +37,22 @@ message Data {
     google.protobuf.Duration read_timeout = 4;
     google.protobuf.Duration write_timeout = 5;
   }
+  message MongoDB {
+    string mongoURI = 1;
+    string database = 2;
+    uint32 maxPoolSize = 3;
+    uint32 minPoolSize = 4;
+    uint32 maxIdleTimeMS = 5;
+    uint32 connectTimeoutMS = 6;
+    uint32 socketTimeoutMS = 7;
+  }
+  message Minio {
+  string endpoint = 1;
+  string access_key = 2;
+  string secret_key = 3;
+  bool use_ssl = 4;
+  string bucket = 5;
+  }
   message TencentYunRealName {
     string secretId = 1;
     string secretKey = 2;
@@ -50,18 +66,12 @@ message Data {
   }
   Database database = 1;
   Redis redis = 2;
-  Minio minio = 3;
-  TencentYunRealName tencent_yun_real_name = 4;
-  AliyunSms aliyun_sms = 5;
-  ShumaiSms shumai_sms = 6;
+  MongoDB mongodb = 3;
+  Minio minio = 4;
+  TencentYunRealName tencent_yun_real_name = 5;
+  AliyunSms aliyun_sms = 6;
+  ShumaiSms shumai_sms = 7;
 }
 
-message Minio {
-  string endpoint = 1;
-  string access_key = 2;
-  string secret_key = 3;
-  bool use_ssl = 4;
-  string bucket = 5;
-}
 
 

@@ -1,0 +1,506 @@
+syntax = "proto3";
+
+package api.company.v1;
+
+import "google/api/annotations.proto";
+import "common/v1/common.proto";
+
+option go_package = "anjuke/server/api/company/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.company.v1";
+option java_outer_classname = "CompanyProtoV1";
+
+// 预约状态枚举
+enum AppointmentStatus {
+  APPOINTMENT_STATUS_UNSPECIFIED = 0;  // 未指定
+  APPOINTMENT_STATUS_PENDING = 1;     // 待确认
+  APPOINTMENT_STATUS_CONFIRMED = 2;   // 已确认
+  APPOINTMENT_STATUS_IN_PROGRESS = 3; // 进行中
+  APPOINTMENT_STATUS_COMPLETED = 4;   // 已完成
+  APPOINTMENT_STATUS_CANCELLED = 5;   // 已取消
+}
+
+// 经纪人状态枚举
+enum RealtorStatus {
+  REALTOR_STATUS_UNSPECIFIED = 0;  // 未指定
+  REALTOR_STATUS_ONLINE = 1;       // 在线
+  REALTOR_STATUS_OFFLINE = 2;     // 离线
+  REALTOR_STATUS_BUSY = 3;         // 忙碌
+}
+
+// 公司管理服务
+service Company {
+    // 创建公司
+    rpc CreateCompany (CreateCompanyRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            post: "/api/companies"
+            body: "*"
+        };
+    }
+
+    // 获取公司详情
+    rpc GetCompany (GetCompanyRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/companies/{id}"
+        };
+    }
+
+    // 更新公司信息
+    rpc UpdateCompany (UpdateCompanyRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            put: "/api/companies/{id}"
+            body: "*"
+        };
+    }
+
+    // 删除公司
+    rpc DeleteCompany (DeleteCompanyRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            delete: "/api/companies/{id}"
+        };
+    }
+
+    // 查询公司列表
+    rpc ListCompanies (ListCompaniesRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/companies"
+        };
+    }
+
+    // 获取公司下的门店列表
+    rpc GetCompanyStores (GetCompanyStoresRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/companies/{company_id}/stores"
+        };
+    }
+
+    // 获取公司下的门店列表（分页）
+    rpc GetStoresByCompanyID (GetStoresByCompanyIDRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/companies/{company_id}/stores/page"
+        };
+    }
+}
+
+// 门店管理服务
+service Store {
+    // 创建门店
+    rpc CreateStore (CreateStoreRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            post: "/api/stores"
+            body: "*"
+        };
+    }
+
+    // 获取门店详情
+    rpc GetStore (GetStoreRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/stores/{id}"
+        };
+    }
+
+    // 更新门店信息
+    rpc UpdateStore (UpdateStoreRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            put: "/api/stores/{id}"
+            body: "*"
+        };
+    }
+
+    // 删除门店
+    rpc DeleteStore (DeleteStoreRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            delete: "/api/stores/{id}"
+        };
+    }
+
+    // 查询门店列表
+    rpc ListStores (ListStoresRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/stores"
+        };
+    }
+
+    // 获取门店下的经纪人列表
+    rpc GetStoreRealtors (GetStoreRealtorsRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/stores/{store_id}/realtors"
+        };
+    }
+
+    // 获取门店下的经纪人列表（分页）
+    rpc GetRealtorsByStoreID (GetRealtorsByStoreIDRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/stores/{store_id}/realtors/page"
+        };
+    }
+
+    // 获取可预约门店列表（包含预约相关信息）
+    rpc ListAvailableStores (ListAvailableStoresRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/stores/available"
+        };
+    }
+}
+
+// 经纪人管理服务
+service Realtor {
+    // 创建经纪人
+    rpc CreateRealtor (CreateRealtorRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            post: "/api/realtors"
+            body: "*"
+        };
+    }
+
+    // 获取经纪人详情
+    rpc GetRealtor (GetRealtorRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/realtors/{id}"
+        };
+    }
+
+    // 更新经纪人信息
+    rpc UpdateRealtor (UpdateRealtorRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            put: "/api/realtors/{id}"
+            body: "*"
+        };
+    }
+
+    // 删除经纪人
+    rpc DeleteRealtor (DeleteRealtorRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            delete: "/api/realtors/{id}"
+        };
+    }
+
+    // 查询经纪人列表
+    rpc ListRealtors (ListRealtorsRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/realtors"
+        };
+    }
+
+    // 获取经纪人状态
+    rpc GetRealtorStatus (GetRealtorStatusRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            get: "/api/realtors/{realtor_id}/status"
+        };
+    }
+
+    // 更新经纪人状态
+    rpc UpdateRealtorStatus (UpdateRealtorStatusRequest) returns (api.common.v1.BaseResponse) {
+        option (google.api.http) = {
+            put: "/api/realtors/{realtor_id}/status"
+            body: "*"
+        };
+    }
+}
+
+// ========== 公司相关消息定义 ==========
+
+// 公司信息
+message CompanyInfo {
+    uint64 id = 1;                          // 公司唯一标识ID（MySQL uint64）
+    string full_name = 2;                   // 公司全称
+    string short_name = 3;                  // 公司简称
+    string business_scope = 4;              // 业务范围描述
+    string address = 5;                     // 公司地址
+    string phone = 6;                       // 联系电话
+    string company_logo = 7;                // 公司Logo URL（可选）
+}
+
+// 创建公司请求
+message CreateCompanyRequest {
+    string full_name = 1;                   // 公司全称（必填）
+    string short_name = 2;                  // 公司简称（必填）
+    string business_scope = 3;              // 业务范围描述（必填）
+    string address = 4;                     // 公司地址（必填）
+    string phone = 5;                       // 联系电话（必填）
+    string company_logo = 6;                // 公司Logo URL（可选）
+}
+
+// 获取公司请求
+message GetCompanyRequest {
+    uint64 id = 1;                          // 公司ID（必填）
+}
+
+// 更新公司请求
+message UpdateCompanyRequest {
+    uint64 id = 1;                          // 公司ID（必填）
+    string full_name = 2;                   // 公司全称（必填）
+    string short_name = 3;                  // 公司简称（必填）
+    string business_scope = 4;              // 业务范围描述（必填）
+    string address = 5;                     // 公司地址（必填）
+    string phone = 6;                       // 联系电话（必填）
+    string company_logo = 7;                // 公司Logo URL（可选）
+}
+
+// 删除公司请求
+message DeleteCompanyRequest {
+    uint64 id = 1;                          // 公司ID（必填）
+}
+
+// 查询公司列表请求
+message ListCompaniesRequest {
+    int32 page = 1;                         // 页码（从1开始，默认1）
+    int32 page_size = 2;                    // 每页数量（默认20，最大100）
+    string keyword = 3;                     // 搜索关键词（可选，支持公司名称模糊搜索）
+}
+
+// 查询公司列表响应
+message ListCompaniesResponse {
+    repeated CompanyInfo companies = 1;     // 公司列表
+    int32 total = 2;                        // 总记录数
+    int32 page = 3;                         // 当前页码
+    int32 page_size = 4;                    // 每页数量
+}
+
+// 获取公司门店请求
+message GetCompanyStoresRequest {
+    uint64 company_id = 1;                  // 公司ID（必填）
+}
+
+// 获取公司下的门店列表（分页）请求
+message GetStoresByCompanyIDRequest {
+    uint64 company_id = 1;                  // 公司ID（必填）
+    int32 page = 2;                         // 页码（从1开始，默认1）
+    int32 page_size = 3;                    // 每页数量（默认20，最大100）
+    bool is_active = 4;                     // 是否激活过滤（可选，默认true）
+    string sort_field = 5;                  // 排序字段（可选，如：rating, review_count）
+    bool sort_desc = 6;                     // 是否降序（可选，默认true）
+}
+
+// ========== 门店相关消息定义 ==========
+
+// 门店信息
+message StoreInfo {
+    uint64 id = 1;                          // 门店唯一标识ID（MySQL uint64）
+    string store_name = 2;                  // 门店名称
+    uint64 company_id = 3;                  // 所属公司ID（MySQL uint64）
+    string address = 4;                     // 门店地址
+    string phone = 5;                       // 门店联系电话
+    string business_hours = 6;              // 营业时间
+    double rating = 7;                      // 评分
+    int32 review_count = 8;                 // 评价数量
+    bool is_active = 9;                     // 是否激活
+    string created_time = 10;               // 创建时间
+    string updated_time = 11;               // 更新时间
+}
+
+// 创建门店请求
+message CreateStoreRequest {
+    string store_name = 1;                  // 门店名称（必填）
+    uint64 company_id = 2;                  // 所属公司ID（必填）
+    string address = 3;                     // 门店地址（必填）
+    string phone = 4;                       // 门店联系电话（必填）
+    string business_hours = 5;              // 营业时间（可选）
+    double rating = 6;                      // 评分（可选）
+    int32 review_count = 7;                 // 评价数量（可选）
+    bool is_active = 8;                     // 是否激活（可选，默认true）
+}
+
+// 获取门店请求
+message GetStoreRequest {
+    uint64 id = 1;                          // 门店ID（必填）
+}
+
+// 更新门店请求
+message UpdateStoreRequest {
+    uint64 id = 1;                          // 门店ID（必填）
+    string store_name = 2;                  // 门店名称（必填）
+    uint64 company_id = 3;                  // 所属公司ID（必填）
+    string address = 4;                     // 门店地址（必填）
+    string phone = 5;                       // 门店联系电话（必填）
+    string business_hours = 6;              // 营业时间（可选）
+    double rating = 7;                      // 评分（可选）
+    int32 review_count = 8;                 // 评价数量（可选）
+    bool is_active = 9;                     // 是否激活（可选）
+}
+
+// 删除门店请求
+message DeleteStoreRequest {
+    uint64 id = 1;                          // 门店ID（必填）
+}
+
+// 查询门店列表请求
+message ListStoresRequest {
+    int32 page = 1;                         // 页码（从1开始，默认1）
+    int32 page_size = 2;                    // 每页数量（默认20，最大100）
+    string keyword = 3;                     // 搜索关键词（可选，支持门店名称、地址模糊搜索）
+    uint64 company_id = 4;                  // 公司ID过滤（可选）
+    bool is_active = 5;                     // 是否激活过滤（可选，默认true）
+    string sort_field = 6;                  // 排序字段（可选，如：rating, review_count）
+    bool sort_desc = 7;                     // 是否降序（可选，默认true）
+}
+
+// 查询门店列表响应
+message ListStoresResponse {
+    repeated StoreInfo stores = 1;          // 门店列表
+    int32 total = 2;                        // 总记录数
+    int32 page = 3;                         // 当前页码
+    int32 page_size = 4;                    // 每页数量
+}
+
+// 获取门店经纪人请求
+message GetStoreRealtorsRequest {
+    uint64 store_id = 1;                    // 门店ID（必填）
+}
+
+// 获取门店下的经纪人列表（分页）请求
+message GetRealtorsByStoreIDRequest {
+    uint64 store_id = 1;                    // 门店ID（必填）
+    int32 page = 2;                         // 页码（从1开始，默认1）
+    int32 page_size = 3;                    // 每页数量（默认20，最大100）
+    string keyword = 4;                     // 搜索关键词（可选，支持经纪人姓名、电话模糊搜索）
+    string sort_field = 5;                  // 排序字段（可选，如：second_hand_score, rental_score）
+    bool sort_desc = 6;                     // 是否降序（可选，默认true）
+}
+
+// 获取可预约门店列表请求
+message ListAvailableStoresRequest {
+    int32 page = 1;                         // 页码（从1开始，默认1）
+    int32 page_size = 2;                    // 每页数量（默认20，最大100）
+    string date = 3;                        // 预约日期（格式：YYYY-MM-DD，可选，默认今天）
+    string time_slot = 4;                   // 时间段（格式：HH:MM，可选）
+    string area = 5;                        // 区域过滤（可选）
+    uint64 company_id = 6;                  // 公司ID过滤（可选）
+}
+
+// ========== 经纪人相关消息定义 ==========
+
+// 经纪人信息
+message RealtorInfo {
+    uint64 id = 1;                          // 经纪人唯一标识ID（MySQL uint64）
+    string realtor_name = 2;                // 经纪人姓名
+    repeated string business_area = 3;      // 业务区域列表（如：["朝阳区", "东城区"]）
+    int32 second_hand_score = 4;            // 二手房业务评分（0-100分）
+    int32 rental_score = 5;                 // 租房业务评分（0-100分）
+    string service_years = 6;               // 从业年限（如："5年"）
+    int32 service_people_count = 7;         // 服务客户数量
+    repeated string main_business_area = 8; // 主要业务区域列表
+    repeated string main_residential_areas = 9; // 主要住宅区域列表
+    uint64 company_id = 10;                 // 所属公司ID（MySQL uint64）
+    uint64 store_id = 11;                   // 所属门店ID（MySQL uint64）
+    string phone = 12;                      // 经纪人电话（可选）
+    string avatar = 13;                     // 头像URL（可选）
+}
+
+// 创建经纪人请求
+message CreateRealtorRequest {
+    string realtor_name = 1;                // 经纪人姓名（必填）
+    repeated string business_area = 2;      // 业务区域列表（必填）
+    int32 second_hand_score = 3;            // 二手房业务评分（0-100分，必填）
+    int32 rental_score = 4;                 // 租房业务评分（0-100分，必填）
+    string service_years = 5;               // 从业年限（必填）
+    int32 service_people_count = 6;         // 服务客户数量（必填）
+    repeated string main_business_area = 7; // 主要业务区域列表（可选）
+    repeated string main_residential_areas = 8; // 主要住宅区域列表（可选）
+    uint64 company_id = 9;                  // 所属公司ID（必填）
+    uint64 store_id = 10;                   // 所属门店ID（必填）
+    string phone = 11;                      // 经纪人电话（可选）
+    string avatar = 12;                     // 头像URL（可选）
+}
+
+// 获取经纪人请求
+message GetRealtorRequest {
+    uint64 id = 1;                          // 经纪人ID（必填）
+}
+
+// 更新经纪人请求
+message UpdateRealtorRequest {
+    uint64 id = 1;                          // 经纪人ID（必填）
+    string realtor_name = 2;                // 经纪人姓名（必填）
+    repeated string business_area = 3;      // 业务区域列表（必填）
+    int32 second_hand_score = 4;            // 二手房业务评分（0-100分，必填）
+    int32 rental_score = 5;                 // 租房业务评分（0-100分，必填）
+    string service_years = 6;               // 从业年限（必填）
+    int32 service_people_count = 7;         // 服务客户数量（必填）
+    repeated string main_business_area = 8; // 主要业务区域列表（可选）
+    repeated string main_residential_areas = 9; // 主要住宅区域列表（可选）
+    uint64 company_id = 10;                 // 所属公司ID（必填）
+    uint64 store_id = 11;                   // 所属门店ID（必填）
+    string phone = 12;                      // 经纪人电话（可选）
+    string avatar = 13;                     // 头像URL（可选）
+}
+
+// 删除经纪人请求
+message DeleteRealtorRequest {
+    uint64 id = 1;                          // 经纪人ID（必填）
+}
+
+// 查询经纪人列表请求
+message ListRealtorsRequest {
+    int32 page = 1;                         // 页码（从1开始，默认1）
+    int32 page_size = 2;                    // 每页数量（默认20，最大100）
+    string keyword = 3;                     // 搜索关键词（可选，支持经纪人姓名、电话模糊搜索）
+    uint64 store_id = 4;                    // 门店ID过滤（可选）
+    uint64 company_id = 5;                  // 公司ID过滤（可选）
+    string sort_field = 6;                  // 排序字段（可选，如：second_hand_score, rental_score）
+    bool sort_desc = 7;                     // 是否降序（可选，默认true）
+}
+
+// 查询经纪人列表响应
+message ListRealtorsResponse {
+    repeated RealtorInfo realtors = 1;      // 经纪人列表
+    int32 total = 2;                        // 总记录数
+    int32 page = 3;                         // 当前页码
+    int32 page_size = 4;                    // 每页数量
+}
+
+// 获取经纪人状态请求
+message GetRealtorStatusRequest {
+    uint64 realtor_id = 1;                  // 经纪人ID（必填）
+}
+
+// 经纪人状态信息
+message RealtorStatusInfo {
+    uint64 realtor_id = 1;                  // 经纪人ID
+    RealtorStatus status = 2;               // 状态
+    int32 current_load = 3;                 // 当前负载
+    int32 max_load = 4;                     // 最大负载
+    string last_active_time = 5;            // 最后活跃时间
+}
+
+// 更新经纪人状态请求
+message UpdateRealtorStatusRequest {
+    uint64 realtor_id = 1;                  // 经纪人ID（必填）
+    RealtorStatus status = 2;               // 状态（必填）
+    int32 max_load = 3;                     // 最大负载（可选）
+}
+
+// 可预约时段
+message TimeSlot {
+    string date = 1;                        // 预约日期（格式：YYYY-MM-DD）
+    string start_time = 2;                  // 开始时间（格式：HH:MM）
+    string end_time = 3;                    // 结束时间（格式：HH:MM）
+    bool available = 4;                     // 是否可预约
+    int32 available_realtors = 5;           // 该时段可用经纪人数量
+    int32 total_capacity = 6;               // 总容量
+    int32 booked_count = 7;                 // 已预约数量
+    int32 queue_count = 8;                  // 排队数量
+}
+
+// 预约信息
+message AppointmentInfo {
+    uint64 appointment_id = 1;              // 预约唯一标识ID（MySQL uint64）
+    string appointment_code = 2;            // 预约码（6位数字，用户凭证）
+    int64 user_id = 3;                      // 用户ID
+    uint64 store_id = 4;                    // 门店ID（MySQL uint64）
+    uint64 realtor_id = 5;                  // 经纪人ID（MySQL uint64，可为空）
+    string realtor_name = 6;                // 经纪人姓名（分配后填充）
+    string realtor_phone = 7;               // 经纪人电话（分配后填充）
+    string customer_name = 8;               // 客户姓名
+    string customer_phone = 9;              // 客户手机号
+    string appointment_date = 10;           // 预约日期（格式：YYYY-MM-DD）
+    string start_time = 11;                 // 预约开始时间（格式：HH:MM）
+    string end_time = 12;                   // 预约结束时间（格式：HH:MM）
+    int32 duration_minutes = 13;            // 预约时长（分钟：30/60/90）
+    string requirements = 14;               // 客户需求描述
+    AppointmentStatus status = 15;          // 预约状态
+    int32 queue_position = 16;              // 排队位置（0表示未排队）
+    int32 estimated_wait_minutes = 17;      // 预估等待时间（分钟）
+    string created_time = 18;               // 创建时间
+    string confirmed_time = 19;             // 确认时间（可为空）
+}

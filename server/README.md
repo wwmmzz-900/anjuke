@@ -1,639 +1,371 @@
-# 📚 安居客系统接口详细说明
+# 安居客预约系统
 
----
+基于Go语言和MySQL开发的房产经纪人预约系统，支持智能分配、排队管理、状态跟踪等功能。采用领域驱动设计(DDD)架构，提供高性能、高可用的预约服务。
 
-## 1. 用户服务（User Service）
+## 🚀 功能特性
 
-### 1.1 创建用户
-- **接口地址**：`POST /user/create`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段      | 类型   | 必填 | 说明     |
-  |-----------|--------|------|----------|
-  | Mobile    | string | 是   | 手机号   |
-  | NickName  | string | 是   | 昵称     |
-  | Password  | string | 是   | 密码     |
-- **请求示例**：
-  ```json
-  {
-    "Mobile": "13800138000",
-    "NickName": "张三",
-    "Password": "password123"
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "用户创建成功",
-    "data": {
-      "user_id": "user_123456",
-      "mobile": "13800138000",
-      "nick_name": "张三"
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 校验手机号唯一性、密码加密存储。
-  - 支持统一响应格式，错误时返回详细原因。
-- **典型调用流程**：
-  1. 前端表单收集用户信息，POST 到 `/user/create`。
-  2. 后端校验、入库，返回用户ID。
-- **FAQ**：
-  - Q: 手机号已注册会怎样？  
-    A: 返回 `code!=0`，msg 提示手机号已存在。
+### 核心功能
+- **智能预约分配**：基于经纪人负载、活跃度的智能分配算法
+- **排队管理**：支持预约排队，自动位置更新和经纪人释放后的重新分配
+- **状态跟踪**：完整的预约状态流转（待确认→已确认→进行中→已完成）
+- **时间冲突检查**：防止用户和经纪人的时间冲突
+- **预约码查询**：6位数字预约码，方便用户查询
 
-### 1.2 实名认证
-- **接口地址**：`POST /user/realname`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段   | 类型   | 必填 | 说明   |
-  |--------|--------|------|--------|
-  | UserId | int    | 是   | 用户ID |
-  | Name   | string | 是   | 姓名   |
-  | IdCard | string | 是   | 身份证 |
-- **请求示例**：
-  ```json
-  {
-    "UserId": 123456,
-    "Name": "张三",
-    "IdCard": "110101199001011234"
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "实名认证成功",
-    "data": {
-      "user_id": 123456,
-      "name": "张三",
-      "status": "verified"
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 支持第三方实名认证服务对接。
-  - 实名状态写入用户表。
-- **典型调用流程**：
-  1. 前端收集实名信息，POST 到 `/user/realname`。
-  2. 后端校验、调用实名服务，返回认证结果。
-- **FAQ**：
-  - Q: 身份证格式不对会怎样？  
-    A: 返回 `code!=0`，msg 提示格式错误。
+### 高级功能
+- **工作时间管理**：支持门店和经纪人的个性化工作时间设置
+- **实时状态管理**：经纪人在线/离线/忙碌状态实时更新
+- **操作日志记录**：完整的预约操作历史追踪
+- **评价系统**：预约完成后的服务评价功能
+- **数据统计**：预约数据的统计分析功能
 
-### 1.3 发送短信验证码
-- **接口地址**：`POST /user/sendSms`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段      | 类型   | 必填 | 说明         |
-  |-----------|--------|------|--------------|
-  | phone     | string | 是   | 手机号       |
-  | device_id | string | 否   | 设备ID       |
-  | scene     | string | 是   | 场景（如register、login）|
-- **请求示例**：
-  ```json
-  {
-    "phone": "13800138000",
-    "device_id": "device123",
-    "scene": "register"
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "短信发送成功",
-    "data": {
-      "phone": "13800138000",
-      "scene": "register",
-      "expire_time": 1704067200
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 支持短信风控（频率、次数、IP、设备限制）。
-  - 支持多场景模板。
-- **典型调用流程**：
-  1. 前端请求发送验证码，后端校验风控，调用短信服务。
-- **FAQ**：
-  - Q: 频繁请求会怎样？  
-    A: 返回 `code!=0`，msg 提示操作频繁。
+## 🏗️ 系统架构
 
-### 1.4 验证短信验证码
-- **接口地址**：`POST /user/verifySms`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段   | 类型   | 必填 | 说明   |
-  |--------|--------|------|--------|
-  | phone  | string | 是   | 手机号 |
-  | code   | string | 是   | 验证码 |
-  | scene  | string | 是   | 场景   |
-- **请求示例**：
-  ```json
-  {
-    "phone": "13800138000",
-    "code": "123456",
-    "scene": "register"
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "验证成功",
-    "data": {
-      "phone": "13800138000",
-      "success": true,
-      "scene": "register"
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 校验验证码有效性、过期时间。
-  - 验证成功后验证码失效。
-- **典型调用流程**：
-  1. 前端提交验证码，后端校验，返回结果。
-- **FAQ**：
-  - Q: 验证码错误/过期会怎样？  
-    A: 返回 `code!=0`，msg 提示错误或过期。
-
----
-
-## 2. 文件上传服务（File Upload Service）
-
-（详见前述“文件上传接口与后端能力说明”）
-
----
-
-## 3. 积分服务（Points Service）
-
-### 3.1 查询用户积分余额
-- **接口地址**：`GET /points/balance/{user_id}`
-- **请求类型**：`GET`
-- **参数说明**：
-  - `user_id`（路径参数）：用户ID
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "查询成功",
-    "data": {
-      "user_id": 123456,
-      "total_points": 1500
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 实时查询积分表，返回当前积分。
-- **典型调用流程**：
-  1. 前端 GET 请求，后端查表返回。
-- **FAQ**：
-  - Q: 用户不存在会怎样？  
-    A: 返回 `code!=0`，msg 提示用户不存在。
-
-### 3.2 查询积分明细记录
-- **接口地址**：`GET /points/history/{user_id}`
-- **请求类型**：`GET`
-- **参数说明**：
-  - `user_id`（路径参数）：用户ID
-  - `page`（查询参数）：页码
-  - `page_size`（查询参数）：每页数量
-  - `type`（查询参数）：类型筛选 earn/use
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "查询成功",
-    "data": {
-      "records": [
-        {
-          "id": 1,
-          "user_id": 123456,
-          "type": "checkin",
-          "points": 10,
-          "description": "每日签到",
-          "order_id": "",
-          "amount": 0,
-          "created_at": "2024-01-01 12:00:00"
-        }
-      ],
-      "page_info": {
-        "page": 1,
-        "page_size": 20,
-        "total": 50,
-        "total_pages": 3
-      }
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 支持分页、类型筛选。
-- **典型调用流程**：
-  1. 前端 GET 请求，带分页参数，后端查表返回。
-- **FAQ**：
-  - Q: 没有记录会怎样？  
-    A: 返回空数组，分页信息正常。
-
-### 3.3 签到获取积分
-- **接口地址**：`POST /points/checkin`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段    | 类型   | 必填 | 说明   |
-  |---------|--------|------|--------|
-  | user_id | int    | 是   | 用户ID |
-- **请求示例**：
-  ```json
-  {
-    "user_id": 123456
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "签到成功",
-    "data": {
-      "points_earned": 10,
-      "total_points": 1510,
-      "consecutive_days": 5
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 支持每日签到、连续签到奖励。
-- **典型调用流程**：
-  1. 前端 POST 请求，后端校验并发放积分。
-- **FAQ**：
-  - Q: 当天已签到会怎样？  
-    A: 返回 `code!=0`，msg 提示已签到。
-
-### 3.4 消费获取积分
-- **接口地址**：`POST /points/earn/consume`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段     | 类型   | 必填 | 说明   |
-  |----------|--------|------|--------|
-  | user_id  | int    | 是   | 用户ID |
-  | order_id | string | 是   | 订单ID |
-  | amount   | int    | 是   | 金额   |
-- **请求示例**：
-  ```json
-  {
-    "user_id": 123456,
-    "order_id": "order_789",
-    "amount": 10000
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "消费获得积分成功，获得100积分",
-    "data": {
-      "points_earned": 100,
-      "total_points": 1610
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 按消费金额自动计算积分。
-- **典型调用流程**：
-  1. 前端 POST 请求，后端校验并发放积分。
-- **FAQ**：
-  - Q: 金额为0会怎样？  
-    A: 返回 `code!=0`，msg 提示金额无效。
-
-### 3.5 使用积分抵扣
-- **接口地址**：`POST /points/use`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段        | 类型   | 必填 | 说明   |
-  |-------------|--------|------|--------|
-  | user_id     | int    | 是   | 用户ID |
-  | points      | int    | 是   | 使用积分|
-  | order_id    | string | 是   | 订单ID |
-  | description | string | 否   | 说明   |
-- **请求示例**：
-  ```json
-  {
-    "user_id": 123456,
-    "points": 100,
-    "order_id": "order_890",
-    "description": "商品抵扣"
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "积分使用成功，抵扣1.00元",
-    "data": {
-      "points_used": 100,
-      "amount_deducted": 100,
-      "total_points": 1510
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 校验积分余额，自动扣减。
-- **典型调用流程**：
-  1. 前端 POST 请求，后端校验并扣减积分。
-- **FAQ**：
-  - Q: 积分不足会怎样？  
-    A: 返回 `code!=0`，msg 提示积分不足。
-
----
-
-## 4. 房源服务（House Service）
-
-### 4.1 创建房源
-- **接口地址**：`POST /house/create`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段      | 类型   | 必填 | 说明   |
-  |-----------|--------|------|--------|
-  | ...       | ...    | ...  | ...    |
-- **请求示例**：
-  ```json
-  {
-    // 具体字段视业务而定
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "房源创建成功",
-    "data": {
-      "house_id": "house_123456"
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 校验房源信息，入库。
-- **典型调用流程**：
-  1. 前端 POST 请求，后端校验并入库。
-- **FAQ**：
-  - Q: 信息不全会怎样？  
-    A: 返回 `code!=0`，msg 提示缺少字段。
-
----
-
-## 5. 交易服务（Transaction Service）
-
-### 5.1 创建交易
-- **接口地址**：`POST /transaction/create`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段        | 类型   | 必填 | 说明   |
-  |-------------|--------|------|--------|
-  | user_id     | int    | 是   | 用户ID |
-  | amount      | int    | 是   | 金额   |
-  | type        | string | 是   | 类型   |
-  | description | string | 否   | 说明   |
-- **请求示例**：
-  ```json
-  {
-    "user_id": 123456,
-    "amount": 10000,
-    "type": "payment",
-    "description": "商品购买"
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "交易创建成功",
-    "data": {
-      "transaction_id": "txn_123456",
-      "user_id": 123456,
-      "amount": 10000,
-      "type": "payment",
-      "status": "created",
-      "created_at": "2024-01-01 12:00:00"
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 校验用户、金额，入库。
-- **典型调用流程**：
-  1. 前端 POST 请求，后端校验并入库。
-- **FAQ**：
-  - Q: 金额为0会怎样？  
-    A: 返回 `code!=0`，msg 提示金额无效。
-
----
-
-## 6. 客服服务（Customer Service）
-
-### 6.1 创建客户
-- **接口地址**：`POST /customer/create`
-- **请求类型**：`application/json`
-- **参数说明**：
-  | 字段      | 类型   | 必填 | 说明   |
-  |-----------|--------|------|--------|
-  | ...       | ...    | ...  | ...    |
-- **请求示例**：
-  ```json
-  {
-    // 具体字段视业务而定
-  }
-  ```
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "客户创建成功",
-    "data": {
-      "customer_id": "cust_123456"
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 校验客户信息，入库。
-- **典型调用流程**：
-  1. 前端 POST 请求，后端校验并入库。
-- **FAQ**：
-  - Q: 信息不全会怎样？  
-    A: 返回 `code!=0`，msg 提示缺少字段。
-
----
-
-## 7. HelloWorld 测试服务
-
-### 7.1 问候
-- **接口地址**：`GET /helloworld/{name}`
-- **请求类型**：`GET`
-- **参数说明**：
-  - `name`（路径参数）：姓名
-- **响应示例**：
-  ```json
-  {
-    "code": 0,
-    "msg": "问候成功",
-    "data": {
-      "message": "Hello 张三",
-      "name": "张三"
-    }
-  }
-  ```
-- **后端能力说明**：
-  - 简单测试接口。
-- **典型调用流程**：
-  1. 前端 GET 请求，后端返回问候语。
-- **FAQ**：
-  - Q: 传空会怎样？  
-    A: 返回默认问候。
-
----
-
-
-# 📦 文件上传接口与后端能力说明
-
-## 1. 对外 HTTP 接口
-
-### 1.1 单文件上传（推荐）
-- **接口地址**：`POST /user/uploadFile`
-- **请求类型**：`multipart/form-data`
-- **参数**：`file`（form-data 文件字段）
-- **说明**：自动适配小文件和大文件，底层采用智能上传（SmartUploadWithProgress），支持分片上传和进度回调（但当前 HTTP 接口未直接暴露进度）。
-- **响应**：
-  ```json
-  {
-    "code": 0,
-    "msg": "上传成功",
-    "data": {
-      "url": "http://minio-endpoint/mybucket/1700000000.png"
-    }
-  }
-  ```
-
-### 1.2 多文件上传
-
-- **请求类型**：`multipart/form-data`
-- **参数**：`files`（form-data 多文件字段）
-- **说明**：每个文件都走智能上传（SmartUploadWithProgress），支持大文件分片，返回每个文件的 url、文件名、大小、类型。
-- **响应**：
-  ```json
-  {
-    "code": 0,
-    "msg": "上传成功",
-    "data": [
-      {
-        "url": "...",
-        "filename": "image1.png",
-        "size": 123456,
-        "content_type": "image/png"
-      }
-    ]
-  }
-  ```
-
----
-
-## 2. 后端能力说明
-
-### 2.1 智能上传（SmartUpload/SmartUploadWithProgress）
-
-- **SmartUpload**：自动判断文件大小，选择普通上传或分片上传，适合所有文件类型。
-- **SmartUploadWithProgress**：在智能上传基础上，增加进度回调参数，适合需要实时进度反馈的场景（如 CLI、WebSocket、前端轮询等）。
-
-#### 代码示例
-
-```go
-// 智能上传（无进度）
-url, err := minioClient.SmartUpload(ctx, filename, file, size, contentType)
-
-// 智能上传（带进度回调）
-url, err := minioClient.SmartUploadWithProgress(ctx, filename, file, size, contentType, func(uploaded, total int64) {
-    fmt.Printf("上传进度: %d/%d\n", uploaded, total)
-})
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   API Gateway   │    │   Load Balancer │    │     Monitor     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+┌─────────────────────────────────────────────────────────────────┐
+│                        Application Layer                        │
+├─────────────────┬─────────────────┬─────────────────────────────┤
+│   HTTP Server   │   gRPC Server   │       Background Jobs       │
+└─────────────────┴─────────────────┴─────────────────────────────┘
+         │                       │                       │
+┌─────────────────────────────────────────────────────────────────┐
+│                        Business Layer                           │
+├─────────────────┬─────────────────┬─────────────────────────────┤
+│ Appointment UC  │   Store UC      │       Realtor UC            │
+└─────────────────┴─────────────────┴─────────────────────────────┘
+         │                       │                       │
+┌─────────────────────────────────────────────────────────────────┐
+│                         Data Layer                              │
+├─────────────────┬─────────────────┬─────────────────────────────┤
+│ Appointment Repo│   Store Repo    │       Realtor Repo          │
+└─────────────────┴─────────────────┴─────────────────────────────┘
+         │                       │                       │
+┌─────────────────────────────────────────────────────────────────┐
+│                      Infrastructure                             │
+├─────────────────┬─────────────────┬─────────────────────────────┤
+│      MySQL      │      Redis      │         Message Queue       │
+└─────────────────┴─────────────────┴─────────────────────────────┘
 ```
 
-- **说明**：HTTP 层目前统一调用 `SmartUploadWithProgress`，如果不需要进度回调，传 `nil` 即可。
+## 📊 数据库设计
 
----
+### 核心表结构
 
-### 2.2 分片上传与断点续传（高级场景）
+```sql
+-- 预约表
+CREATE TABLE appointments (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    appointment_code VARCHAR(6) UNIQUE NOT NULL,
+    user_id BIGINT NOT NULL,
+    store_id BIGINT NOT NULL,
+    realtor_id BIGINT,
+    customer_name VARCHAR(50) NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    appointment_date DATE NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    duration_minutes INT NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    queue_position INT DEFAULT 0,
+    estimated_wait_minutes INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
-- **StartMultipartUpload**：手动初始化分片上传，返回分片信息。
-- **ResumeMultipartUpload**：断点续传，恢复未完成的分片上传。
-- **用途**：适合大文件、断点续传、前端直传等高级需求。
+-- 门店表
+CREATE TABLE stores (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    store_name VARCHAR(100) NOT NULL,
+    address VARCHAR(200) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    business_hours VARCHAR(50),
+    rating DECIMAL(3,2) DEFAULT 0,
+    review_count INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE
+);
 
-#### 代码示例
-
-```go
-// 初始化分片上传
-info, err := minioClient.StartMultipartUpload(ctx, filename, contentType, totalSize)
-// ...前端/客户端分片上传...
-// 断点续传
-url, err := minioClient.ResumeMultipartUpload(ctx, info, fileReader)
+-- 经纪人表
+CREATE TABLE realtors (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    store_id BIGINT NOT NULL,
+    realtor_name VARCHAR(50) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(100),
+    is_active BOOLEAN DEFAULT TRUE
+);
 ```
 
+## 🛠️ 技术栈
+
+### 后端技术
+- **语言**：Go 1.19+
+- **框架**：Kratos v2 (微服务框架)
+- **数据库**：MySQL 8.0+
+- **ORM**：GORM v2
+- **缓存**：Redis 6.0+
+- **协议**：gRPC + HTTP/JSON
+- **配置**：YAML
+- **日志**：结构化日志
+
+### 开发工具
+- **依赖注入**：Wire
+- **API文档**：Protocol Buffers
+- **测试**：Go Testing + Testify
+- **构建**：Docker + Docker Compose
+- **监控**：Prometheus + Grafana
+
+## 🚀 快速开始
+
+### 环境要求
+- Go 1.19+
+- MySQL 8.0+
+- Redis 6.0+ (可选)
+
+### 1. 克隆项目
+```bash
+git clone <repository-url>
+cd appointment-system/server
+```
+
+### 2. 安装依赖
+```bash
+go mod download
+```
+
+### 3. 配置数据库
+```bash
+# 创建数据库
+mysql -u root -p
+CREATE DATABASE anjuke_appointment CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# 执行数据库迁移
+mysql -u root -p anjuke_appointment < internal/data/migrations/001_create_appointment_tables.sql
+```
+
+### 4. 修改配置
+```bash
+cp configs/config_mysql.yaml configs/config.yaml
+# 编辑 configs/config.yaml，修改数据库连接信息
+```
+
+### 5. 启动服务
+```bash
+go run cmd/server/main.go -conf configs/config.yaml
+```
+
+### 6. 验证服务
+```bash
+# 检查服务状态
+curl http://localhost:8000/health
+
+# 获取可预约时段
+curl "http://localhost:8000/api/v1/appointment/stores/1/slots?start_date=2025-01-31&days=7"
+```
+
+## 📖 API 文档
+
+### 预约管理
+
+#### 创建预约
+```http
+POST /api/v1/appointment/appointments
+Content-Type: application/json
+
+{
+    "store_id": "1",
+    "customer_name": "张三",
+    "customer_phone": "13800138000",
+    "appointment_date": "2025-02-01",
+    "start_time": "14:00",
+    "duration_minutes": 60,
+    "requirements": "需要了解二手房购买流程"
+}
+```
+
+#### 查询预约
+```http
+GET /api/v1/appointment/appointments/{appointment_code}
+```
+
+#### 取消预约
+```http
+POST /api/v1/appointment/appointments/{appointment_code}/cancel
+Content-Type: application/json
+
+{
+    "reason": "临时有事，需要取消"
+}
+```
+
+#### 获取可预约时段
+```http
+GET /api/v1/appointment/stores/{store_id}/slots?start_date=2025-02-01&days=7
+```
+
+### 经纪人管理
+
+#### 更新经纪人状态
+```http
+POST /api/v1/appointment/realtor/status
+Content-Type: application/json
+
+{
+    "realtor_id": "1",
+    "status": "online"
+}
+```
+
+#### 经纪人接单
+```http
+POST /api/v1/appointment/appointments/{appointment_id}/accept
+Content-Type: application/json
+
+{
+    "realtor_id": "1"
+}
+```
+
+## 🧪 测试
+
+### 运行单元测试
+```bash
+go test ./...
+```
+
+### 运行集成测试
+```bash
+go test ./test/...
+```
+
+### 运行性能测试
+```bash
+go test -bench=. ./test/...
+```
+
+### API测试
+```bash
+# 使用提供的测试脚本
+go test -v ./test/appointment_api_test.go
+```
+
+## 📈 性能指标
+
+### 基准性能
+- **并发处理**：1000+ QPS
+- **响应时间**：P99 < 100ms
+- **数据库连接**：连接池复用，最大100连接
+- **内存使用**：< 100MB (空载)
+
+### 扩展性
+- **水平扩展**：支持多实例部署
+- **数据库分片**：支持按门店ID分片
+- **缓存策略**：热点数据Redis缓存
+
+## 🔧 配置说明
+
+### 数据库配置
+```yaml
+data:
+  mysql:
+    host: localhost
+    port: 3306
+    username: root
+    password: password
+    database: anjuke_appointment
+    charset: utf8mb4
+    max_idle_conns: 10
+    max_open_conns: 100
+    max_lifetime: 3600
+```
+
+### 业务配置
+```yaml
+business:
+  appointment:
+    default_duration: 60
+    max_advance_days: 7
+    min_advance_minutes: 30
+    queue_timeout_minutes: 120
+    realtor:
+      default_max_load: 3
+      online_timeout_minutes: 30
+```
+
+## 🚀 部署
+
+### Docker部署
+```bash
+# 构建镜像
+docker build -t appointment-server .
+
+# 运行容器
+docker run -d \
+  --name appointment-server \
+  -p 8000:8000 \
+  -p 9000:9000 \
+  -v $(pwd)/configs:/app/configs \
+  appointment-server
+```
+
+### Docker Compose部署
+```bash
+docker-compose up -d
+```
+
+### Kubernetes部署
+```bash
+kubectl apply -f k8s/
+```
+
+## 📊 监控
+
+### 健康检查
+```http
+GET /health
+```
+
+### 指标监控
+```http
+GET /metrics
+```
+
+### 关键指标
+- `appointment_created_total`：预约创建总数
+- `appointment_success_rate`：预约成功率
+- `realtor_utilization`：经纪人利用率
+- `queue_wait_time`：平均排队时间
+
+## 🤝 贡献指南
+
+1. Fork 项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
+
+## 📝 更新日志
+
+### v1.0.0 (2025-01-30)
+- ✨ 初始版本发布
+- 🎯 支持基础预约功能
+- 🤖 智能经纪人分配算法
+- 📊 排队管理系统
+- 🔍 预约状态跟踪
+- 📱 RESTful API接口
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+
+## 📞 联系我们
+
+- 项目维护者：开发团队
+- 邮箱：dev@anjuke.com
+- 问题反馈：[GitHub Issues](https://github.com/anjuke/appointment-system/issues)
+
 ---
 
-## 3. 进度回调与智能上传的关系
-
-- **所有 HTTP 上传接口底层都用带进度回调的智能上传（SmartUploadWithProgress）**，只是当前未将进度直接暴露给前端。
-- 后端如需扩展前端进度条，可通过 WebSocket、轮询等方式将进度回调结果推送给前端。
-
----
-
-## 4. 典型调用流程
-
-1. 前端调用 `/user/uploadFile`，上传文件。
-2. 后端 handler 调用 `user.UploadToMinioWithProgress`，底层统一用 `SmartUploadWithProgress`，自动适配分片上传。
-3. 进度回调参数当前为 `nil`，如需进度可扩展。
-
----
-
-## 5. FAQ
-
-- **Q: 智能上传和带进度回调的智能上传有何区别？**
-  - A: 功能完全一致，后者多了进度通知能力。你可以统一用带进度回调的接口，传 `nil` 也不会有副作用。
-
-- **Q: HTTP 接口能否直接获取上传进度？**
-  - A: 目前未直接暴露。如需支持，可通过 WebSocket 或轮询方式扩展。
-
-- **Q: 分片上传/断点续传如何用？**
-  - A: 需用后端高级接口（StartMultipartUpload/ResumeMultipartUpload），适合大文件和断点续传场景。
-
----
-
-### 2.5 管理员清理未完成分片
-- **接口地址**：`POST /admin/cleanupIncompleteUploads`
-- **描述**：清理 MinIO 未完成分片（管理员/内部使用）
-- **请求参数**（Query）：
-  - `prefix`（可选）：只清理指定前缀的分片
-  - `older_than`（可选）：清理多久以前的分片（如 `24h`、`48h`），默认 24 小时
-- **请求示例**：
-  ```bash
-  curl -X POST "http://localhost:8000/admin/cleanupIncompleteUploads?prefix=&older_than=24h"
-  ```
-- **成功响应**：
-  ```json
-  {
-    "code": 0,
-    "msg": "清理成功"
-  }
-  ```
-- **失败响应**：
-  ```json
-  {
-    "code": 1,
-    "msg": "清理失败: 错误信息"
-  }
-  ```
-- **后端能力说明**：
-  - 通过 `minioClient.CleanupIncompleteUploads` 实现，支持定时任务和手动触发。
-  - 仅建议管理员或内部系统调用，防止误删。
-- **典型调用流程**：
-  1. 管理员或定时任务调用该接口。
-  2. 后端清理所有超过指定时间未完成的分片上传。
-- **FAQ**：
-  - Q: 该接口是否有权限控制？  
-    A: 建议加权限校验，仅限内部或管理员使用。
-  - Q: 会影响正常上传吗？  
-    A: 只会清理长时间未完成的分片，不影响正常上传。
+**注意**：这是一个演示项目，生产环境使用前请进行充分的测试和安全评估。

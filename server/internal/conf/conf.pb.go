@@ -130,10 +130,11 @@ type Data struct {
 	state              protoimpl.MessageState   `protogen:"open.v1"`
 	Database           *Data_Database           `protobuf:"bytes,1,opt,name=database,proto3" json:"database,omitempty"`
 	Redis              *Data_Redis              `protobuf:"bytes,2,opt,name=redis,proto3" json:"redis,omitempty"`
-	Minio              *Minio                   `protobuf:"bytes,3,opt,name=minio,proto3" json:"minio,omitempty"`
-	TencentYunRealName *Data_TencentYunRealName `protobuf:"bytes,4,opt,name=tencent_yun_real_name,json=tencentYunRealName,proto3" json:"tencent_yun_real_name,omitempty"`
-	AliyunSms          *Data_AliyunSms          `protobuf:"bytes,5,opt,name=aliyun_sms,json=aliyunSms,proto3" json:"aliyun_sms,omitempty"`
-	ShumaiSms          *Data_ShumaiSms          `protobuf:"bytes,6,opt,name=shumai_sms,json=shumaiSms,proto3" json:"shumai_sms,omitempty"`
+	Mongodb            *Data_MongoDB            `protobuf:"bytes,3,opt,name=mongodb,proto3" json:"mongodb,omitempty"`
+	Minio              *Data_Minio              `protobuf:"bytes,4,opt,name=minio,proto3" json:"minio,omitempty"`
+	TencentYunRealName *Data_TencentYunRealName `protobuf:"bytes,5,opt,name=tencent_yun_real_name,json=tencentYunRealName,proto3" json:"tencent_yun_real_name,omitempty"`
+	AliyunSms          *Data_AliyunSms          `protobuf:"bytes,6,opt,name=aliyun_sms,json=aliyunSms,proto3" json:"aliyun_sms,omitempty"`
+	ShumaiSms          *Data_ShumaiSms          `protobuf:"bytes,7,opt,name=shumai_sms,json=shumaiSms,proto3" json:"shumai_sms,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -182,7 +183,14 @@ func (x *Data) GetRedis() *Data_Redis {
 	return nil
 }
 
-func (x *Data) GetMinio() *Minio {
+func (x *Data) GetMongodb() *Data_MongoDB {
+	if x != nil {
+		return x.Mongodb
+	}
+	return nil
+}
+
+func (x *Data) GetMinio() *Data_Minio {
 	if x != nil {
 		return x.Minio
 	}
@@ -210,82 +218,6 @@ func (x *Data) GetShumaiSms() *Data_ShumaiSms {
 	return nil
 }
 
-type Minio struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Endpoint      string                 `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	AccessKey     string                 `protobuf:"bytes,2,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
-	SecretKey     string                 `protobuf:"bytes,3,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
-	UseSsl        bool                   `protobuf:"varint,4,opt,name=use_ssl,json=useSsl,proto3" json:"use_ssl,omitempty"`
-	Bucket        string                 `protobuf:"bytes,5,opt,name=bucket,proto3" json:"bucket,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Minio) Reset() {
-	*x = Minio{}
-	mi := &file_conf_conf_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Minio) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Minio) ProtoMessage() {}
-
-func (x *Minio) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Minio.ProtoReflect.Descriptor instead.
-func (*Minio) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *Minio) GetEndpoint() string {
-	if x != nil {
-		return x.Endpoint
-	}
-	return ""
-}
-
-func (x *Minio) GetAccessKey() string {
-	if x != nil {
-		return x.AccessKey
-	}
-	return ""
-}
-
-func (x *Minio) GetSecretKey() string {
-	if x != nil {
-		return x.SecretKey
-	}
-	return ""
-}
-
-func (x *Minio) GetUseSsl() bool {
-	if x != nil {
-		return x.UseSsl
-	}
-	return false
-}
-
-func (x *Minio) GetBucket() string {
-	if x != nil {
-		return x.Bucket
-	}
-	return ""
-}
-
 type Server_HTTP struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Network       string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
@@ -297,7 +229,7 @@ type Server_HTTP struct {
 
 func (x *Server_HTTP) Reset() {
 	*x = Server_HTTP{}
-	mi := &file_conf_conf_proto_msgTypes[4]
+	mi := &file_conf_conf_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -309,7 +241,7 @@ func (x *Server_HTTP) String() string {
 func (*Server_HTTP) ProtoMessage() {}
 
 func (x *Server_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[4]
+	mi := &file_conf_conf_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -357,7 +289,7 @@ type Server_GRPC struct {
 
 func (x *Server_GRPC) Reset() {
 	*x = Server_GRPC{}
-	mi := &file_conf_conf_proto_msgTypes[5]
+	mi := &file_conf_conf_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -369,7 +301,7 @@ func (x *Server_GRPC) String() string {
 func (*Server_GRPC) ProtoMessage() {}
 
 func (x *Server_GRPC) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[5]
+	mi := &file_conf_conf_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -416,7 +348,7 @@ type Data_Database struct {
 
 func (x *Data_Database) Reset() {
 	*x = Data_Database{}
-	mi := &file_conf_conf_proto_msgTypes[6]
+	mi := &file_conf_conf_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -428,7 +360,7 @@ func (x *Data_Database) String() string {
 func (*Data_Database) ProtoMessage() {}
 
 func (x *Data_Database) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[6]
+	mi := &file_conf_conf_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -471,7 +403,7 @@ type Data_Redis struct {
 
 func (x *Data_Redis) Reset() {
 	*x = Data_Redis{}
-	mi := &file_conf_conf_proto_msgTypes[7]
+	mi := &file_conf_conf_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -483,7 +415,7 @@ func (x *Data_Redis) String() string {
 func (*Data_Redis) ProtoMessage() {}
 
 func (x *Data_Redis) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[7]
+	mi := &file_conf_conf_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -534,6 +466,174 @@ func (x *Data_Redis) GetWriteTimeout() *durationpb.Duration {
 	return nil
 }
 
+type Data_MongoDB struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	MongoURI         string                 `protobuf:"bytes,1,opt,name=mongoURI,proto3" json:"mongoURI,omitempty"`
+	Database         string                 `protobuf:"bytes,2,opt,name=database,proto3" json:"database,omitempty"`
+	MaxPoolSize      uint32                 `protobuf:"varint,3,opt,name=maxPoolSize,proto3" json:"maxPoolSize,omitempty"`
+	MinPoolSize      uint32                 `protobuf:"varint,4,opt,name=minPoolSize,proto3" json:"minPoolSize,omitempty"`
+	MaxIdleTimeMS    uint32                 `protobuf:"varint,5,opt,name=maxIdleTimeMS,proto3" json:"maxIdleTimeMS,omitempty"`
+	ConnectTimeoutMS uint32                 `protobuf:"varint,6,opt,name=connectTimeoutMS,proto3" json:"connectTimeoutMS,omitempty"`
+	SocketTimeoutMS  uint32                 `protobuf:"varint,7,opt,name=socketTimeoutMS,proto3" json:"socketTimeoutMS,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *Data_MongoDB) Reset() {
+	*x = Data_MongoDB{}
+	mi := &file_conf_conf_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Data_MongoDB) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Data_MongoDB) ProtoMessage() {}
+
+func (x *Data_MongoDB) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Data_MongoDB.ProtoReflect.Descriptor instead.
+func (*Data_MongoDB) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{2, 2}
+}
+
+func (x *Data_MongoDB) GetMongoURI() string {
+	if x != nil {
+		return x.MongoURI
+	}
+	return ""
+}
+
+func (x *Data_MongoDB) GetDatabase() string {
+	if x != nil {
+		return x.Database
+	}
+	return ""
+}
+
+func (x *Data_MongoDB) GetMaxPoolSize() uint32 {
+	if x != nil {
+		return x.MaxPoolSize
+	}
+	return 0
+}
+
+func (x *Data_MongoDB) GetMinPoolSize() uint32 {
+	if x != nil {
+		return x.MinPoolSize
+	}
+	return 0
+}
+
+func (x *Data_MongoDB) GetMaxIdleTimeMS() uint32 {
+	if x != nil {
+		return x.MaxIdleTimeMS
+	}
+	return 0
+}
+
+func (x *Data_MongoDB) GetConnectTimeoutMS() uint32 {
+	if x != nil {
+		return x.ConnectTimeoutMS
+	}
+	return 0
+}
+
+func (x *Data_MongoDB) GetSocketTimeoutMS() uint32 {
+	if x != nil {
+		return x.SocketTimeoutMS
+	}
+	return 0
+}
+
+type Data_Minio struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Endpoint      string                 `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	AccessKey     string                 `protobuf:"bytes,2,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
+	SecretKey     string                 `protobuf:"bytes,3,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
+	UseSsl        bool                   `protobuf:"varint,4,opt,name=use_ssl,json=useSsl,proto3" json:"use_ssl,omitempty"`
+	Bucket        string                 `protobuf:"bytes,5,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Data_Minio) Reset() {
+	*x = Data_Minio{}
+	mi := &file_conf_conf_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Data_Minio) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Data_Minio) ProtoMessage() {}
+
+func (x *Data_Minio) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Data_Minio.ProtoReflect.Descriptor instead.
+func (*Data_Minio) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{2, 3}
+}
+
+func (x *Data_Minio) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *Data_Minio) GetAccessKey() string {
+	if x != nil {
+		return x.AccessKey
+	}
+	return ""
+}
+
+func (x *Data_Minio) GetSecretKey() string {
+	if x != nil {
+		return x.SecretKey
+	}
+	return ""
+}
+
+func (x *Data_Minio) GetUseSsl() bool {
+	if x != nil {
+		return x.UseSsl
+	}
+	return false
+}
+
+func (x *Data_Minio) GetBucket() string {
+	if x != nil {
+		return x.Bucket
+	}
+	return ""
+}
+
 type Data_TencentYunRealName struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SecretId      string                 `protobuf:"bytes,1,opt,name=secretId,proto3" json:"secretId,omitempty"`
@@ -544,7 +644,7 @@ type Data_TencentYunRealName struct {
 
 func (x *Data_TencentYunRealName) Reset() {
 	*x = Data_TencentYunRealName{}
-	mi := &file_conf_conf_proto_msgTypes[8]
+	mi := &file_conf_conf_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -556,7 +656,7 @@ func (x *Data_TencentYunRealName) String() string {
 func (*Data_TencentYunRealName) ProtoMessage() {}
 
 func (x *Data_TencentYunRealName) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[8]
+	mi := &file_conf_conf_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -569,7 +669,7 @@ func (x *Data_TencentYunRealName) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_TencentYunRealName.ProtoReflect.Descriptor instead.
 func (*Data_TencentYunRealName) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{2, 2}
+	return file_conf_conf_proto_rawDescGZIP(), []int{2, 4}
 }
 
 func (x *Data_TencentYunRealName) GetSecretId() string {
@@ -596,7 +696,7 @@ type Data_AliyunSms struct {
 
 func (x *Data_AliyunSms) Reset() {
 	*x = Data_AliyunSms{}
-	mi := &file_conf_conf_proto_msgTypes[9]
+	mi := &file_conf_conf_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -608,7 +708,7 @@ func (x *Data_AliyunSms) String() string {
 func (*Data_AliyunSms) ProtoMessage() {}
 
 func (x *Data_AliyunSms) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[9]
+	mi := &file_conf_conf_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -621,7 +721,7 @@ func (x *Data_AliyunSms) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_AliyunSms.ProtoReflect.Descriptor instead.
 func (*Data_AliyunSms) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{2, 3}
+	return file_conf_conf_proto_rawDescGZIP(), []int{2, 5}
 }
 
 func (x *Data_AliyunSms) GetAccessKeyId() string {
@@ -647,7 +747,7 @@ type Data_ShumaiSms struct {
 
 func (x *Data_ShumaiSms) Reset() {
 	*x = Data_ShumaiSms{}
-	mi := &file_conf_conf_proto_msgTypes[10]
+	mi := &file_conf_conf_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -659,7 +759,7 @@ func (x *Data_ShumaiSms) String() string {
 func (*Data_ShumaiSms) ProtoMessage() {}
 
 func (x *Data_ShumaiSms) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[10]
+	mi := &file_conf_conf_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -672,7 +772,7 @@ func (x *Data_ShumaiSms) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_ShumaiSms.ProtoReflect.Descriptor instead.
 func (*Data_ShumaiSms) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{2, 4}
+	return file_conf_conf_proto_rawDescGZIP(), []int{2, 6}
 }
 
 func (x *Data_ShumaiSms) GetAppCode() string {
@@ -701,16 +801,18 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\x04GRPC\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xc5\x06\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\x97\n" +
+	"\n" +
 	"\x04Data\x125\n" +
 	"\bdatabase\x18\x01 \x01(\v2\x19.kratos.api.Data.DatabaseR\bdatabase\x12,\n" +
-	"\x05redis\x18\x02 \x01(\v2\x16.kratos.api.Data.RedisR\x05redis\x12'\n" +
-	"\x05minio\x18\x03 \x01(\v2\x11.kratos.api.MinioR\x05minio\x12V\n" +
-	"\x15tencent_yun_real_name\x18\x04 \x01(\v2#.kratos.api.Data.TencentYunRealNameR\x12tencentYunRealName\x129\n" +
+	"\x05redis\x18\x02 \x01(\v2\x16.kratos.api.Data.RedisR\x05redis\x122\n" +
+	"\amongodb\x18\x03 \x01(\v2\x18.kratos.api.Data.MongoDBR\amongodb\x12,\n" +
+	"\x05minio\x18\x04 \x01(\v2\x16.kratos.api.Data.MinioR\x05minio\x12V\n" +
+	"\x15tencent_yun_real_name\x18\x05 \x01(\v2#.kratos.api.Data.TencentYunRealNameR\x12tencentYunRealName\x129\n" +
 	"\n" +
-	"aliyun_sms\x18\x05 \x01(\v2\x1a.kratos.api.Data.AliyunSmsR\taliyunSms\x129\n" +
+	"aliyun_sms\x18\x06 \x01(\v2\x1a.kratos.api.Data.AliyunSmsR\taliyunSms\x129\n" +
 	"\n" +
-	"shumai_sms\x18\x06 \x01(\v2\x1a.kratos.api.Data.ShumaiSmsR\tshumaiSms\x1a:\n" +
+	"shumai_sms\x18\a \x01(\v2\x1a.kratos.api.Data.ShumaiSmsR\tshumaiSms\x1a:\n" +
 	"\bDatabase\x12\x16\n" +
 	"\x06driver\x18\x01 \x01(\tR\x06driver\x12\x16\n" +
 	"\x06source\x18\x02 \x01(\tR\x06source\x1a\xcf\x01\n" +
@@ -719,15 +821,15 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x12<\n" +
 	"\fread_timeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\vreadTimeout\x12>\n" +
-	"\rwrite_timeout\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\fwriteTimeout\x1aN\n" +
-	"\x12TencentYunRealName\x12\x1a\n" +
-	"\bsecretId\x18\x01 \x01(\tR\bsecretId\x12\x1c\n" +
-	"\tsecretKey\x18\x02 \x01(\tR\tsecretKey\x1a[\n" +
-	"\tAliyunSms\x12\"\n" +
-	"\raccess_key_id\x18\x01 \x01(\tR\vaccessKeyId\x12*\n" +
-	"\x11access_key_secret\x18\x02 \x01(\tR\x0faccessKeySecret\x1a&\n" +
-	"\tShumaiSms\x12\x19\n" +
-	"\bapp_code\x18\x01 \x01(\tR\aappCode\"\x92\x01\n" +
+	"\rwrite_timeout\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\fwriteTimeout\x1a\x81\x02\n" +
+	"\aMongoDB\x12\x1a\n" +
+	"\bmongoURI\x18\x01 \x01(\tR\bmongoURI\x12\x1a\n" +
+	"\bdatabase\x18\x02 \x01(\tR\bdatabase\x12 \n" +
+	"\vmaxPoolSize\x18\x03 \x01(\rR\vmaxPoolSize\x12 \n" +
+	"\vminPoolSize\x18\x04 \x01(\rR\vminPoolSize\x12$\n" +
+	"\rmaxIdleTimeMS\x18\x05 \x01(\rR\rmaxIdleTimeMS\x12*\n" +
+	"\x10connectTimeoutMS\x18\x06 \x01(\rR\x10connectTimeoutMS\x12(\n" +
+	"\x0fsocketTimeoutMS\x18\a \x01(\rR\x0fsocketTimeoutMS\x1a\x92\x01\n" +
 	"\x05Minio\x12\x1a\n" +
 	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x12\x1d\n" +
 	"\n" +
@@ -735,7 +837,15 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\n" +
 	"secret_key\x18\x03 \x01(\tR\tsecretKey\x12\x17\n" +
 	"\ause_ssl\x18\x04 \x01(\bR\x06useSsl\x12\x16\n" +
-	"\x06bucket\x18\x05 \x01(\tR\x06bucketB\x1bZ\x19anjuke/internal/conf;confb\x06proto3"
+	"\x06bucket\x18\x05 \x01(\tR\x06bucket\x1aN\n" +
+	"\x12TencentYunRealName\x12\x1a\n" +
+	"\bsecretId\x18\x01 \x01(\tR\bsecretId\x12\x1c\n" +
+	"\tsecretKey\x18\x02 \x01(\tR\tsecretKey\x1a[\n" +
+	"\tAliyunSms\x12\"\n" +
+	"\raccess_key_id\x18\x01 \x01(\tR\vaccessKeyId\x12*\n" +
+	"\x11access_key_secret\x18\x02 \x01(\tR\x0faccessKeySecret\x1a&\n" +
+	"\tShumaiSms\x12\x19\n" +
+	"\bapp_code\x18\x01 \x01(\tR\aappCodeB\x1bZ\x19anjuke/internal/conf;confb\x06proto3"
 
 var (
 	file_conf_conf_proto_rawDescOnce sync.Once
@@ -749,41 +859,43 @@ func file_conf_conf_proto_rawDescGZIP() []byte {
 	return file_conf_conf_proto_rawDescData
 }
 
-var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_conf_conf_proto_goTypes = []any{
 	(*Bootstrap)(nil),               // 0: kratos.api.Bootstrap
 	(*Server)(nil),                  // 1: kratos.api.Server
 	(*Data)(nil),                    // 2: kratos.api.Data
-	(*Minio)(nil),                   // 3: kratos.api.Minio
-	(*Server_HTTP)(nil),             // 4: kratos.api.Server.HTTP
-	(*Server_GRPC)(nil),             // 5: kratos.api.Server.GRPC
-	(*Data_Database)(nil),           // 6: kratos.api.Data.Database
-	(*Data_Redis)(nil),              // 7: kratos.api.Data.Redis
-	(*Data_TencentYunRealName)(nil), // 8: kratos.api.Data.TencentYunRealName
-	(*Data_AliyunSms)(nil),          // 9: kratos.api.Data.AliyunSms
-	(*Data_ShumaiSms)(nil),          // 10: kratos.api.Data.ShumaiSms
-	(*durationpb.Duration)(nil),     // 11: google.protobuf.Duration
+	(*Server_HTTP)(nil),             // 3: kratos.api.Server.HTTP
+	(*Server_GRPC)(nil),             // 4: kratos.api.Server.GRPC
+	(*Data_Database)(nil),           // 5: kratos.api.Data.Database
+	(*Data_Redis)(nil),              // 6: kratos.api.Data.Redis
+	(*Data_MongoDB)(nil),            // 7: kratos.api.Data.MongoDB
+	(*Data_Minio)(nil),              // 8: kratos.api.Data.Minio
+	(*Data_TencentYunRealName)(nil), // 9: kratos.api.Data.TencentYunRealName
+	(*Data_AliyunSms)(nil),          // 10: kratos.api.Data.AliyunSms
+	(*Data_ShumaiSms)(nil),          // 11: kratos.api.Data.ShumaiSms
+	(*durationpb.Duration)(nil),     // 12: google.protobuf.Duration
 }
 var file_conf_conf_proto_depIdxs = []int32{
 	1,  // 0: kratos.api.Bootstrap.server:type_name -> kratos.api.Server
 	2,  // 1: kratos.api.Bootstrap.data:type_name -> kratos.api.Data
-	4,  // 2: kratos.api.Server.http:type_name -> kratos.api.Server.HTTP
-	5,  // 3: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
-	6,  // 4: kratos.api.Data.database:type_name -> kratos.api.Data.Database
-	7,  // 5: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
-	3,  // 6: kratos.api.Data.minio:type_name -> kratos.api.Minio
-	8,  // 7: kratos.api.Data.tencent_yun_real_name:type_name -> kratos.api.Data.TencentYunRealName
-	9,  // 8: kratos.api.Data.aliyun_sms:type_name -> kratos.api.Data.AliyunSms
-	10, // 9: kratos.api.Data.shumai_sms:type_name -> kratos.api.Data.ShumaiSms
-	11, // 10: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	11, // 11: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	11, // 12: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	11, // 13: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	3,  // 2: kratos.api.Server.http:type_name -> kratos.api.Server.HTTP
+	4,  // 3: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
+	5,  // 4: kratos.api.Data.database:type_name -> kratos.api.Data.Database
+	6,  // 5: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
+	7,  // 6: kratos.api.Data.mongodb:type_name -> kratos.api.Data.MongoDB
+	8,  // 7: kratos.api.Data.minio:type_name -> kratos.api.Data.Minio
+	9,  // 8: kratos.api.Data.tencent_yun_real_name:type_name -> kratos.api.Data.TencentYunRealName
+	10, // 9: kratos.api.Data.aliyun_sms:type_name -> kratos.api.Data.AliyunSms
+	11, // 10: kratos.api.Data.shumai_sms:type_name -> kratos.api.Data.ShumaiSms
+	12, // 11: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	12, // 12: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	12, // 13: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	12, // 14: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	15, // [15:15] is the sub-list for method output_type
+	15, // [15:15] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_conf_conf_proto_init() }
@@ -797,7 +909,7 @@ func file_conf_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conf_conf_proto_rawDesc), len(file_conf_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

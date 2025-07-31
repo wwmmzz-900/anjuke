@@ -14,11 +14,16 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
+// RealNameSDKInterface 定义实名认证SDK接口，用于测试时的mock
+type RealNameSDKInterface interface {
+	RealName(name, idCard string) (bool, error)
+}
+
 // UserRepo 实现了 domain.UserRepo 接口。
 type UserRepo struct {
 	data        *Data
 	log         *log.Helper
-	realNameSDK *RealNameSDK // <-- 重新添加
+	realNameSDK RealNameSDKInterface
 }
 
 // NewUserRepo 是 UserRepo 的构造函数，由 wire 自动调用。
@@ -26,13 +31,13 @@ func NewUserRepo(data *Data, realNameSDK *RealNameSDK, logger log.Logger) domain
 	return &UserRepo{
 		data:        data,
 		log:         log.NewHelper(logger),
-		realNameSDK: realNameSDK, // <-- 重新添加
+		realNameSDK: realNameSDK,
 	}
 }
 
 // SmsRiskControl 实现了短信风控的检查逻辑，它直接调用了封装在 Data 中的 Redis 操作。
-func (u *UserRepo) SmsRiskControl(ctx context.Context, phone, deviceID, ip string) error {
-	return u.data.SmsRiskControl(ctx, phone, deviceID, ip)
+func (u *UserRepo) SmsRiskControl(ctx context.Context, phone string) error {
+	return u.data.SmsRiskControl(ctx, phone, "", "")
 }
 
 // todo:实名认证
@@ -193,4 +198,55 @@ func (u *UserRepo) GetUserByPhone(ctx context.Context, phone string) (*domain.Us
 		return nil, fmt.Errorf("用户不存在")
 	}
 	return &user, nil
+}
+
+// GetUserByID 根据用户ID获取用户
+func (u *UserRepo) GetUserByID(ctx context.Context, id uint64) (*domain.UserBase, error) {
+	var user domain.UserBase
+	if err := u.data.db.Where("user_id = ?", id).First(&user).Error; err != nil {
+		return nil, fmt.Errorf("用户不存在")
+	}
+	return &user, nil
+}
+
+// UpdateUser 更新用户信息
+func (u *UserRepo) UpdateUser(ctx context.Context, user *domain.UserBase) (*domain.UserBase, error) {
+	if err := u.data.db.Model(&domain.UserBase{}).Where("user_id = ?", user.UserId).Updates(user).Error; err != nil {
+		return nil, fmt.Errorf("更新用户失败: %v", err)
+	}
+	return user, nil
+}
+
+// DeleteUser 删除用户
+func (u *UserRepo) DeleteUser(ctx context.Context, id uint64) error {
+	// 使用事务确保数据一致性
+	tx := u.data.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 1. 删除实名认证记录
+	if err := tx.Where("user_id = ?", id).Delete(&domain.RealName{}).Error; err != nil {
+		tx.Rollback()
+		u.log.Errorf("删除用户实名认证记录失败: 用户ID=%d, 错误=%v", id, err)
+		return fmt.Errorf("删除用户实名认证记录失败: %v", err)
+	}
+
+	// 2. 删除用户基础信息
+	if err := tx.Where("user_id = ?", id).Delete(&domain.UserBase{}).Error; err != nil {
+		tx.Rollback()
+		u.log.Errorf("删除用户失败: 用户ID=%d, 错误=%v", id, err)
+		return fmt.Errorf("删除用户失败: %v", err)
+	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		u.log.Errorf("删除用户事务提交失败: 用户ID=%d, 错误=%v", id, err)
+		return fmt.Errorf("删除用户事务提交失败: %v", err)
+	}
+
+	u.log.Infof("用户删除成功: 用户ID=%d", id)
+	return nil
 }

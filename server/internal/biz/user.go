@@ -37,14 +37,18 @@ func (uc *UserUsecase) SendSms(ctx context.Context, phone, deviceID, ip, scene s
 	}
 
 	// 2. 调用 UserRepo 进行风控检查
-	err := uc.repo.SmsRiskControl(ctx, phone, deviceID, ip)
+	err := uc.repo.SmsRiskControl(ctx, phone)
 	if err != nil {
 		return "", err
 	}
 
 	// 3. 风控通过后，调用 SmsRepo 执行发送
 	uc.log.WithContext(ctx).Infof("SendSms to: %s, scene: %s", phone, scene)
-	return uc.smsRepo.SendSms(ctx, phone, scene)
+	err = uc.smsRepo.SendSms(ctx, phone, scene)
+	if err != nil {
+		return "", err
+	}
+	return "发送成功", nil
 }
 
 // VerifySms 验证短信验证码
@@ -61,7 +65,7 @@ func (uc *UserUsecase) VerifySms(ctx context.Context, phone, code, scene string)
 
 	// 3. 调用 SmsRepo 进行验证
 	uc.log.WithContext(ctx).Infof("VerifySms: phone=%s, scene=%s", phone, scene)
-	return uc.smsRepo.VerifySms(ctx, phone, code, scene)
+	return uc.smsRepo.VerifySms(ctx, phone, code)
 }
 
 // isValidScene 检查短信场景是否有效
@@ -115,7 +119,11 @@ func (uc *UserUsecase) UploadToMinioWithProgress(ctx context.Context, fileName s
 		return repo.SmartUploadWithProgress(ctx, fileName, reader, size, contentType, progressCallback)
 	}
 	// fallback: no progress
-	return uc.minioRepo.SimpleUpload(ctx, fileName, reader, size, contentType)
+	fileInfo, err := uc.minioRepo.SimpleUpload(ctx, fileName, reader)
+	if err != nil {
+		return "", err
+	}
+	return fileInfo.FileURL, nil
 }
 
 func (uc *UserUsecase) DeleteFromMinio(ctx context.Context, objectName string) error {
@@ -236,10 +244,19 @@ func (uc *UserUsecase) GetFileList(ctx context.Context, page, pageSize int32, ke
 
 	if keyword != "" {
 		// 如果有搜索关键词，使用搜索接口
-		files, err = uc.minioRepo.SearchFiles(ctx, keyword, maxKeys*int(page))
+		files, total, err := uc.minioRepo.SearchFiles(ctx, keyword, int32(page), int32(pageSize))
+		if err != nil {
+			uc.log.WithContext(ctx).Errorf("搜索文件失败: %v", err)
+			return nil, 0, fmt.Errorf("搜索文件失败: %w", err)
+		}
+		return files, total, nil
 	} else {
 		// 否则列出所有文件
-		files, err = uc.minioRepo.ListFiles(ctx, "", maxKeys*int(page))
+		files, err = uc.minioRepo.ListFiles(ctx, "", maxKeys)
+		if err != nil {
+			uc.log.WithContext(ctx).Errorf("列出文件失败: %v", err)
+			return nil, 0, fmt.Errorf("列出文件失败: %w", err)
+		}
 	}
 
 	if err != nil {
@@ -270,7 +287,7 @@ func (uc *UserUsecase) GetFileList(ctx context.Context, page, pageSize int32, ke
 // GetUploadStats 获取上传统计
 func (uc *UserUsecase) GetUploadStats(ctx context.Context) (map[string]interface{}, error) {
 	// 获取文件统计信息
-	stats, err := uc.minioRepo.GetFileStats(ctx, "")
+	stats, err := uc.minioRepo.GetFileStats(ctx)
 	if err != nil {
 		uc.log.WithContext(ctx).Errorf("获取上传统计失败: %v", err)
 		// 返回默认统计数据而不是错误

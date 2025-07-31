@@ -20,15 +20,37 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
+// UserUsecaseInterface 定义用户用例接口，用于测试时的mock
+type UserUsecaseInterface interface {
+	SendSms(ctx context.Context, phone, deviceID, ip, scene string) (string, error)
+	VerifySms(ctx context.Context, phone, code, scene string) (bool, error)
+	RealName(ctx context.Context, user *domain.RealName) (*domain.RealName, error)
+	UpdateUserStatus(ctx context.Context, user *domain.UserBase) (*domain.UserBase, error)
+	CreateUser(ctx context.Context, phone, name, password string) (*domain.UserBase, error)
+	Login(ctx context.Context, loginType, mobile, password, code string) (*domain.UserBase, string, error)
+	GetFileList(ctx context.Context, page, pageSize int32, keyword string) ([]domain.FileInfo, int32, error)
+	GetUploadStats(ctx context.Context) (map[string]interface{}, error)
+	DeleteFile(ctx context.Context, objectName string) error
+	UploadToMinioWithProgress(ctx context.Context, fileName string, reader io.Reader, size int64, contentType string, progressCallback func(uploaded, total int64)) (string, error)
+	DeleteFromMinio(ctx context.Context, objectName string) error
+}
+
 // UserService 实现了 API 定义的用户服务。
 // 它依赖 biz.UserUsecase 来完成实际的业务处理。
 type UserService struct {
 	v2.UnimplementedUserServer
-	uc *biz.UserUsecase
+	uc UserUsecaseInterface
 }
 
 // NewUserService 是 UserService 的构造函数。
 func NewUserService(uc *biz.UserUsecase) *UserService {
+	return &UserService{
+		uc: uc,
+	}
+}
+
+// NewUserServiceWithInterface 用于测试时创建服务
+func NewUserServiceWithInterface(uc UserUsecaseInterface) *UserService {
 	return &UserService{
 		uc: uc,
 	}
@@ -39,7 +61,7 @@ func (s *UserService) RealName(ctx context.Context, req *v2.RealNameRequest) (*c
 
 	// 将请求参数转换为 biz 层的领域模型
 	_, err := s.uc.RealName(ctx, &domain.RealName{
-		UserId: uint32(req.UserId),
+		UserId: uint64(req.UserId),
 		Name:   req.Name,
 		IdCard: req.IdCard,
 	})
@@ -449,33 +471,6 @@ func (s *UserService) DeleteFile(ctx context.Context, req *v2.DeleteFileRequest)
 
 	// 构建成功响应
 	resp, err := BuildSuccessResponse("删除文件成功", data)
-	if err != nil {
-		return BuildErrorResponse(1, "响应构建失败"), nil
-	}
-	return resp, nil
-}
-
-// TestMinioConnection 测试MinIO连接
-func (s *UserService) TestMinioConnection(ctx context.Context, req *v2.GetUploadStatsRequest) (*commonv1.BaseResponse, error) {
-	log.Printf("TestMinioConnection请求")
-
-	// 尝试列出文件来测试连接
-	files, total, err := s.uc.GetFileList(ctx, 1, 1, "")
-	if err != nil {
-		log.Printf("MinIO连接测试失败: %v", err)
-		return BuildErrorResponse(1, "MinIO连接失败: "+err.Error()), nil
-	}
-
-	// 构建响应数据
-	data := &v2.GetUploadStatsData{
-		TotalUploads:   total,
-		SuccessUploads: int32(len(files)),
-		TotalSize:      0,
-		TodayUploads:   0,
-	}
-
-	// 构建成功响应
-	resp, err := BuildSuccessResponse("MinIO连接测试成功", data)
 	if err != nil {
 		return BuildErrorResponse(1, "响应构建失败"), nil
 	}

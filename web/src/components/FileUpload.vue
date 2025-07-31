@@ -1,29 +1,18 @@
 <template>
   <div class="file-upload">
-    <el-upload
-      ref="uploadRef"
-      :action="action"
-      :auto-upload="false"
-      :multiple="multiple"
-      :limit="limit"
-      :accept="accept"
-      :file-list="fileList"
-      :on-change="handleFileChange"
-      :on-remove="handleFileRemove"
-      :on-exceed="handleExceed"
-      :before-upload="beforeUpload"
-      :drag="drag"
-      :show-file-list="true"
-      :list-type="listType"
-      :disabled="disabled"
-    >
+    <el-upload ref="uploadRef" :action="action" :auto-upload="false" :multiple="multiple" :limit="limit"
+      :accept="accept" :file-list="fileList" :on-change="handleFileChange" :on-remove="handleFileRemove"
+      :on-exceed="handleExceed" :before-upload="beforeUpload" :drag="drag" :show-file-list="true" :list-type="listType"
+      :disabled="disabled">
       <template #trigger>
         <el-button type="primary" :disabled="disabled">
-          <el-icon><Upload /></el-icon>
+          <el-icon>
+            <Upload />
+          </el-icon>
           选择文件
         </el-button>
       </template>
-      
+
       <template #tip>
         <div class="el-upload__tip">
           {{ tip }}
@@ -33,30 +22,22 @@
 
     <!-- 上传进度 -->
     <div v-if="uploadProgress > 0 && uploadProgress < 100" class="upload-progress">
-      <el-progress 
-        :percentage="uploadProgress" 
-        :status="uploadStatus"
-        :stroke-width="8"
-      />
+      <el-progress :percentage="uploadProgress" :status="uploadStatus" :stroke-width="8" />
       <div class="progress-text">{{ progressText }}</div>
     </div>
 
     <!-- 上传按钮 -->
     <div v-if="fileList.length > 0" class="upload-actions">
-      <el-button 
-        type="success" 
-        @click="startUpload"
-        :loading="uploading"
-        :disabled="disabled || fileList.length === 0"
-      >
-        <el-icon><Upload /></el-icon>
+      <el-button type="success" @click="startUpload" :loading="uploading" :disabled="disabled || fileList.length === 0">
+        <el-icon>
+          <Upload />
+        </el-icon>
         开始上传
       </el-button>
-      <el-button 
-        @click="clearFiles"
-        :disabled="uploading"
-      >
-        <el-icon><Delete /></el-icon>
+      <el-button @click="clearFiles" :disabled="uploading">
+        <el-icon>
+          <Delete />
+        </el-icon>
         清空文件
       </el-button>
     </div>
@@ -149,13 +130,13 @@ export default {
         ElMessage.error(`文件大小不能超过 ${props.maxSize}MB`)
         return false
       }
-      
+
       // 验证文件类型
       if (props.accept !== '*' && props.accept !== '') {
         const acceptTypes = props.accept.split(',').map(type => type.trim())
         const fileType = file.type || ''
         const fileName = file.name || ''
-        
+
         const isValidType = acceptTypes.some(type => {
           if (type.startsWith('.')) {
             return fileName.toLowerCase().endsWith(type.toLowerCase())
@@ -166,13 +147,13 @@ export default {
             return fileType === type
           }
         })
-        
+
         if (!isValidType) {
           ElMessage.error(`不支持的文件类型: ${fileType}`)
           return false
         }
       }
-      
+
       return true
     }
 
@@ -206,32 +187,32 @@ export default {
       try {
         for (let i = 0; i < fileList.value.length; i++) {
           const file = fileList.value[i]
-          
+
           if (!file.raw) {
             ElMessage.error(`文件 ${file.name} 无效`)
             continue
           }
 
           progressText.value = `正在上传: ${file.name}`
-          
+
           // 根据文件大小选择上传方式
           let response
           if (file.size > 5 * 1024 * 1024) { // 5MB以上使用智能上传
             // 生成uploadID
             const uploadID = generateUploadID()
-            
+
             // 连接WebSocket监听进度
             const ws = connectWebSocket(uploadID, (progress, status) => {
               uploadProgress.value = progress
               progressText.value = `${status}: ${progress}%`
             })
-            
+
             // 等待WebSocket连接
             await new Promise(resolve => setTimeout(resolve, 500))
-            
+
             // 执行上传
             response = await uploadApi.uploadSmart(file.raw, uploadID)
-            
+
             // 关闭WebSocket
             if (ws) {
               ws.close()
@@ -248,7 +229,7 @@ export default {
             const url = response.data?.url || response.url
             file.url = url
             file.status = 'success'
-            
+
             ElMessage.success(`文件 ${file.name} 上传成功`)
             emit('success', response, file)
           } else {
@@ -260,12 +241,12 @@ export default {
         uploadProgress.value = 100
         uploadStatus.value = 'success'
         progressText.value = '所有文件上传完成'
-        
+
       } catch (error) {
         uploadProgress.value = 0
         uploadStatus.value = 'exception'
         progressText.value = `上传失败: ${error.message}`
-        
+
         ElMessage.error(`上传失败: ${error.message}`)
         emit('error', error)
       } finally {
@@ -298,13 +279,13 @@ export default {
     const connectWebSocket = (uploadID, onProgress) => {
       const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://'
       const wsUrl = `${protocol}${window.location.host}/api/upload/progress?uploadID=${uploadID}`
-      
+
       const ws = new WebSocket(wsUrl)
-      
+
       ws.onopen = () => {
         console.log('WebSocket连接已建立')
       }
-      
+
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data)
@@ -315,15 +296,15 @@ export default {
           console.error('解析WebSocket消息失败:', error)
         }
       }
-      
+
       ws.onerror = (error) => {
         console.error('WebSocket错误:', error)
       }
-      
+
       ws.onclose = () => {
         console.log('WebSocket连接已关闭')
       }
-      
+
       return ws
     }
 
@@ -372,4 +353,4 @@ export default {
   font-size: 12px;
   margin-top: 5px;
 }
-</style> 
+</style>
