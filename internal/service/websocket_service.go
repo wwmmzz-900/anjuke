@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,25 +14,63 @@ import (
 	"github.com/wwmmzz-900/anjuke/internal/model"
 )
 
+// HeartbeatConfig 心跳检测配置
+type HeartbeatConfig struct {
+	Interval time.Duration // 心跳间隔时间
+	Timeout  time.Duration // 心跳超时时间
+}
+
+// ConnectionInfo 连接信息
+type ConnectionInfo struct {
+	Conn         *websocket.Conn
+	LastHeartbeat time.Time
+	Cancel       context.CancelFunc
+}
+
 // WebSocketManager WebSocket连接管理器
 type WebSocketManager struct {
 	mutex            sync.RWMutex
-	connections      map[int64]*websocket.Conn           // userID -> connection
-	houseConnections map[int64]map[int64]*websocket.Conn // houseID -> userID -> connection
-	sessionKeys      map[int64]string                    // userID -> sessionKey
+	connections      map[int64]*ConnectionInfo               // userID -> connection info
+	houseConnections map[int64]map[int64]*ConnectionInfo     // houseID -> userID -> connection info
+	sessionKeys      map[int64]string                        // userID -> sessionKey
 	upgrader         websocket.Upgrader
+	heartbeatConfig  HeartbeatConfig
 }
 
 // NewWebSocketManager 创建新的WebSocket管理器
 func NewWebSocketManager() *WebSocketManager {
 	return &WebSocketManager{
-		connections:      make(map[int64]*websocket.Conn),
-		houseConnections: make(map[int64]map[int64]*websocket.Conn),
+		connections:      make(map[int64]*ConnectionInfo),
+		houseConnections: make(map[int64]map[int64]*ConnectionInfo),
 		sessionKeys:      make(map[int64]string),
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
+		heartbeatConfig: HeartbeatConfig{
+			Interval: 30 * time.Second, // 默认30秒心跳间隔
+			Timeout:  60 * time.Second, // 默认60秒超时
+		},
 	}
+}
+
+// SetHeartbeatConfig 设置心跳配置
+func (wm *WebSocketManager) SetHeartbeatConfig(interval, timeout time.Duration) {
+	wm.mutex.Lock()
+	defer wm.mutex.Unlock()
+	
+	if interval > 0 {
+		wm.heartbeatConfig.Interval = interval
+	} else {
+		log.Printf("警告: 心跳间隔时间无效，使用默认值 %v", wm.heartbeatConfig.Interval)
+	}
+	
+	if timeout > 0 {
+		wm.heartbeatConfig.Timeout = timeout
+	} else {
+		log.Printf("警告: 心跳超时时间无效，使用默认值 %v", wm.heartbeatConfig.Timeout)
+	}
+	
+	log.Printf("心跳配置已更新: 间隔=%v, 超时=%v", wm.heartbeatConfig.Interval, wm.heartbeatConfig.Timeout)
 }
 
 // AddConnection 添加用户连接
@@ -40,12 +79,26 @@ func (wm *WebSocketManager) AddConnection(userID int64, conn *websocket.Conn) {
 	defer wm.mutex.Unlock()
 
 	// 如果用户已有连接，先关闭旧连接
-	if oldConn, exists := wm.connections[userID]; exists {
-		oldConn.Close()
+	if oldConnInfo, exists := wm.connections[userID]; exists {
+		if oldConnInfo.Cancel != nil {
+			oldConnInfo.Cancel()
+		}
+		oldConnInfo.Conn.Close()
 	}
 
-	wm.connections[userID] = conn
+	// 创建心跳上下文
+	ctx, cancel := context.WithCancel(context.Background())
+	connInfo := &ConnectionInfo{
+		Conn:          conn,
+		LastHeartbeat: time.Now(),
+		Cancel:        cancel,
+	}
+
+	wm.connections[userID] = connInfo
 	log.Printf("用户 %d 的WebSocket连接已添加", userID)
+
+	// 启动心跳检测
+	go wm.startHeartbeat(ctx, userID, connInfo)
 }
 
 // AddHouseConnection 添加房源相关的用户连接
@@ -54,18 +107,33 @@ func (wm *WebSocketManager) AddHouseConnection(houseID, userID int64, conn *webs
 	defer wm.mutex.Unlock()
 
 	// 添加到全局连接池
-	if oldConn, exists := wm.connections[userID]; exists {
-		oldConn.Close()
+	if oldConnInfo, exists := wm.connections[userID]; exists {
+		if oldConnInfo.Cancel != nil {
+			oldConnInfo.Cancel()
+		}
+		oldConnInfo.Conn.Close()
 	}
-	wm.connections[userID] = conn
+
+	// 创建心跳上下文
+	ctx, cancel := context.WithCancel(context.Background())
+	connInfo := &ConnectionInfo{
+		Conn:          conn,
+		LastHeartbeat: time.Now(),
+		Cancel:        cancel,
+	}
+
+	wm.connections[userID] = connInfo
 
 	// 添加到房源连接池
 	if wm.houseConnections[houseID] == nil {
-		wm.houseConnections[houseID] = make(map[int64]*websocket.Conn)
+		wm.houseConnections[houseID] = make(map[int64]*ConnectionInfo)
 	}
-	wm.houseConnections[houseID][userID] = conn
+	wm.houseConnections[houseID][userID] = connInfo
 
 	log.Printf("用户 %d 的房源 %d WebSocket连接已添加", userID, houseID)
+
+	// 启动心跳检测
+	go wm.startHeartbeat(ctx, userID, connInfo)
 }
 
 // RemoveConnection 移除用户连接
@@ -74,8 +142,11 @@ func (wm *WebSocketManager) RemoveConnection(userID int64) {
 	defer wm.mutex.Unlock()
 
 	// 从全局连接池移除
-	if conn, exists := wm.connections[userID]; exists {
-		conn.Close()
+	if connInfo, exists := wm.connections[userID]; exists {
+		if connInfo.Cancel != nil {
+			connInfo.Cancel()
+		}
+		connInfo.Conn.Close()
 		delete(wm.connections, userID)
 	}
 
@@ -99,7 +170,7 @@ func (wm *WebSocketManager) RemoveConnection(userID int64) {
 // SendMessageToUser 向指定用户发送消息
 func (wm *WebSocketManager) SendMessageToUser(userID int64, message interface{}) error {
 	wm.mutex.RLock()
-	conn, exists := wm.connections[userID]
+	connInfo, exists := wm.connections[userID]
 	wm.mutex.RUnlock()
 
 	if !exists {
@@ -113,7 +184,7 @@ func (wm *WebSocketManager) SendMessageToUser(userID int64, message interface{})
 	}
 
 	// 发送消息
-	if err := conn.WriteMessage(websocket.TextMessage, jsonData); err != nil {
+	if err := connInfo.Conn.WriteMessage(websocket.TextMessage, jsonData); err != nil {
 		// 如果发送失败，移除连接
 		wm.RemoveConnection(userID)
 		return fmt.Errorf("发送消息失败: %v", err)
@@ -133,8 +204,8 @@ func (wm *WebSocketManager) SendMessageToHouse(houseID int64, message interface{
 
 	// 复制连接映射以避免在锁内进行网络操作
 	connsCopy := make(map[int64]*websocket.Conn)
-	for userID, conn := range houseConns {
-		connsCopy[userID] = conn
+	for userID, connInfo := range houseConns {
+		connsCopy[userID] = connInfo.Conn
 	}
 	wm.mutex.RUnlock()
 
@@ -230,8 +301,8 @@ func (wm *WebSocketManager) GetSessionKey(userID int64) (string, bool) {
 func (wm *WebSocketManager) BroadcastMessage(message interface{}) error {
 	wm.mutex.RLock()
 	connsCopy := make(map[int64]*websocket.Conn)
-	for userID, conn := range wm.connections {
-		connsCopy[userID] = conn
+	for userID, connInfo := range wm.connections {
+		connsCopy[userID] = connInfo.Conn
 	}
 	wm.mutex.RUnlock()
 
@@ -283,7 +354,83 @@ func (wm *WebSocketManager) GetConnectionStats() map[string]interface{} {
 	stats["total_houses"] = len(wm.houseConnections)
 	stats["houses"] = houseStats
 
+	// 添加心跳统计信息
+	heartbeatStats := make(map[string]interface{})
+	heartbeatStats["interval"] = wm.heartbeatConfig.Interval.String()
+	heartbeatStats["timeout"] = wm.heartbeatConfig.Timeout.String()
+	
+	// 统计心跳超时的连接
+	timeoutCount := 0
+	now := time.Now()
+	for _, connInfo := range wm.connections {
+		if now.Sub(connInfo.LastHeartbeat) > wm.heartbeatConfig.Timeout {
+			timeoutCount++
+		}
+	}
+	heartbeatStats["timeout_connections"] = timeoutCount
+	stats["heartbeat"] = heartbeatStats
+
 	return stats
+}
+
+// startHeartbeat 启动心跳检测
+func (wm *WebSocketManager) startHeartbeat(ctx context.Context, userID int64, connInfo *ConnectionInfo) {
+	ticker := time.NewTicker(wm.heartbeatConfig.Interval)
+	defer ticker.Stop()
+
+	log.Printf("用户 %d 心跳检测已启动", userID)
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Printf("用户 %d 心跳检测已停止", userID)
+			return
+		case <-ticker.C:
+			// 检查连接是否超时
+			wm.mutex.RLock()
+			lastHeartbeat := connInfo.LastHeartbeat
+			timeout := wm.heartbeatConfig.Timeout
+			wm.mutex.RUnlock()
+
+			if time.Since(lastHeartbeat) > timeout {
+				log.Printf("用户 %d 心跳超时，断开连接", userID)
+				wm.RemoveConnection(userID)
+				return
+			}
+
+			// 发送心跳包
+			heartbeatMsg := map[string]interface{}{
+				"type":      "heartbeat",
+				"message":   "ping",
+				"timestamp": time.Now().Unix(),
+			}
+
+			if err := connInfo.Conn.WriteJSON(heartbeatMsg); err != nil {
+				log.Printf("向用户 %d 发送心跳包失败: %v", userID, err)
+				wm.RemoveConnection(userID)
+				return
+			}
+
+			log.Printf("向用户 %d 发送心跳包", userID)
+		}
+	}
+}
+
+// HandleHeartbeatResponse 处理心跳响应
+func (wm *WebSocketManager) HandleHeartbeatResponse(userID int64) error {
+	wm.mutex.Lock()
+	defer wm.mutex.Unlock()
+
+	connInfo, exists := wm.connections[userID]
+	if !exists {
+		return fmt.Errorf("用户 %d 连接不存在", userID)
+	}
+
+	// 更新最后心跳时间
+	connInfo.LastHeartbeat = time.Now()
+	log.Printf("用户 %d 心跳响应已更新", userID)
+
+	return nil
 }
 
 // =============================================================================
@@ -398,7 +545,10 @@ func (ws *WebSocketService) processMessage(conn *websocket.Conn, houseID, userID
 	log.Printf("解析JSON成功: %+v\n", msgData)
 
 	// 处理不同类型的消息
-	if to, hasTo := msgData["to"].(float64); hasTo {
+	if msgType, ok := msgData["type"].(string); ok && msgType == "heartbeat" {
+		// 处理心跳响应
+		return ws.handleHeartbeatResponse(userID, msgData)
+	} else if to, hasTo := msgData["to"].(float64); hasTo {
 		return ws.handleDirectMessage(conn, houseID, userID, msgData, int64(to))
 	} else if action, ok := msgData["action"].(string); ok {
 		return ws.handleActionMessage(conn, houseID, userID, msgData, action)
@@ -571,6 +721,25 @@ func (ws *WebSocketService) handleChatMessage(conn *websocket.Conn, houseID, use
 	})
 }
 
+// handleHeartbeatResponse 处理心跳响应
+func (ws *WebSocketService) handleHeartbeatResponse(userID int64, msgData map[string]interface{}) error {
+	message, ok := msgData["message"].(string)
+	if !ok || message != "pong" {
+		log.Printf("用户 %d 心跳响应格式错误: %v", userID, msgData)
+		// 格式错误但不断开连接，只记录日志
+		return nil
+	}
+
+	// 更新心跳时间
+	if err := ws.manager.HandleHeartbeatResponse(userID); err != nil {
+		log.Printf("更新用户 %d 心跳时间失败: %v", userID, err)
+		return err
+	}
+
+	log.Printf("用户 %d 心跳响应处理成功", userID)
+	return nil
+}
+
 // handleEchoMessage 处理回显消息
 func (ws *WebSocketService) handleEchoMessage(conn *websocket.Conn, msgData map[string]interface{}) error {
 	log.Println("消息没有action字段，回显")
@@ -640,35 +809,78 @@ func HandleSecureChatPage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "web/secure_chat.html")
 }
 
-// =============================================================================
-// 辅助函数（向后兼容）
-// =============================================================================
+// HandleHeartbeatConfig HTTP处理器：配置心跳参数
+func HandleHeartbeatConfig(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-// pushToUser 推送消息给指定用户（向后兼容）
-func pushToUser(houseID, userID int64, msg interface{}) {
-	err := GlobalWebSocketManager.SendMessageToUser(userID, msg)
-	if err != nil {
-		log.Printf("推送消息给用户%d失败: %v\n", userID, err)
-	} else {
-		log.Printf("成功推送消息给用户%d: %+v\n", userID, msg)
-	}
-}
+	if r.Method == "GET" {
+		// 获取当前心跳配置
+		GlobalWebSocketManager.mutex.RLock()
+		config := GlobalWebSocketManager.heartbeatConfig
+		GlobalWebSocketManager.mutex.RUnlock()
 
-// pushToAll 推送消息给所有正在查看该房源的用户（向后兼容）
-func pushToAll(houseID int64, msg interface{}) {
-	users := GlobalWebSocketManager.GetHouseUsers(houseID)
-
-	for _, userID := range users {
-		err := GlobalWebSocketManager.SendMessageToUser(userID, msg)
-		if err != nil {
-			log.Printf("推送消息给房源%d的用户%d失败: %v\n", houseID, userID, err)
+		response := map[string]interface{}{
+			"code": 0,
+			"msg":  "success",
+			"data": map[string]interface{}{
+				"interval": config.Interval.String(),
+				"timeout":  config.Timeout.String(),
+			},
 		}
+
+		jsonData, _ := json.Marshal(response)
+		w.Write(jsonData)
+		return
 	}
 
-	log.Printf("向房源%d的%d个用户推送了消息\n", houseID, len(users))
-}
+	if r.Method == "POST" {
+		// 设置心跳配置
+		var reqData struct {
+			Interval string `json:"interval"`
+			Timeout  string `json:"timeout"`
+		}
 
-// GetConnectionStats 获取连接状态信息（向后兼容）
-func GetConnectionStats() map[string]interface{} {
-	return GlobalWebSocketManager.GetConnectionStats()
+		if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"code":400,"msg":"请求参数格式错误","data":null}`))
+			return
+		}
+
+		var interval, timeout time.Duration
+		var err error
+
+		if reqData.Interval != "" {
+			interval, err = time.ParseDuration(reqData.Interval)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(`{"code":400,"msg":"心跳间隔时间格式错误","data":null}`))
+				return
+			}
+		}
+
+		if reqData.Timeout != "" {
+			timeout, err = time.ParseDuration(reqData.Timeout)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(`{"code":400,"msg":"心跳超时时间格式错误","data":null}`))
+				return
+			}
+		}
+
+		// 更新配置
+		GlobalWebSocketManager.SetHeartbeatConfig(interval, timeout)
+
+		response := map[string]interface{}{
+			"code": 0,
+			"msg":  "心跳配置更新成功",
+			"data": nil,
+		}
+
+		jsonData, _ := json.Marshal(response)
+		w.Write(jsonData)
+		return
+	}
+
+	w.WriteHeader(http.StatusMethodNotAllowed)
+	w.Write([]byte(`{"code":405,"msg":"方法不允许","data":null}`))
 }

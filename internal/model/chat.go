@@ -4,14 +4,14 @@ import "time"
 
 // 聊天会话
 type ChatSession struct {
-	ChatID        string            `gorm:"column:chat_id;primaryKey;size:64" json:"chat_id"`           // 聊天ID
-	ReservationID int64             `gorm:"column:reservation_id;not null;index" json:"reservation_id"` // 预约ID
-	UserID        int64             `gorm:"column:user_id;not null;index" json:"user_id"`               // 用户ID
-	LandlordID    int64             `gorm:"column:landlord_id;not null;index" json:"landlord_id"`       // 房东ID
-	HouseID       int64             `gorm:"column:house_id;not null;index" json:"house_id"`             // 房源ID
+	ChatID        string            `gorm:"column:chat_id;primaryKey;size:64" json:"chat_id"`              // 聊天ID
+	ReservationID int64             `gorm:"column:reservation_id;not null;index" json:"reservation_id"`    // 预约ID
+	UserID        int64             `gorm:"column:user_id;not null;index" json:"user_id"`                  // 用户ID
+	LandlordID    int64             `gorm:"column:landlord_id;not null;index" json:"landlord_id"`          // 房东ID
+	HouseID       int64             `gorm:"column:house_id;not null;index" json:"house_id"`                // 房源ID
 	Status        ChatSessionStatus `gorm:"column:status;size:20;not null;default:'active'" json:"status"` // 状态：active/closed
-	CreatedAt     time.Time         `gorm:"column:created_at;not null" json:"created_at"`               // 创建时间
-	UpdatedAt     time.Time         `gorm:"column:updated_at;not null" json:"updated_at"`               // 更新时间
+	CreatedAt     time.Time         `gorm:"column:created_at;not null" json:"created_at"`                  // 创建时间
+	UpdatedAt     time.Time         `gorm:"column:updated_at;not null" json:"updated_at"`                  // 更新时间
 }
 
 // 表名

@@ -20,11 +20,11 @@ type HouseService struct {
 	// 请求统计
 	stats struct {
 		sync.RWMutex
-		totalRequests     int64
-		successRequests   int64
-		failedRequests    int64
-		avgResponseTime   time.Duration
-		lastRequestTime   time.Time
+		totalRequests   int64
+		successRequests int64
+		failedRequests  int64
+		avgResponseTime time.Duration
+		lastRequestTime time.Time
 	}
 }
 
@@ -32,10 +32,10 @@ func NewHouseService(uc *biz.HouseUsecase) *HouseService {
 	service := &HouseService{
 		uc: uc,
 	}
-	
+
 	// 启动统计信息定期输出
 	go service.logStats()
-	
+
 	return service
 }
 
@@ -43,16 +43,16 @@ func NewHouseService(uc *biz.HouseUsecase) *HouseService {
 func (s *HouseService) recordRequest(success bool, duration time.Duration) {
 	s.stats.Lock()
 	defer s.stats.Unlock()
-	
+
 	s.stats.totalRequests++
 	s.stats.lastRequestTime = time.Now()
-	
+
 	if success {
 		s.stats.successRequests++
 	} else {
 		s.stats.failedRequests++
 	}
-	
+
 	// 计算平均响应时间（简单移动平均）
 	if s.stats.totalRequests == 1 {
 		s.stats.avgResponseTime = duration
@@ -65,7 +65,7 @@ func (s *HouseService) recordRequest(success bool, duration time.Duration) {
 func (s *HouseService) logStats() {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		s.stats.RLock()
 		log.Printf("房源服务统计 - 总请求: %d, 成功: %d, 失败: %d, 平均响应时间: %v",
@@ -81,7 +81,7 @@ func (s *HouseService) RecommendList(ctx context.Context, req *pb.HouseRecommend
 		duration := time.Since(startTime)
 		s.recordRequest(true, duration)
 	}()
-	
+
 	log.Printf("接收到普通推荐请求: page=%d, pageSize=%d", req.Page, req.PageSize)
 
 	// 参数验证和标准化
@@ -106,7 +106,7 @@ func (s *HouseService) RecommendList(ctx context.Context, req *pb.HouseRecommend
 	if err != nil {
 		log.Printf("获取推荐列表失败: %v", err)
 		s.recordRequest(false, time.Since(startTime))
-		
+
 		// 降级策略：返回空列表但不报错
 		return &pb.HouseRecommendReply{
 			Code: 0,
@@ -150,7 +150,7 @@ func (s *HouseService) PersonalRecommendList(ctx context.Context, req *pb.Person
 		duration := time.Since(startTime)
 		s.recordRequest(true, duration)
 	}()
-	
+
 	log.Printf("接收到个性化推荐请求: userId=%d, page=%d, pageSize=%d", req.UserId, req.Page, req.PageSize)
 
 	// 参数验证
@@ -189,7 +189,7 @@ func (s *HouseService) PersonalRecommendList(ctx context.Context, req *pb.Person
 	if err != nil {
 		log.Printf("获取个性化推荐失败: %v", err)
 		s.recordRequest(false, time.Since(startTime))
-		
+
 		// 降级策略：返回空列表但不报错
 		return &pb.HouseRecommendReply{
 			Code: 0,
@@ -395,6 +395,301 @@ func (s *HouseService) StartChat(ctx context.Context, req *pb.StartChatRequest) 
 		Data: &pb.StartChatData{
 			ChatId:  chatID,
 			Success: true,
+		},
+	}, nil
+}
+// ============================================================================
+// 收藏相关接口实现
+// ============================================================================
+
+// FavoriteHouse 收藏房源
+func (s *HouseService) FavoriteHouse(ctx context.Context, req *pb.FavoriteHouseRequest) (*pb.FavoriteHouseReply, error) {
+	startTime := time.Now()
+	defer func() {
+		duration := time.Since(startTime)
+		s.recordRequest(true, duration)
+	}()
+
+	log.Printf("接收到收藏房源请求: userId=%d, houseId=%d", req.UserId, req.HouseId)
+
+	// 参数验证
+	if req.UserId <= 0 {
+		log.Printf("无效的用户ID: %d", req.UserId)
+		s.recordRequest(false, time.Since(startTime))
+		return &pb.FavoriteHouseReply{
+			Code: 400,
+			Msg:  "无效的用户ID",
+			Data: &pb.FavoriteHouseData{
+				Success: false,
+			},
+		}, nil
+	}
+
+	if req.HouseId <= 0 {
+		log.Printf("无效的房源ID: %d", req.HouseId)
+		s.recordRequest(false, time.Since(startTime))
+		return &pb.FavoriteHouseReply{
+			Code: 400,
+			Msg:  "无效的房源ID",
+			Data: &pb.FavoriteHouseData{
+				Success: false,
+			},
+		}, nil
+	}
+
+	// 设置请求超时
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// 调用业务层收藏房源
+	favorite, err := s.uc.FavoriteHouse(ctx, req.UserId, req.HouseId)
+	if err != nil {
+		log.Printf("收藏房源失败: %v", err)
+		s.recordRequest(false, time.Since(startTime))
+
+		// 根据错误类型返回不同的错误码
+		code := 500
+		if err.Error() == "房源已收藏" {
+			code = 1003 // ErrCodeAlreadyFavorited
+		}
+
+		return &pb.FavoriteHouseReply{
+			Code: int32(code),
+			Msg:  err.Error(),
+			Data: &pb.FavoriteHouseData{
+				Success: false,
+			},
+		}, nil
+	}
+
+	log.Printf("成功收藏房源: userId=%d, houseId=%d, favoriteId=%d", req.UserId, req.HouseId, favorite.Id)
+
+	return &pb.FavoriteHouseReply{
+		Code: 0,
+		Msg:  "收藏成功",
+		Data: &pb.FavoriteHouseData{
+			Success:    true,
+			FavoriteId: favorite.Id,
+		},
+	}, nil
+}
+
+// UnfavoriteHouse 取消收藏房源
+func (s *HouseService) UnfavoriteHouse(ctx context.Context, req *pb.UnfavoriteHouseRequest) (*pb.UnfavoriteHouseReply, error) {
+	startTime := time.Now()
+	defer func() {
+		duration := time.Since(startTime)
+		s.recordRequest(true, duration)
+	}()
+
+	log.Printf("接收到取消收藏请求: userId=%d, houseId=%d", req.UserId, req.HouseId)
+
+	// 参数验证
+	if req.UserId <= 0 {
+		log.Printf("无效的用户ID: %d", req.UserId)
+		s.recordRequest(false, time.Since(startTime))
+		return &pb.UnfavoriteHouseReply{
+			Code: 400,
+			Msg:  "无效的用户ID",
+			Data: &pb.UnfavoriteHouseData{
+				Success: false,
+			},
+		}, nil
+	}
+
+	if req.HouseId <= 0 {
+		log.Printf("无效的房源ID: %d", req.HouseId)
+		s.recordRequest(false, time.Since(startTime))
+		return &pb.UnfavoriteHouseReply{
+			Code: 400,
+			Msg:  "无效的房源ID",
+			Data: &pb.UnfavoriteHouseData{
+				Success: false,
+			},
+		}, nil
+	}
+
+	// 设置请求超时
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// 调用业务层取消收藏
+	err := s.uc.UnfavoriteHouse(ctx, req.UserId, req.HouseId)
+	if err != nil {
+		log.Printf("取消收藏失败: %v", err)
+		s.recordRequest(false, time.Since(startTime))
+
+		// 根据错误类型返回不同的错误码
+		code := 500
+		if err.Error() == "房源未收藏" {
+			code = 1004 // ErrCodeNotFavorited
+		}
+
+		return &pb.UnfavoriteHouseReply{
+			Code: int32(code),
+			Msg:  err.Error(),
+			Data: &pb.UnfavoriteHouseData{
+				Success: false,
+			},
+		}, nil
+	}
+
+	log.Printf("成功取消收藏: userId=%d, houseId=%d", req.UserId, req.HouseId)
+
+	return &pb.UnfavoriteHouseReply{
+		Code: 0,
+		Msg:  "取消收藏成功",
+		Data: &pb.UnfavoriteHouseData{
+			Success: true,
+		},
+	}, nil
+}
+
+// GetFavoriteList 获取收藏列表
+func (s *HouseService) GetFavoriteList(ctx context.Context, req *pb.GetFavoriteListRequest) (*pb.GetFavoriteListReply, error) {
+	startTime := time.Now()
+	defer func() {
+		duration := time.Since(startTime)
+		s.recordRequest(true, duration)
+	}()
+
+	log.Printf("接收到获取收藏列表请求: userId=%d, page=%d, pageSize=%d", req.UserId, req.Page, req.PageSize)
+
+	// 参数验证
+	if req.UserId <= 0 {
+		log.Printf("无效的用户ID: %d", req.UserId)
+		s.recordRequest(false, time.Since(startTime))
+		return &pb.GetFavoriteListReply{
+			Code: 400,
+			Msg:  "无效的用户ID",
+			Data: &pb.FavoriteListData{
+				Total: 0,
+				List:  []*pb.FavoriteHouseItem{},
+			},
+		}, nil
+	}
+
+	// 参数标准化
+	page := int(req.Page)
+	if page <= 0 {
+		page = 1
+	}
+	pageSize := int(req.PageSize)
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+
+	// 设置请求超时
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// 调用业务层获取收藏列表
+	houses, total, err := s.uc.GetFavoriteList(ctx, req.UserId, page, pageSize)
+	if err != nil {
+		log.Printf("获取收藏列表失败: %v", err)
+		s.recordRequest(false, time.Since(startTime))
+
+		// 降级策略：返回空列表但不报错
+		return &pb.GetFavoriteListReply{
+			Code: 0,
+			Msg:  "success",
+			Data: &pb.FavoriteListData{
+				Total: 0,
+				List:  []*pb.FavoriteHouseItem{},
+			},
+		}, nil
+	}
+
+	// 转换为protobuf格式
+	items := make([]*pb.FavoriteHouseItem, 0, len(houses))
+	for _, house := range houses {
+		items = append(items, &pb.FavoriteHouseItem{
+			FavoriteId:   house.Id,
+			HouseId:      house.HouseId,
+			Title:        house.HouseTitle,
+			Description:  "", // 如果需要描述，可以从house表中获取
+			Price:        house.HousePrice,
+			Area:         house.HouseArea,
+			Layout:       house.HouseLayout,
+			ImageUrl:     house.ImageURL,
+			FavoriteTime: house.CreatedAt.Unix(),
+		})
+	}
+
+	log.Printf("成功获取到 %d 条收藏记录", len(items))
+	return &pb.GetFavoriteListReply{
+		Code: 0,
+		Msg:  "success",
+		Data: &pb.FavoriteListData{
+			Total: int64(total),
+			List:  items,
+		},
+	}, nil
+}
+
+// CheckFavoriteStatus 检查收藏状态
+func (s *HouseService) CheckFavoriteStatus(ctx context.Context, req *pb.CheckFavoriteStatusRequest) (*pb.CheckFavoriteStatusReply, error) {
+	startTime := time.Now()
+	defer func() {
+		duration := time.Since(startTime)
+		s.recordRequest(true, duration)
+	}()
+
+	log.Printf("接收到检查收藏状态请求: userId=%d, houseIds=%v", req.UserId, req.HouseIds)
+
+	// 参数验证
+	if req.UserId <= 0 {
+		log.Printf("无效的用户ID: %d", req.UserId)
+		s.recordRequest(false, time.Since(startTime))
+		return &pb.CheckFavoriteStatusReply{
+			Code: 400,
+			Msg:  "无效的用户ID",
+			Data: &pb.FavoriteStatusData{
+				StatusMap: make(map[int64]bool),
+			},
+		}, nil
+	}
+
+	if len(req.HouseIds) == 0 {
+		log.Printf("房源ID列表为空")
+		return &pb.CheckFavoriteStatusReply{
+			Code: 0,
+			Msg:  "success",
+			Data: &pb.FavoriteStatusData{
+				StatusMap: make(map[int64]bool),
+			},
+		}, nil
+	}
+
+	// 设置请求超时
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// 调用业务层检查收藏状态
+	statusMap, err := s.uc.CheckFavoriteStatus(ctx, req.UserId, req.HouseIds)
+	if err != nil {
+		log.Printf("检查收藏状态失败: %v", err)
+		s.recordRequest(false, time.Since(startTime))
+
+		// 降级策略：返回空状态映射但不报错
+		return &pb.CheckFavoriteStatusReply{
+			Code: 0,
+			Msg:  "success",
+			Data: &pb.FavoriteStatusData{
+				StatusMap: make(map[int64]bool),
+			},
+		}, nil
+	}
+
+	log.Printf("成功检查收藏状态: %d个房源", len(statusMap))
+	return &pb.CheckFavoriteStatusReply{
+		Code: 0,
+		Msg:  "success",
+		Data: &pb.FavoriteStatusData{
+			StatusMap: statusMap,
 		},
 	}, nil
 }

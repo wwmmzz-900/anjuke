@@ -24,7 +24,7 @@ func (r *ChatRepo) CreateChatSession(ctx context.Context, reservationID, userID,
 	if reservationID <= 0 || userID <= 0 || landlordID <= 0 {
 		return "", fmt.Errorf("无效的参数")
 	}
-	
+
 	// 生成聊天ID（简化版本）
 	chatID := fmt.Sprintf("chat_%d_%d_%d", reservationID, userID, time.Now().Unix())
 

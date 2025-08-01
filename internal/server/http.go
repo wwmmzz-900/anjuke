@@ -18,7 +18,7 @@ import (
 // 中间件已移除，使用proto文件中的json_name="-"来隐藏房源ID
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, logger log.Logger) *kratoshttp.Server {
+func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, bloggerProfile *service.BloggerProfileService, logger log.Logger) *kratoshttp.Server {
 	var opts = []kratoshttp.ServerOption{
 		kratoshttp.Middleware(
 			recovery.Recovery(),
@@ -66,6 +66,7 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 	v4.RegisterTransactionHTTPServer(srv, transaction)
 	v5.RegisterPointsHTTPServer(srv, points)
 	v6.RegisterCustomerHTTPServer(srv, customer)
+	v2.RegisterBloggerProfileHTTPServer(srv, bloggerProfile)
 
 	// 注册 WebSocket 路由到 Kratos HTTP 服务器
 	srv.HandleFunc("/ws/house", service.HandleHouseWS)

@@ -6,11 +6,11 @@
 package main
 
 import (
-	"anjuke/internal/biz"
-	"anjuke/internal/conf"
-	"anjuke/internal/data"
-	"anjuke/internal/server"
-	"anjuke/internal/service"
+	"github.com/wwmmzz-900/anjuke/internal/biz"
+	"github.com/wwmmzz-900/anjuke/internal/conf"
+	"github.com/wwmmzz-900/anjuke/internal/data"
+	"github.com/wwmmzz-900/anjuke/internal/server"
+	"github.com/wwmmzz-900/anjuke/internal/service"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

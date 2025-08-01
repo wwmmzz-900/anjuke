@@ -219,7 +219,7 @@ func (s *ChatService) GetChatMessages(ctx context.Context, chatID string, page, 
 	if chatID == "" {
 		return nil, 0, fmt.Errorf("聊天ID不能为空")
 	}
-	
+
 	if page <= 0 {
 		page = model.DefaultPage
 	}

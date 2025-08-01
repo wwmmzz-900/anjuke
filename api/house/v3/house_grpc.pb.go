@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.4.0
 // - protoc             v3.19.4
-// source: api/house/v3/house.proto
+// source: house/v3/house.proto
 
 package v3
 
@@ -23,6 +23,10 @@ const (
 	House_PersonalRecommendList_FullMethodName = "/api.house.v3.House/PersonalRecommendList"
 	House_ReserveHouse_FullMethodName          = "/api.house.v3.House/ReserveHouse"
 	House_StartChat_FullMethodName             = "/api.house.v3.House/StartChat"
+	House_FavoriteHouse_FullMethodName         = "/api.house.v3.House/FavoriteHouse"
+	House_UnfavoriteHouse_FullMethodName       = "/api.house.v3.House/UnfavoriteHouse"
+	House_GetFavoriteList_FullMethodName       = "/api.house.v3.House/GetFavoriteList"
+	House_CheckFavoriteStatus_FullMethodName   = "/api.house.v3.House/CheckFavoriteStatus"
 )
 
 // HouseClient is the client API for House service.
@@ -37,6 +41,14 @@ type HouseClient interface {
 	ReserveHouse(ctx context.Context, in *ReserveHouseRequest, opts ...grpc.CallOption) (*ReserveHouseReply, error)
 	// 发起在线聊天
 	StartChat(ctx context.Context, in *StartChatRequest, opts ...grpc.CallOption) (*StartChatReply, error)
+	// 收藏房源
+	FavoriteHouse(ctx context.Context, in *FavoriteHouseRequest, opts ...grpc.CallOption) (*FavoriteHouseReply, error)
+	// 取消收藏房源
+	UnfavoriteHouse(ctx context.Context, in *UnfavoriteHouseRequest, opts ...grpc.CallOption) (*UnfavoriteHouseReply, error)
+	// 获取收藏列表
+	GetFavoriteList(ctx context.Context, in *GetFavoriteListRequest, opts ...grpc.CallOption) (*GetFavoriteListReply, error)
+	// 检查收藏状态
+	CheckFavoriteStatus(ctx context.Context, in *CheckFavoriteStatusRequest, opts ...grpc.CallOption) (*CheckFavoriteStatusReply, error)
 }
 
 type houseClient struct {
@@ -87,6 +99,46 @@ func (c *houseClient) StartChat(ctx context.Context, in *StartChatRequest, opts 
 	return out, nil
 }
 
+func (c *houseClient) FavoriteHouse(ctx context.Context, in *FavoriteHouseRequest, opts ...grpc.CallOption) (*FavoriteHouseReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FavoriteHouseReply)
+	err := c.cc.Invoke(ctx, House_FavoriteHouse_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *houseClient) UnfavoriteHouse(ctx context.Context, in *UnfavoriteHouseRequest, opts ...grpc.CallOption) (*UnfavoriteHouseReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UnfavoriteHouseReply)
+	err := c.cc.Invoke(ctx, House_UnfavoriteHouse_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *houseClient) GetFavoriteList(ctx context.Context, in *GetFavoriteListRequest, opts ...grpc.CallOption) (*GetFavoriteListReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetFavoriteListReply)
+	err := c.cc.Invoke(ctx, House_GetFavoriteList_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *houseClient) CheckFavoriteStatus(ctx context.Context, in *CheckFavoriteStatusRequest, opts ...grpc.CallOption) (*CheckFavoriteStatusReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckFavoriteStatusReply)
+	err := c.cc.Invoke(ctx, House_CheckFavoriteStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HouseServer is the server API for House service.
 // All implementations must embed UnimplementedHouseServer
 // for forward compatibility
@@ -99,6 +151,14 @@ type HouseServer interface {
 	ReserveHouse(context.Context, *ReserveHouseRequest) (*ReserveHouseReply, error)
 	// 发起在线聊天
 	StartChat(context.Context, *StartChatRequest) (*StartChatReply, error)
+	// 收藏房源
+	FavoriteHouse(context.Context, *FavoriteHouseRequest) (*FavoriteHouseReply, error)
+	// 取消收藏房源
+	UnfavoriteHouse(context.Context, *UnfavoriteHouseRequest) (*UnfavoriteHouseReply, error)
+	// 获取收藏列表
+	GetFavoriteList(context.Context, *GetFavoriteListRequest) (*GetFavoriteListReply, error)
+	// 检查收藏状态
+	CheckFavoriteStatus(context.Context, *CheckFavoriteStatusRequest) (*CheckFavoriteStatusReply, error)
 	mustEmbedUnimplementedHouseServer()
 }
 
@@ -117,6 +177,18 @@ func (UnimplementedHouseServer) ReserveHouse(context.Context, *ReserveHouseReque
 }
 func (UnimplementedHouseServer) StartChat(context.Context, *StartChatRequest) (*StartChatReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartChat not implemented")
+}
+func (UnimplementedHouseServer) FavoriteHouse(context.Context, *FavoriteHouseRequest) (*FavoriteHouseReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FavoriteHouse not implemented")
+}
+func (UnimplementedHouseServer) UnfavoriteHouse(context.Context, *UnfavoriteHouseRequest) (*UnfavoriteHouseReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnfavoriteHouse not implemented")
+}
+func (UnimplementedHouseServer) GetFavoriteList(context.Context, *GetFavoriteListRequest) (*GetFavoriteListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFavoriteList not implemented")
+}
+func (UnimplementedHouseServer) CheckFavoriteStatus(context.Context, *CheckFavoriteStatusRequest) (*CheckFavoriteStatusReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckFavoriteStatus not implemented")
 }
 func (UnimplementedHouseServer) mustEmbedUnimplementedHouseServer() {}
 
@@ -203,6 +275,78 @@ func _House_StartChat_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _House_FavoriteHouse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FavoriteHouseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).FavoriteHouse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_FavoriteHouse_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).FavoriteHouse(ctx, req.(*FavoriteHouseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _House_UnfavoriteHouse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnfavoriteHouseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).UnfavoriteHouse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_UnfavoriteHouse_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).UnfavoriteHouse(ctx, req.(*UnfavoriteHouseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _House_GetFavoriteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFavoriteListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).GetFavoriteList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_GetFavoriteList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).GetFavoriteList(ctx, req.(*GetFavoriteListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _House_CheckFavoriteStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckFavoriteStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HouseServer).CheckFavoriteStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: House_CheckFavoriteStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HouseServer).CheckFavoriteStatus(ctx, req.(*CheckFavoriteStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // House_ServiceDesc is the grpc.ServiceDesc for House service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -226,7 +370,23 @@ var House_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "StartChat",
 			Handler:    _House_StartChat_Handler,
 		},
+		{
+			MethodName: "FavoriteHouse",
+			Handler:    _House_FavoriteHouse_Handler,
+		},
+		{
+			MethodName: "UnfavoriteHouse",
+			Handler:    _House_UnfavoriteHouse_Handler,
+		},
+		{
+			MethodName: "GetFavoriteList",
+			Handler:    _House_GetFavoriteList_Handler,
+		},
+		{
+			MethodName: "CheckFavoriteStatus",
+			Handler:    _House_CheckFavoriteStatus_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/house/v3/house.proto",
+	Metadata: "house/v3/house.proto",
 }

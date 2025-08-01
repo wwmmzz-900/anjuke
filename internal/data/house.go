@@ -16,22 +16,34 @@ import (
 // 缓存键常量
 const (
 	// 房源推荐缓存键前缀
-	CacheKeyRecommendList = "house:recommend:list:%d:%d"        // page:pageSize
-	CacheKeyPersonalList  = "house:personal:%d:%.2f:%.2f:%d:%d" // userID:minPrice:maxPrice:page:pageSize
-	CacheKeyUserPreference = "house:user:preference:%d"         // userID
-	CacheKeyHouseImages   = "house:images:%s"                   // houseIDs joined by comma
-	CacheKeyHouseDetail   = "house:detail:%d"                   // houseID
+	CacheKeyRecommendList  = "house:recommend:list:%d:%d"        // page:pageSize
+	CacheKeyPersonalList   = "house:personal:%d:%.2f:%.2f:%d:%d" // userID:minPrice:maxPrice:page:pageSize
+	CacheKeyUserPreference = "house:user:preference:%d"          // userID
+	CacheKeyHouseImages    = "house:images:%s"                   // houseIDs joined by comma
+	CacheKeyHouseDetail    = "house:detail:%d"                   // houseID
 	
+	// 收藏相关缓存键
+	CacheKeyFavoriteStatus = "house:favorite:status:%d:%d"    // userID:houseID
+	CacheKeyFavoriteList   = "house:favorite:list:%d:%d:%d"   // userID:page:pageSize
+	CacheKeyFavoriteCount  = "house:favorite:count:%d"       // houseID
+	CacheKeyBatchStatus    = "house:favorite:batch:%d:%s"    // userID:houseIDs
+
 	// 缓存过期时间
-	CacheExpireRecommend   = 15 * time.Minute  // 推荐列表缓存15分钟
-	CacheExpirePersonal    = 10 * time.Minute  // 个性化推荐缓存10分钟
-	CacheExpirePreference  = 30 * time.Minute  // 用户偏好缓存30分钟
-	CacheExpireImages      = 60 * time.Minute  // 图片缓存1小时
-	CacheExpireDetail      = 30 * time.Minute  // 房源详情缓存30分钟
+	CacheExpireRecommend  = 15 * time.Minute // 推荐列表缓存15分钟
+	CacheExpirePersonal   = 10 * time.Minute // 个性化推荐缓存10分钟
+	CacheExpirePreference = 30 * time.Minute // 用户偏好缓存30分钟
+	CacheExpireImages     = 60 * time.Minute // 图片缓存1小时
+	CacheExpireDetail     = 30 * time.Minute // 房源详情缓存30分钟
 	
+	// 收藏缓存过期时间
+	CacheExpireFavoriteStatus = 30 * time.Minute
+	CacheExpireFavoriteList   = 15 * time.Minute
+	CacheExpireFavoriteCount  = 60 * time.Minute
+	CacheExpireBatchStatus    = 10 * time.Minute
+
 	// 降级策略
-	MaxConcurrentQueries = 100 // 最大并发查询数
-	QueryTimeout        = 5 * time.Second // 查询超时时间
+	MaxConcurrentQueries = 100             // 最大并发查询数
+	QueryTimeout         = 5 * time.Second // 查询超时时间
 )
 
 type houseRepo struct {
@@ -58,13 +70,13 @@ func NewHouseRepo(data *Data) biz.HouseRepo {
 		data:           data,
 		querySemaphore: make(chan struct{}, MaxConcurrentQueries),
 	}
-	
+
 	// 初始化访问跟踪器
 	repo.accessTracker.popularQueries = make(map[string]int64)
-	
+
 	// 启动被动式缓存分析（不主动访问数据库）
 	go repo.intelligentCacheManager()
-	
+
 	return repo
 }
 
@@ -78,18 +90,18 @@ func (r *houseRepo) intelligentCacheManager() {
 		popularQueries map[string]int64 // 记录热门查询模式
 		cacheHitRate   float64          // 缓存命中率
 	}
-	
+
 	tracker := &accessTracker{
 		popularQueries: make(map[string]int64),
 	}
-	
+
 	// 定期分析访问模式，但不主动查询数据库
 	ticker := time.NewTicker(15 * time.Minute) // 每15分钟分析一次
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		tracker.Lock()
-		
+
 		// 计算缓存命中率
 		r.cacheStats.RLock()
 		totalRequests := r.cacheStats.hits + r.cacheStats.misses
@@ -97,13 +109,13 @@ func (r *houseRepo) intelligentCacheManager() {
 			tracker.cacheHitRate = float64(r.cacheStats.hits) / float64(totalRequests)
 		}
 		r.cacheStats.RUnlock()
-		
+
 		// 记录分析结果，但不执行预热
-		log.Printf("缓存分析报告 - 命中率: %.2f%%, 最近访问: %v, 访问次数: %d", 
-			tracker.cacheHitRate*100, 
+		log.Printf("缓存分析报告 - 命中率: %.2f%%, 最近访问: %v, 访问次数: %d",
+			tracker.cacheHitRate*100,
 			time.Since(tracker.lastAccess),
 			tracker.accessCount)
-		
+
 		// 清理过期的热门查询记录
 		for key, count := range tracker.popularQueries {
 			// 热门度衰减
@@ -114,7 +126,7 @@ func (r *houseRepo) intelligentCacheManager() {
 				tracker.popularQueries[key] = newCount
 			}
 		}
-		
+
 		// 重置访问计数
 		tracker.accessCount = 0
 		tracker.Unlock()
@@ -125,15 +137,15 @@ func (r *houseRepo) intelligentCacheManager() {
 func (r *houseRepo) recordAccess(queryType string, params map[string]interface{}) {
 	r.accessTracker.Lock()
 	defer r.accessTracker.Unlock()
-	
+
 	// 生成查询键
 	queryKey := r.generateQueryKey(queryType, params)
-	
+
 	// 记录访问
 	r.accessTracker.popularQueries[queryKey]++
 	r.accessTracker.lastAccess = time.Now()
 	r.accessTracker.accessCount++
-	
+
 	// 只记录，不执行任何主动查询
 	log.Printf("记录访问模式: %s, 累计访问: %d", queryKey, r.accessTracker.popularQueries[queryKey])
 }
@@ -152,7 +164,7 @@ func (r *houseRepo) getDynamicCacheExpiration(queryKey string) time.Duration {
 	r.accessTracker.RLock()
 	count := r.accessTracker.popularQueries[queryKey]
 	r.accessTracker.RUnlock()
-	
+
 	// 访问频率越高，缓存时间越长
 	switch {
 	case count > 100:
@@ -187,9 +199,9 @@ func (r *houseRepo) GetUserPricePreference(ctx context.Context, userID int64) (f
 			return preference.MinPrice, preference.MaxPrice, nil
 		}
 	}
-	
+
 	r.recordCacheMiss()
-	
+
 	// 并发控制
 	select {
 	case r.querySemaphore <- struct{}{}:
@@ -245,7 +257,7 @@ func (r *houseRepo) GetUserPricePreference(ctx context.Context, userID int64) (f
 func (r *houseRepo) GetPersonalRecommendList(ctx context.Context, minPrice, maxPrice float64, page, pageSize int) ([]*biz.House, int, error) {
 	// 生成缓存键
 	cacheKey := fmt.Sprintf(CacheKeyPersonalList, 0, minPrice, maxPrice, page, pageSize) // userID设为0表示通用个性化推荐
-	
+
 	// 先尝试从缓存获取
 	if cached, err := r.data.rdb.Get(ctx, cacheKey).Result(); err == nil {
 		var cacheResult struct {
@@ -254,14 +266,14 @@ func (r *houseRepo) GetPersonalRecommendList(ctx context.Context, minPrice, maxP
 		}
 		if json.Unmarshal([]byte(cached), &cacheResult) == nil {
 			r.recordCacheHit()
-			log.Printf("个性化推荐缓存命中: minPrice=%.2f, maxPrice=%.2f, page=%d, pageSize=%d", 
+			log.Printf("个性化推荐缓存命中: minPrice=%.2f, maxPrice=%.2f, page=%d, pageSize=%d",
 				minPrice, maxPrice, page, pageSize)
 			return cacheResult.Houses, cacheResult.Total, nil
 		}
 	}
-	
+
 	r.recordCacheMiss()
-	
+
 	// 并发控制
 	select {
 	case r.querySemaphore <- struct{}{}:
@@ -442,45 +454,17 @@ func (r *houseRepo) getHouseImages(houseIDs []int64) map[int64]string {
 
 // 获取默认房源数据
 func (r *houseRepo) getDefaultHouses() []*biz.House {
-	return []*biz.House{
-		{
-			HouseID:     101,
-			Title:       "精装修两室一厅",
-			Description: "地铁口附近，交通便利，精装修",
-			Price:       3500.0,
-			Area:        85.5,
-			Layout:      "2室1厅1卫",
-			ImageURL:    "https://example.com/house1.jpg",
-		},
-		{
-			HouseID:     102,
-			Title:       "温馨三室两厅",
-			Description: "小区环境优美，配套设施完善",
-			Price:       4200.0,
-			Area:        120.0,
-			Layout:      "3室2厅2卫",
-			ImageURL:    "https://example.com/house2.jpg",
-		},
-		{
-			HouseID:     103,
-			Title:       "豪华公寓",
-			Description: "高端小区，装修豪华，设施齐全",
-			Price:       5800.0,
-			Area:        150.0,
-			Layout:      "3室2厅2卫",
-			ImageURL:    "https://example.com/house3.jpg",
-		},
-	}
+	return []*biz.House{}
 }
 
 // 查询推荐房源（高并发优化版本）
 func (r *houseRepo) GetRecommendList(ctx context.Context, page, pageSize int) ([]*biz.House, int, error) {
 	// 记录访问模式（被动记录）
 	r.recordAccessPattern("recommend_list", page, pageSize)
-	
+
 	// 生成缓存键
 	cacheKey := fmt.Sprintf(CacheKeyRecommendList, page, pageSize)
-	
+
 	// 先尝试从缓存获取
 	if cached, err := r.data.rdb.Get(ctx, cacheKey).Result(); err == nil {
 		var cacheResult struct {
@@ -493,9 +477,9 @@ func (r *houseRepo) GetRecommendList(ctx context.Context, page, pageSize int) ([
 			return cacheResult.Houses, cacheResult.Total, nil
 		}
 	}
-	
+
 	r.recordCacheMiss()
-	
+
 	// 并发控制
 	select {
 	case r.querySemaphore <- struct{}{}:
@@ -507,7 +491,7 @@ func (r *houseRepo) GetRecommendList(ctx context.Context, page, pageSize int) ([
 	}
 
 	log.Printf("开始查询推荐房源: page=%d, pageSize=%d", page, pageSize)
-	
+
 	// 记录访问统计
 	r.recordAccess("recommend_list", map[string]interface{}{
 		"page":     page,
@@ -650,7 +634,7 @@ func (r *houseRepo) cacheRecommendResult(cacheKey string, houses []*biz.House, t
 		Houses: houses,
 		Total:  total,
 	}
-	
+
 	if cacheData, err := json.Marshal(cacheResult); err == nil {
 		if err := r.data.rdb.Set(context.Background(), cacheKey, cacheData, expiration).Err(); err != nil {
 			log.Printf("缓存推荐结果失败: %v", err)
@@ -676,10 +660,10 @@ func (r *houseRepo) recordCacheMiss() {
 func (r *houseRepo) recordAccessPattern(queryType string, params ...interface{}) {
 	r.accessTracker.Lock()
 	defer r.accessTracker.Unlock()
-	
+
 	r.accessTracker.lastAccess = time.Now()
 	r.accessTracker.accessCount++
-	
+
 	// 生成查询模式键
 	patternKey := fmt.Sprintf("%s:%v", queryType, params)
 	r.accessTracker.popularQueries[patternKey]++
@@ -696,7 +680,7 @@ func (r *houseRepo) GetCacheStats() (hits, misses int64) {
 func (r *houseRepo) cleanupExpiredCache() {
 	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		// 这里可以添加清理逻辑，Redis会自动处理过期键
 		// 可以添加一些统计信息的清理
@@ -708,7 +692,7 @@ func (r *houseRepo) cleanupExpiredCache() {
 func (r *houseRepo) analyzeCachePatterns() {
 	r.accessTracker.RLock()
 	defer r.accessTracker.RUnlock()
-	
+
 	// 分析热门查询模式
 	var hotQueries []string
 	for query, count := range r.accessTracker.popularQueries {
@@ -716,13 +700,13 @@ func (r *houseRepo) analyzeCachePatterns() {
 			hotQueries = append(hotQueries, query)
 		}
 	}
-	
+
 	// 只记录分析结果，不执行查询
 	if len(hotQueries) > 0 {
 		log.Printf("发现热门查询模式: %v", hotQueries)
 		log.Printf("建议优化这些查询的缓存策略")
 	}
-	
+
 	// 计算缓存效率
 	r.cacheStats.RLock()
 	totalRequests := r.cacheStats.hits + r.cacheStats.misses
@@ -731,6 +715,340 @@ func (r *houseRepo) analyzeCachePatterns() {
 		hitRate = float64(r.cacheStats.hits) / float64(totalRequests)
 	}
 	r.cacheStats.RUnlock()
-	
+
 	log.Printf("当前缓存命中率: %.2f%% (%d/%d)", hitRate*100, r.cacheStats.hits, totalRequests)
+}
+// ============================================================================
+// 收藏相关实现
+// ============================================================================
+
+// CreateFavorite 创建收藏记录
+func (r *houseRepo) CreateFavorite(ctx context.Context, userID, houseID int64) (*model.Favorite, error) {
+	favorite := &model.Favorite{
+		UserId:    userID,
+		HouseId:   houseID,
+		CreatedAt: time.Now(),
+	}
+	
+	if err := r.data.db.WithContext(ctx).Create(favorite).Error; err != nil {
+		return nil, err
+	}
+	
+	// 异步更新缓存
+	go r.updateFavoriteCacheAsync(userID, houseID, true)
+	
+	return favorite, nil
+}
+
+// DeleteFavorite 删除收藏记录
+func (r *houseRepo) DeleteFavorite(ctx context.Context, userID, houseID int64) error {
+	result := r.data.db.WithContext(ctx).
+		Where("user_id = ? AND house_id = ?", userID, houseID).
+		Delete(&model.Favorite{})
+	
+	if result.Error != nil {
+		return result.Error
+	}
+	
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("收藏记录不存在")
+	}
+	
+	// 异步更新缓存
+	go r.updateFavoriteCacheAsync(userID, houseID, false)
+	
+	return nil
+}
+
+// IsFavorited 检查收藏状态（带缓存）
+func (r *houseRepo) IsFavorited(ctx context.Context, userID, houseID int64) (bool, error) {
+	cacheKey := fmt.Sprintf(CacheKeyFavoriteStatus, userID, houseID)
+	
+	// 先从缓存获取
+	if cached, err := r.data.rdb.Get(ctx, cacheKey).Result(); err == nil {
+		r.recordCacheHit()
+		return cached == "1", nil
+	}
+	
+	r.recordCacheMiss()
+	
+	// 查询数据库
+	var count int64
+	err := r.data.db.WithContext(ctx).
+		Model(&model.Favorite{}).
+		Where("user_id = ? AND house_id = ?", userID, houseID).
+		Count(&count).Error
+	
+	if err != nil {
+		return false, err
+	}
+	
+	isFavorited := count > 0
+	
+	// 异步缓存结果
+	go func() {
+		value := "0"
+		if isFavorited {
+			value = "1"
+		}
+		r.data.rdb.Set(context.Background(), cacheKey, value, CacheExpireFavoriteStatus)
+	}()
+	
+	return isFavorited, nil
+}
+
+// BatchCheckFavoriteStatus 批量检查收藏状态
+func (r *houseRepo) BatchCheckFavoriteStatus(ctx context.Context, userID int64, houseIDs []int64) (map[int64]bool, error) {
+	if len(houseIDs) == 0 {
+		return make(map[int64]bool), nil
+	}
+	
+	// 生成缓存键
+	houseIDStrs := make([]string, len(houseIDs))
+	for i, id := range houseIDs {
+		houseIDStrs[i] = strconv.FormatInt(id, 10)
+	}
+	cacheKey := fmt.Sprintf(CacheKeyBatchStatus, userID, fmt.Sprintf("%v", houseIDs))
+	
+	// 先尝试从缓存获取
+	if cached, err := r.data.rdb.Get(ctx, cacheKey).Result(); err == nil {
+		var statusMap map[int64]bool
+		if json.Unmarshal([]byte(cached), &statusMap) == nil {
+			r.recordCacheHit()
+			return statusMap, nil
+		}
+	}
+	
+	r.recordCacheMiss()
+	
+	// 查询数据库
+	var favorites []model.Favorite
+	err := r.data.db.WithContext(ctx).
+		Select("house_id").
+		Where("user_id = ? AND house_id IN ?", userID, houseIDs).
+		Find(&favorites).Error
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	// 构建状态映射
+	statusMap := make(map[int64]bool)
+	favoritedSet := make(map[int64]bool)
+	
+	for _, fav := range favorites {
+		favoritedSet[fav.HouseId] = true
+	}
+	
+	for _, houseID := range houseIDs {
+		statusMap[houseID] = favoritedSet[houseID]
+	}
+	
+	// 异步缓存结果
+	go func() {
+		if cacheData, err := json.Marshal(statusMap); err == nil {
+			r.data.rdb.Set(context.Background(), cacheKey, cacheData, CacheExpireBatchStatus)
+		}
+	}()
+	
+	return statusMap, nil
+}
+
+// GetUserFavoriteList 获取用户收藏列表
+func (r *houseRepo) GetUserFavoriteList(ctx context.Context, userID int64, page, pageSize int) ([]*biz.FavoriteHouse, int, error) {
+	// 生成缓存键
+	cacheKey := fmt.Sprintf(CacheKeyFavoriteList, userID, page, pageSize)
+	
+	// 先尝试从缓存获取
+	if cached, err := r.data.rdb.Get(ctx, cacheKey).Result(); err == nil {
+		var cacheResult struct {
+			Houses []*biz.FavoriteHouse `json:"houses"`
+			Total  int                  `json:"total"`
+		}
+		if json.Unmarshal([]byte(cached), &cacheResult) == nil {
+			r.recordCacheHit()
+			return cacheResult.Houses, cacheResult.Total, nil
+		}
+	}
+	
+	r.recordCacheMiss()
+	
+	// 并发控制
+	select {
+	case r.querySemaphore <- struct{}{}:
+		defer func() { <-r.querySemaphore }()
+	case <-time.After(QueryTimeout):
+		return nil, 0, fmt.Errorf("查询超时")
+	}
+	
+	// 创建查询超时上下文
+	queryCtx, cancel := context.WithTimeout(ctx, QueryTimeout)
+	defer cancel()
+	
+	var total int64
+	var favorites []*biz.FavoriteHouse
+	
+	// 使用并发查询总数和列表数据
+	var wg sync.WaitGroup
+	var countErr, listErr error
+	
+	// 并发查询总数
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		countErr = r.data.db.WithContext(queryCtx).
+			Model(&model.Favorite{}).
+			Where("user_id = ?", userID).
+			Count(&total).Error
+	}()
+	
+	// 并发查询列表数据
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		
+		type favoriteWithHouse struct {
+			Id          int64     `json:"id"`
+			UserId      int64     `json:"user_id"`
+			HouseId     int64     `json:"house_id"`
+			CreatedAt   time.Time `json:"created_at"`
+			HouseTitle  string    `json:"house_title"`
+			HousePrice  float64   `json:"house_price"`
+			HouseArea   float32   `json:"house_area"`
+			HouseLayout string    `json:"house_layout"`
+		}
+		
+		var results []favoriteWithHouse
+		listErr = r.data.db.WithContext(queryCtx).
+			Table("favorite f").
+			Select("f.id, f.user_id, f.house_id, f.created_at, h.title as house_title, h.price as house_price, h.area as house_area, h.layout as house_layout").
+			Joins("JOIN house h ON f.house_id = h.house_id").
+			Where("f.user_id = ?", userID).
+			Order("f.created_at DESC").
+			Limit(pageSize).
+			Offset((page - 1) * pageSize).
+			Scan(&results).Error
+		
+		if listErr == nil {
+			// 获取房源图片
+			houseIDs := make([]int64, len(results))
+			for i, result := range results {
+				houseIDs[i] = result.HouseId
+			}
+			imageMap := r.getHouseImagesWithCache(ctx, houseIDs)
+			
+			// 转换为业务层结构体
+			favorites = make([]*biz.FavoriteHouse, 0, len(results))
+			for _, result := range results {
+				favorites = append(favorites, &biz.FavoriteHouse{
+					Id:          result.Id,
+					UserId:      result.UserId,
+					HouseId:     result.HouseId,
+					HouseTitle:  result.HouseTitle,
+					HousePrice:  result.HousePrice,
+					HouseArea:   float64(result.HouseArea),
+					HouseLayout: result.HouseLayout,
+					ImageURL:    imageMap[result.HouseId],
+					CreatedAt:   result.CreatedAt,
+				})
+			}
+		}
+	}()
+	
+	wg.Wait()
+	
+	// 检查错误
+	if countErr != nil {
+		return nil, 0, fmt.Errorf("查询收藏总数失败: %w", countErr)
+	}
+	
+	if listErr != nil {
+		return nil, 0, fmt.Errorf("查询收藏列表失败: %w", listErr)
+	}
+	
+	// 异步缓存结果
+	go r.cacheFavoriteListResult(cacheKey, favorites, int(total))
+	
+	return favorites, int(total), nil
+}
+
+// GetHouseFavoriteCount 获取房源收藏数量
+func (r *houseRepo) GetHouseFavoriteCount(ctx context.Context, houseID int64) (int64, error) {
+	cacheKey := fmt.Sprintf(CacheKeyFavoriteCount, houseID)
+	
+	// 先从缓存获取
+	if cached, err := r.data.rdb.Get(ctx, cacheKey).Result(); err == nil {
+		if count, err := strconv.ParseInt(cached, 10, 64); err == nil {
+			r.recordCacheHit()
+			return count, nil
+		}
+	}
+	
+	r.recordCacheMiss()
+	
+	// 查询数据库
+	var count int64
+	err := r.data.db.WithContext(ctx).
+		Model(&model.Favorite{}).
+		Where("house_id = ?", houseID).
+		Count(&count).Error
+	
+	if err != nil {
+		return 0, err
+	}
+	
+	// 异步缓存结果
+	go func() {
+		r.data.rdb.Set(context.Background(), cacheKey, strconv.FormatInt(count, 10), CacheExpireFavoriteCount)
+	}()
+	
+	return count, nil
+}
+
+// updateFavoriteCacheAsync 异步更新收藏缓存
+func (r *houseRepo) updateFavoriteCacheAsync(userID, houseID int64, isFavorited bool) {
+	// 更新收藏状态缓存
+	statusCacheKey := fmt.Sprintf(CacheKeyFavoriteStatus, userID, houseID)
+	value := "0"
+	if isFavorited {
+		value = "1"
+	}
+	r.data.rdb.Set(context.Background(), statusCacheKey, value, CacheExpireFavoriteStatus)
+	
+	// 清理相关的列表缓存
+	r.clearUserFavoriteListCache(userID)
+	
+	// 清理房源收藏数量缓存
+	countCacheKey := fmt.Sprintf(CacheKeyFavoriteCount, houseID)
+	r.data.rdb.Del(context.Background(), countCacheKey)
+}
+
+// clearUserFavoriteListCache 清理用户收藏列表缓存
+func (r *houseRepo) clearUserFavoriteListCache(userID int64) {
+	// 由于缓存键包含分页参数，我们需要清理所有相关的缓存
+	// 这里简化处理，实际项目中可以使用Redis的模式匹配删除
+	pattern := fmt.Sprintf("house:favorite:list:%d:*", userID)
+	
+	// 使用SCAN命令查找匹配的键
+	iter := r.data.rdb.Scan(context.Background(), 0, pattern, 0).Iterator()
+	for iter.Next(context.Background()) {
+		r.data.rdb.Del(context.Background(), iter.Val())
+	}
+}
+
+// cacheFavoriteListResult 缓存收藏列表结果
+func (r *houseRepo) cacheFavoriteListResult(cacheKey string, houses []*biz.FavoriteHouse, total int) {
+	cacheResult := struct {
+		Houses []*biz.FavoriteHouse `json:"houses"`
+		Total  int                  `json:"total"`
+	}{
+		Houses: houses,
+		Total:  total,
+	}
+	
+	if cacheData, err := json.Marshal(cacheResult); err == nil {
+		if err := r.data.rdb.Set(context.Background(), cacheKey, cacheData, CacheExpireFavoriteList).Err(); err != nil {
+			log.Printf("缓存收藏列表结果失败: %v", err)
+		}
+	}
 }

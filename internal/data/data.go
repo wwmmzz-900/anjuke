@@ -14,7 +14,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewGreeterRepo, NewUserRepo, NewHouseRepo, NewTransactionRepo, NewPointsRepo, NewCustomerRepo)
+var ProviderSet = wire.NewSet(NewData, NewGreeterRepo, NewUserRepo, NewHouseRepo, NewTransactionRepo, NewPointsRepo, NewCustomerRepo, NewBloggerProfileRepo, MysqlInit, ExampleClient)
 
 // Data .
 type Data struct {
@@ -38,7 +38,7 @@ func MysqlInit(c *conf.Data, logger log.Logger) (*gorm.DB, error) {
 	datas := &Data{}
 	dsn := c.Database.Source
 	var err error
-	
+
 	// 优化GORM配置以支持高并发
 	config := &gorm.Config{
 		// 禁用默认事务，提高性能
@@ -48,7 +48,7 @@ func MysqlInit(c *conf.Data, logger log.Logger) (*gorm.DB, error) {
 		// 批量插入大小
 		CreateBatchSize: 1000,
 	}
-	
+
 	datas.db, err = gorm.Open(mysql.Open(dsn), config)
 	if err != nil {
 		return nil, fmt.Errorf("数据库连接失败: %w", err)
@@ -61,9 +61,9 @@ func MysqlInit(c *conf.Data, logger log.Logger) (*gorm.DB, error) {
 	}
 
 	// 配置连接池参数以支持高并发
-	sqlDB.SetMaxOpenConns(100)        // 最大打开连接数
-	sqlDB.SetMaxIdleConns(20)         // 最大空闲连接数
-	sqlDB.SetConnMaxLifetime(time.Hour) // 连接最大生存时间
+	sqlDB.SetMaxOpenConns(100)                 // 最大打开连接数
+	sqlDB.SetMaxIdleConns(20)                  // 最大空闲连接数
+	sqlDB.SetConnMaxLifetime(time.Hour)        // 连接最大生存时间
 	sqlDB.SetConnMaxIdleTime(30 * time.Minute) // 连接最大空闲时间
 
 	// 测试连接
@@ -76,34 +76,34 @@ func MysqlInit(c *conf.Data, logger log.Logger) (*gorm.DB, error) {
 }
 func ExampleClient(c *conf.Data, logger log.Logger) (*redis.Client, error) {
 	data := &Data{}
-	
+
 	// 优化Redis配置以支持高并发
 	data.rdb = redis.NewClient(&redis.Options{
-		Addr:         c.Redis.Addr,
-		Password:     c.Redis.Password,
-		DB:           0,
+		Addr:     c.Redis.Addr,
+		Password: c.Redis.Password,
+		DB:       0,
 		// 连接池配置
-		PoolSize:     50,                    // 连接池大小
-		MinIdleConns: 10,                    // 最小空闲连接数
-		MaxRetries:   3,                     // 最大重试次数
-		DialTimeout:  5 * time.Second,       // 连接超时
-		ReadTimeout:  3 * time.Second,       // 读取超时
-		WriteTimeout: 3 * time.Second,       // 写入超时
-		PoolTimeout:  4 * time.Second,       // 连接池超时
-		IdleTimeout:  5 * time.Minute,       // 空闲连接超时
+		PoolSize:     50,              // 连接池大小
+		MinIdleConns: 10,              // 最小空闲连接数
+		MaxRetries:   3,               // 最大重试次数
+		DialTimeout:  5 * time.Second, // 连接超时
+		ReadTimeout:  3 * time.Second, // 读取超时
+		WriteTimeout: 3 * time.Second, // 写入超时
+		PoolTimeout:  4 * time.Second, // 连接池超时
+		IdleTimeout:  5 * time.Minute, // 空闲连接超时
 		// 启用连接检查
 		IdleCheckFrequency: 1 * time.Minute,
 	})
-	
+
 	// 测试连接
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	_, err := data.rdb.Ping(ctx).Result()
 	if err != nil {
 		return nil, fmt.Errorf("redis连接失败: %w", err)
 	}
-	
+
 	fmt.Println("redis连接成功，连接池已配置")
 	return data.rdb, nil
 }

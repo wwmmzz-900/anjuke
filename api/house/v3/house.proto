@@ -37,6 +37,35 @@ service House {
       body: "*"
     };
   }
+
+  // 收藏房源
+  rpc FavoriteHouse (FavoriteHouseRequest) returns (FavoriteHouseReply) {
+    option (google.api.http) = {
+      post: "/house/favorite"
+      body: "*"
+    };
+  }
+
+  // 取消收藏房源
+  rpc UnfavoriteHouse (UnfavoriteHouseRequest) returns (UnfavoriteHouseReply) {
+    option (google.api.http) = {
+      delete: "/house/favorite"
+    };
+  }
+
+  // 获取收藏列表
+  rpc GetFavoriteList (GetFavoriteListRequest) returns (GetFavoriteListReply) {
+    option (google.api.http) = {
+      get: "/house/favorites"
+    };
+  }
+
+  // 检查收藏状态
+  rpc CheckFavoriteStatus (CheckFavoriteStatusRequest) returns (CheckFavoriteStatusReply) {
+    option (google.api.http) = {
+      get: "/house/favorite/status"
+    };
+  }
  
 }
 
@@ -181,4 +210,87 @@ message StartChatReply {
 message StartChatData {
   string chat_id = 1;           // 聊天ID
   bool success = 2;             // 是否成功
+}
+
+// 收藏房源请求
+message FavoriteHouseRequest {
+  int64 user_id = 1;    // 用户ID
+  int64 house_id = 2;   // 房源ID
+}
+
+// 收藏房源响应
+message FavoriteHouseReply {
+  int32 code = 1;       // 状态码
+  string msg = 2;       // 消息
+  FavoriteHouseData data = 3; // 数据
+}
+
+message FavoriteHouseData {
+  bool success = 1;     // 是否成功
+  int64 favorite_id = 2; // 收藏ID
+}
+
+// 取消收藏请求
+message UnfavoriteHouseRequest {
+  int64 user_id = 1;    // 用户ID
+  int64 house_id = 2;   // 房源ID
+}
+
+// 取消收藏响应
+message UnfavoriteHouseReply {
+  int32 code = 1;       // 状态码
+  string msg = 2;       // 消息
+  UnfavoriteHouseData data = 3; // 数据
+}
+
+message UnfavoriteHouseData {
+  bool success = 1;     // 是否成功
+}
+
+// 获取收藏列表请求
+message GetFavoriteListRequest {
+  int64 user_id = 1;    // 用户ID
+  int32 page = 2;       // 页码
+  int32 page_size = 3;  // 每页数量
+}
+
+// 获取收藏列表响应
+message GetFavoriteListReply {
+  int32 code = 1;       // 状态码
+  string msg = 2;       // 消息
+  FavoriteListData data = 3; // 数据
+}
+
+message FavoriteListData {
+  int64 total = 1;      // 总数
+  repeated FavoriteHouseItem list = 2; // 收藏房源列表
+}
+
+message FavoriteHouseItem {
+  int64 favorite_id = 1;     // 收藏ID
+  int64 house_id = 2;        // 房源ID
+  string title = 3;          // 房源标题
+  string description = 4;    // 房源描述
+  double price = 5;          // 价格
+  double area = 6;           // 面积
+  string layout = 7;         // 户型
+  string image_url = 8;      // 图片URL
+  int64 favorite_time = 9;   // 收藏时间戳
+}
+
+// 检查收藏状态请求
+message CheckFavoriteStatusRequest {
+  int64 user_id = 1;         // 用户ID
+  repeated int64 house_ids = 2; // 房源ID列表
+}
+
+// 检查收藏状态响应
+message CheckFavoriteStatusReply {
+  int32 code = 1;            // 状态码
+  string msg = 2;            // 消息
+  FavoriteStatusData data = 3; // 数据
+}
+
+message FavoriteStatusData {
+  map<int64, bool> status_map = 1; // 房源ID -> 收藏状态映射
 }

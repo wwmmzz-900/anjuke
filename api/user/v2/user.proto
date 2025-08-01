@@ -10,10 +10,24 @@ option java_outer_classname = "UserProtoV2";
 
 service User {
 	rpc CreateUser (CreateUserRequest) returns (CreateUserReply){
-	option (google.api.http) = {
+		option (google.api.http) = {
 			post: "/user/create"
 			body:"*"
-				};
+		};
+	};
+}
+
+service BloggerProfile {
+	rpc GetBloggerProfile (GetBloggerProfileRequest) returns (GetBloggerProfileResponse) {
+		option (google.api.http) = {
+			get: "/api/v2/blogger/profile"
+		};
+	};
+	
+	rpc GetBloggerHouses (GetBloggerHousesRequest) returns (GetBloggerHousesResponse) {
+		option (google.api.http) = {
+			get: "/api/v2/blogger/houses"
+		};
 	};
 }
 
@@ -22,6 +36,67 @@ message CreateUserRequest {
 	string  NickName=2;
 	string Password=3;
 }
+
 message CreateUserReply {
 	string Success=1;
+}
+
+// 博主主页相关消息定义
+message GetBloggerProfileRequest {
+	int64 user_id = 1;
+}
+
+message GetBloggerProfileResponse {
+	// 用户基础信息
+	int64 user_id = 1;
+	string name = 2;
+	string real_name = 3;
+	string phone_masked = 4;
+	string email = 5;
+	string avatar = 6;
+	string sex = 7;
+	int32 real_status = 8;
+	int32 status = 9;
+	int64 created_at = 10;
+	int64 updated_at = 11;
+	
+	// 最近房源列表
+	repeated HouseInfo recent_houses = 19;
+}
+
+message HouseInfo {
+	int64 house_id = 1;
+	string title = 2;
+	string address = 3;
+	double price = 4;
+	float area = 5;
+	string layout = 6;
+	string status = 7;
+	int64 created_at = 8;
+}
+
+message GetBloggerHousesRequest {
+	int64 user_id = 1;
+	int32 page = 2;
+	int32 page_size = 3;
+	string status = 4;
+	string sort_by = 5;      // 排序字段: created_at, price, area
+	string order = 6;        // 排序方向: asc, desc
+	double min_price = 7;    // 最低价格
+	double max_price = 8;    // 最高价格
+	float min_area = 9;      // 最小面积
+	float max_area = 10;     // 最大面积
+	string layout = 11;      // 户型
+	string keyword = 12;     // 关键词搜索
+	int64 region_id = 13;    // 区域ID
+}
+
+message GetBloggerHousesResponse {
+	repeated HouseInfo houses = 1;
+	int64 total = 2;
+	int32 page = 3;
+	int32 page_size = 4;
+	int32 pages = 5;         // 总页数
+	bool has_next = 6;       // 是否有下一页
+	bool has_prev = 7;       // 是否有上一页
 }

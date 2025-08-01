@@ -8,6 +8,9 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Security security = 3;
+  Monitor monitor = 4;
+  Cache cache = 5;
 }
 
 message Server {
@@ -39,4 +42,40 @@ message Data {
   }
   Database database = 1;
   Redis redis = 2;
+}
+message Security {
+  string jwt_secret = 1;
+  string encryption_key = 2;
+  int32 jwt_expire_hours = 3;
+  map<string, int32> rate_limits = 4;
+  bool enable_cors = 5;
+  repeated string allowed_origins = 6;
+}
+
+message Monitor {
+  bool enable_metrics = 1;
+  string metrics_path = 2;
+  bool enable_tracing = 3;
+  string jaeger_endpoint = 4;
+  LogLevel log_level = 5;
+  string log_format = 6;
+}
+
+message Cache {
+  message Level {
+    bool enabled = 1;
+    google.protobuf.Duration ttl = 2;
+    int32 max_size = 3;
+  }
+  Level local = 1;
+  Level redis = 2;
+  bool enable_compression = 3;
+  string key_prefix = 4;
+}
+
+enum LogLevel {
+  DEBUG = 0;
+  INFO = 1;
+  WARN = 2;
+  ERROR = 3;
 }

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.8.4
 // - protoc             v3.19.4
-// source: api/house/v3/house.proto
+// source: house/v3/house.proto
 
 package v3
 
@@ -19,12 +19,22 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationHouseCheckFavoriteStatus = "/api.house.v3.House/CheckFavoriteStatus"
+const OperationHouseFavoriteHouse = "/api.house.v3.House/FavoriteHouse"
+const OperationHouseGetFavoriteList = "/api.house.v3.House/GetFavoriteList"
 const OperationHousePersonalRecommendList = "/api.house.v3.House/PersonalRecommendList"
 const OperationHouseRecommendList = "/api.house.v3.House/RecommendList"
 const OperationHouseReserveHouse = "/api.house.v3.House/ReserveHouse"
 const OperationHouseStartChat = "/api.house.v3.House/StartChat"
+const OperationHouseUnfavoriteHouse = "/api.house.v3.House/UnfavoriteHouse"
 
 type HouseHTTPServer interface {
+	// CheckFavoriteStatus 检查收藏状态
+	CheckFavoriteStatus(context.Context, *CheckFavoriteStatusRequest) (*CheckFavoriteStatusReply, error)
+	// FavoriteHouse 收藏房源
+	FavoriteHouse(context.Context, *FavoriteHouseRequest) (*FavoriteHouseReply, error)
+	// GetFavoriteList 获取收藏列表
+	GetFavoriteList(context.Context, *GetFavoriteListRequest) (*GetFavoriteListReply, error)
 	// PersonalRecommendList 个性化推荐列表，根据用户浏览习惯推荐
 	PersonalRecommendList(context.Context, *PersonalRecommendRequest) (*HouseRecommendReply, error)
 	// RecommendList 普通推荐列表
@@ -33,6 +43,8 @@ type HouseHTTPServer interface {
 	ReserveHouse(context.Context, *ReserveHouseRequest) (*ReserveHouseReply, error)
 	// StartChat 发起在线聊天
 	StartChat(context.Context, *StartChatRequest) (*StartChatReply, error)
+	// UnfavoriteHouse 取消收藏房源
+	UnfavoriteHouse(context.Context, *UnfavoriteHouseRequest) (*UnfavoriteHouseReply, error)
 }
 
 func RegisterHouseHTTPServer(s *http.Server, srv HouseHTTPServer) {
@@ -41,6 +53,10 @@ func RegisterHouseHTTPServer(s *http.Server, srv HouseHTTPServer) {
 	r.GET("/house/personal-recommend", _House_PersonalRecommendList0_HTTP_Handler(srv))
 	r.POST("/house/reserve", _House_ReserveHouse0_HTTP_Handler(srv))
 	r.POST("/house/chat/start", _House_StartChat0_HTTP_Handler(srv))
+	r.POST("/house/favorite", _House_FavoriteHouse0_HTTP_Handler(srv))
+	r.DELETE("/house/favorite", _House_UnfavoriteHouse0_HTTP_Handler(srv))
+	r.GET("/house/favorites", _House_GetFavoriteList0_HTTP_Handler(srv))
+	r.GET("/house/favorite/status", _House_CheckFavoriteStatus0_HTTP_Handler(srv))
 }
 
 func _House_RecommendList0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
@@ -125,11 +141,94 @@ func _House_StartChat0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) 
 	}
 }
 
+func _House_FavoriteHouse0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in FavoriteHouseRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseFavoriteHouse)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.FavoriteHouse(ctx, req.(*FavoriteHouseRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*FavoriteHouseReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _House_UnfavoriteHouse0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UnfavoriteHouseRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseUnfavoriteHouse)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UnfavoriteHouse(ctx, req.(*UnfavoriteHouseRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UnfavoriteHouseReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _House_GetFavoriteList0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetFavoriteListRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseGetFavoriteList)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetFavoriteList(ctx, req.(*GetFavoriteListRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetFavoriteListReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _House_CheckFavoriteStatus0_HTTP_Handler(srv HouseHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CheckFavoriteStatusRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationHouseCheckFavoriteStatus)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CheckFavoriteStatus(ctx, req.(*CheckFavoriteStatusRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CheckFavoriteStatusReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type HouseHTTPClient interface {
+	CheckFavoriteStatus(ctx context.Context, req *CheckFavoriteStatusRequest, opts ...http.CallOption) (rsp *CheckFavoriteStatusReply, err error)
+	FavoriteHouse(ctx context.Context, req *FavoriteHouseRequest, opts ...http.CallOption) (rsp *FavoriteHouseReply, err error)
+	GetFavoriteList(ctx context.Context, req *GetFavoriteListRequest, opts ...http.CallOption) (rsp *GetFavoriteListReply, err error)
 	PersonalRecommendList(ctx context.Context, req *PersonalRecommendRequest, opts ...http.CallOption) (rsp *HouseRecommendReply, err error)
 	RecommendList(ctx context.Context, req *HouseRecommendRequest, opts ...http.CallOption) (rsp *HouseRecommendReply, err error)
 	ReserveHouse(ctx context.Context, req *ReserveHouseRequest, opts ...http.CallOption) (rsp *ReserveHouseReply, err error)
 	StartChat(ctx context.Context, req *StartChatRequest, opts ...http.CallOption) (rsp *StartChatReply, err error)
+	UnfavoriteHouse(ctx context.Context, req *UnfavoriteHouseRequest, opts ...http.CallOption) (rsp *UnfavoriteHouseReply, err error)
 }
 
 type HouseHTTPClientImpl struct {
@@ -138,6 +237,45 @@ type HouseHTTPClientImpl struct {
 
 func NewHouseHTTPClient(client *http.Client) HouseHTTPClient {
 	return &HouseHTTPClientImpl{client}
+}
+
+func (c *HouseHTTPClientImpl) CheckFavoriteStatus(ctx context.Context, in *CheckFavoriteStatusRequest, opts ...http.CallOption) (*CheckFavoriteStatusReply, error) {
+	var out CheckFavoriteStatusReply
+	pattern := "/house/favorite/status"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationHouseCheckFavoriteStatus))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *HouseHTTPClientImpl) FavoriteHouse(ctx context.Context, in *FavoriteHouseRequest, opts ...http.CallOption) (*FavoriteHouseReply, error) {
+	var out FavoriteHouseReply
+	pattern := "/house/favorite"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationHouseFavoriteHouse))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *HouseHTTPClientImpl) GetFavoriteList(ctx context.Context, in *GetFavoriteListRequest, opts ...http.CallOption) (*GetFavoriteListReply, error) {
+	var out GetFavoriteListReply
+	pattern := "/house/favorites"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationHouseGetFavoriteList))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 func (c *HouseHTTPClientImpl) PersonalRecommendList(ctx context.Context, in *PersonalRecommendRequest, opts ...http.CallOption) (*HouseRecommendReply, error) {
@@ -186,6 +324,19 @@ func (c *HouseHTTPClientImpl) StartChat(ctx context.Context, in *StartChatReques
 	opts = append(opts, http.Operation(OperationHouseStartChat))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *HouseHTTPClientImpl) UnfavoriteHouse(ctx context.Context, in *UnfavoriteHouseRequest, opts ...http.CallOption) (*UnfavoriteHouseReply, error) {
+	var out UnfavoriteHouseReply
+	pattern := "/house/favorite"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationHouseUnfavoriteHouse))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
