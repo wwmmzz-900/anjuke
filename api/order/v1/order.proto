@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package api.order.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "anjuke/api/order/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.order.v1";
+
+service Order {
+	rpc GetTenantOrderList (GetTenantOrderListRequest) returns (GetTenantOrderListReply) { // 获取租客订单列表(完成)
+		option (google.api.http) = {
+			get: "/api/v1/orders/tenant/{tenant_id}"
+		};
+	};
+
+	rpc GetOrderDetail (GetOrderDetailRequest) returns (GetOrderDetailReply) { // 获取订单详情
+		option (google.api.http) = {
+			get: "/api/v1/orders/{id}"
+		};
+	};
+
+	rpc GetOrderList (GetOrderListRequest) returns (GetOrderListReply) { // 订单列表
+		option (google.api.http) = {
+			get: "/api/v1/orders"
+		};
+	};
+
+	rpc CreateOrder (CreateOrderRequest) returns (CreateOrderReply) { // 创建订单
+		option (google.api.http) = {
+			post: "/api/v1/orders"
+			body: "*"
+		};
+	};
+
+	rpc CancelOrder (CancelOrderRequest) returns (CancelOrderReply) { // 取消订单
+		option (google.api.http) = {
+			put: "/api/v1/orders/{id}/cancel"
+			body: "*"
+		};
+	};
+
+}
+
+message GetTenantOrderListRequest {
+	uint32 tenant_id = 1;  //租客ID
+	uint32 page = 2;
+	uint32 page_size = 3;
+}
+message GetTenantOrderListReply {
+
+	repeated OrderInfo list = 1;
+	int64 total = 2;
+	int32 page = 3;
+	int32 page_size = 4;
+}
+
+message OrderInfo {
+	string order_no = 2;
+	uint32 house_id = 3;
+	uint32 tenant_id = 4;
+	uint32 landlord_id = 5;
+	string tenant_phone = 6;
+	string rent_start = 7;
+	string rent_end = 8;
+	double rent_amount = 9;
+	double deposit = 10;
+	string status = 11;
+	string signed_at = 12;
+	string created_at = 15;
+	string cancel_reason = 16;    // 取消原因
+	string cancelled_at = 17;     // 取消时间
+}
+
+
+message GetOrderDetailRequest {
+	uint32 id = 1;//订单ID
+}
+message GetOrderDetailReply {
+	OrderInfo order = 1;
+}
+
+message GetOrderListRequest {
+	uint32 page = 1;
+	uint32 page_size = 2;
+
+}
+message GetOrderListReply {
+	repeated OrderInfo list = 1;
+	int64 total = 2;
+	int32 page = 3;
+	int32 page_size = 4;
+}
+
+message CreateOrderRequest {
+	uint32 house_id = 1;        // 房源ID
+	uint32 tenant_id = 2;       // 租客ID
+	uint32 landlord_id = 3;     // 房东ID
+	string tenant_phone = 4;    // 租客手机号
+	string rent_start = 5;      // 租期开始时间 (YYYY-MM-DD)
+	string rent_end = 6;        // 租期结束时间 (YYYY-MM-DD)
+	double rent_amount = 7;     // 租金
+	double deposit = 8;         // 押金
+}
+
+message CreateOrderReply {
+	string order_no = 1;        // 订单号
+	string message = 2;         // 返回消息
+}
+
+message CancelOrderRequest {
+	uint32 id = 1;              // 订单ID
+	string cancel_reason = 2;   // 取消原因
+}
+
+message CancelOrderReply {
+	string message = 1;         // 返回消息
+	bool success = 2;           // 是否成功
+}

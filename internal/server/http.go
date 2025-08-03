@@ -2,8 +2,8 @@ package server
 
 import (
 	v6 "anjuke/api/customer/v6"
-	v1 "anjuke/api/helloworld/v1"
 	v3 "anjuke/api/house/v3"
+	v7 "anjuke/api/order/v1"
 	v5 "anjuke/api/points/v5"
 	v4 "anjuke/api/transaction/v4"
 	v2 "anjuke/api/user/v2"
@@ -16,7 +16,7 @@ import (
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, orderService *service.OrderService, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
@@ -32,11 +32,11 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
 	}
 	srv := http.NewServer(opts...)
-	v1.RegisterGreeterHTTPServer(srv, greeter)
 	v2.RegisterUserHTTPServer(srv, user)
 	v3.RegisterHouseHTTPServer(srv, house)
 	v4.RegisterTransactionHTTPServer(srv, transaction)
 	v5.RegisterPointsHTTPServer(srv, points)
 	v6.RegisterCustomerHTTPServer(srv, customer)
+	v7.RegisterOrderHTTPServer(srv, orderService)
 	return srv
 }
