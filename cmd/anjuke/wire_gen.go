@@ -24,49 +24,72 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	db,err:=data.MysqlInit(confData,logger)
+	db, err := data.MysqlInit(confData)
 	if err != nil {
 		return nil, nil, err
 	}
-	rdb,err:=data.ExampleClient(confData,logger)
+	rdb, err := data.ExampleClient(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	dataData, cleanup, err := data.NewData(confData, logger,db,rdb)
+	rdbRW, err := data.InitRedisViaSentinel(logger) //创建redis读写对象
 	if err != nil {
 		return nil, nil, err
 	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
+
+	es, err := data.NewElasticsearch(confData, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dataData, cleanup, err := data.NewData(confData, logger, db, rdb, es, rdbRW)
+	if err != nil {
+		return nil, nil, err
+	}
 	//todo:user
 	userRepo := data.NewUserRepo(dataData, logger)
 	userUsecase := biz.NewUserUsecase(userRepo, logger)
 	userService := service.NewUserService(userUsecase)
 	//todo:house
-	houseRepo:=data.NewHouseRepo(dataData, logger)
+	houseRepo := data.NewHouseRepo(dataData, logger)
 	houseUsecase := biz.NewHouseUsecase(houseRepo, logger)
 	houseService := service.NewHouseService(houseUsecase)
 	//todo:transaction
-	transaction:=data.NewTransactionRepo(dataData, logger)
+	transaction := data.NewTransactionRepo(dataData, logger)
 	transactionUsecase := biz.NewTransactionUsecase(transaction, logger)
 	transactionService := service.NewTransactionService(transactionUsecase)
 	//todo:points
-	points:=data.NewPointsRepo(dataData, logger)
+	points := data.NewPointsRepo(dataData, logger)
 	pointsUsecase := biz.NewPointsUsecase(points, logger)
 	pointsService := service.NewPointsService(pointsUsecase)
 	//todo:Customer
-	customer:=data.NewCustomerRepo(dataData, logger)
+	customer := data.NewCustomerRepo(dataData, logger)
 	customerUsecase := biz.NewCustomerUsecase(customer, logger)
 	customerService := service.NewCustomerService(customerUsecase)
 
-	//todo:payment
-	payment:=data.NewAlipayRepo()
-	paymentUsecase := biz.NewPaymentUsecase(payment)
-	paymentService := service.NewPaymentService(paymentUsecase)
+	//订单服务
+	orderDBRepo := data.NewOrderRepo(db, logger)
+	localCache, err := data.NewRistrettoCache() //创建本地缓存
+	if err != nil {
+		return nil, nil, err
+	}
+	circuit := data.NewHystrixCircuit("order_query") // 订单服务熔断器
+	// 4. 创建带缓存和熔断的Repo（注入DB Repo、缓存、熔断器）
+	orderCacheRepo := data.NewOrderCacheRepo(
+		rdbRW, //redis读写对象
+		db,    //数据库对象
+		localCache,
+		circuit,
+		orderDBRepo, /// 把 DB 仓储注入到缓存仓储中
+	)
+	// 5. 创建用例（注意：依赖的是带缓存的orderCacheRepo，而非原始的orderDBRepo）
+	orderUsecase := biz.NewOrderUsecase(orderCacheRepo, logger) /// 把缓存仓储注入到用例中
 
-	grpcServer := server.NewGRPCServer(confServer, greeterService, userService,houseService,transactionService,pointsService,customerService,paymentService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, userService,houseService,transactionService,pointsService,customerService, logger)
+	// 6. 创建服务实例
+	orderService := service.NewOrderService(orderUsecase)
+
+	grpcServer := server.NewGRPCServer(confServer, userService, houseService, transactionService, pointsService, customerService, orderService, logger)
+	httpServer := server.NewHTTPServer(confServer, userService, houseService, transactionService, pointsService, customerService, orderService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

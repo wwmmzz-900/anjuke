@@ -2,9 +2,8 @@ package server
 
 import (
 	v6 "anjuke/api/customer/v6"
-	v1 "anjuke/api/helloworld/v1"
 	v3 "anjuke/api/house/v3"
-	v7 "anjuke/api/payment/v1"
+	v7 "anjuke/api/order/v1"
 	v5 "anjuke/api/points/v5"
 	v4 "anjuke/api/transaction/v4"
 	v2 "anjuke/api/user/v2"
@@ -17,7 +16,7 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, payment *service.PaymentService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, user *service.UserService, house *service.HouseService, transaction *service.TransactionService, points *service.PointsService, customer *service.CustomerService, orderService *service.OrderService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -33,12 +32,11 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, user *servic
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-	v1.RegisterGreeterServer(srv, greeter)
 	v2.RegisterUserServer(srv, user)
 	v3.RegisterHouseServer(srv, house)
 	v4.RegisterTransactionServer(srv, transaction)
 	v5.RegisterPointsServer(srv, points)
 	v6.RegisterCustomerServer(srv, customer)
-	v7.RegisterPaymentServer(srv, payment)
+	v7.RegisterOrderServer(srv, orderService)
 	return srv
 }
